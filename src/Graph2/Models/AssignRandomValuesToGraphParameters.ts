@@ -2,7 +2,7 @@
 
 import type { Integer } from "../../../Types";
 import type { GraphDataNode } from "../../DataNode";
-import { Matrix } from "../../../Matrix";
+// import { Matrix } from "../../../Matrix";
 
 export const AssignRandomValueToNodes = (
   G: Map<string, GraphDataNode>,
@@ -39,7 +39,8 @@ export const AssignRandomVectorToNodes = (
   seed: Integer,
 ): void => {
   for (const [_, node] of G) {
-    node.data.value = Matrix.random(1, size, from, to, undefined, seed++)[0];
+    const vector = Array.from({ length: size }).map(Math.random);
+    node.data.value = vector;
   }
 };
 
@@ -50,7 +51,8 @@ export const AssignUniqueRandomVectorToNodes = (
   to: number,
 ): void => {
   for (const [_, node] of G) {
-    node.data.value = Matrix.uniqueRandom(1, size, from, to)[0];
+    const vector = Array.from({ length: size }).map(Math.random);
+    node.data.value = vector;
   }
 };
 
@@ -63,7 +65,8 @@ export const AssignRandomMatrixToNodes = (
   seed: Integer,
 ): void => {
   for (const [_, node] of G) {
-    node.data.value = Matrix.random(rows, columns, from, to, undefined, seed++);
+    const matrix = [[]];
+    node.data.value = matrix;
   }
 };
 
@@ -75,7 +78,8 @@ export const AssignUniqueRandomMatrixToNodes = (
   to: number,
 ): void => {
   for (const [_, node] of G) {
-    node.data.value = Matrix.uniqueRandom(rows, columns, from, to);
+    const matrix = [[]];
+    node.data.value = matrix;
   }
 };
 
