@@ -36,7 +36,7 @@ import {
   ifEdgeNotExistsThrow,
 } from "../Decorators";
 import * as models from "./Models";
-import { Matrix } from "../../Matrix";
+// import { Matrix } from "../../Matrix";
 import { CreateTypedArrayConstructor } from "../../Matrix/Models";
 import { IsTypedArrayOrArray } from "../../Matrix/Conditions";
 import { DynamicStack } from "../Stack";
