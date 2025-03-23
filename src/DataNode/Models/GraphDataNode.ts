@@ -10,7 +10,7 @@ import type {
 import { GraphDataElement } from "./GraphDataElement";
 import { GraphDataEdge } from "./GraphDataEdge";
 import { v4 as uuidv4 } from "uuid";
-import { Matrix } from "../../../Matrix";
+// import { Matrix } from "../../../Matrix";
 /**
  * Class representing a node in a graph.
  * Extends the abstract class GraphDataElement
@@ -918,7 +918,8 @@ export class GraphDataNode extends GraphDataElement {
     seed: Integer,
     type: NumericType = "float64",
   ): GraphDataNode {
-    this.value = Matrix.random(1, size, from, to, type, seed)[0];
+    const matrix = [[]];
+    this.value = matrix;
 
     return this;
   }
@@ -939,7 +940,8 @@ export class GraphDataNode extends GraphDataElement {
     to: number,
     type: NumericType = "float64",
   ): GraphDataNode {
-    this.value = Matrix.uniqueRandom(1, size, from, to, type)[0];
+    const matrix = [[]];
+    this.value = matrix;
 
     return this;
   }
@@ -962,7 +964,8 @@ export class GraphDataNode extends GraphDataElement {
     seed: Integer,
     type: NumericType = "float64",
   ): GraphDataNode {
-    this.value = Matrix.random(rows, columns, from, to, type, seed);
+    const matrix = [[]];
+    this.value = matrix;
 
     return this;
   }
@@ -982,7 +985,8 @@ export class GraphDataNode extends GraphDataElement {
     to: number,
     type: NumericType = "float64",
   ): GraphDataNode {
-    this.value = Matrix.uniqueRandom(rows, columns, from, to, type);
+    const matrix = [[]];
+    this.value = matrix;
 
     return this;
   }
