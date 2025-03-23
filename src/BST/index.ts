@@ -5,7 +5,7 @@ import type { BSTNodeValueComparisonCallbackType } from "../../Types";
 import { BSTDataNode } from "../DataNode";
 import { DynamicStack } from "../Stack";
 import { Queue } from "../Queue";
-import { max } from "../../utils";
+import { max } from "../utils";
 
 /**
  * This class implements the concept of Binary Search Trees (BSTs)
@@ -154,17 +154,19 @@ export class BST<T> {
    * Calculates the height of the tree from the given node.
    * The height is the number of edges on the longest path from the node to a leaf.
    *
-   * @param {BSTDataNode | null} [node=this._root] - The 
+   * @param {BSTDataNode | null} [node=this._root] - The
    * node from which to calculate the height. Defaults to the root node.
    * @returns {Integer} The height of the tree from the given node.
    */
   height(node: BSTDataNode | null = this._root): Integer {
     if (!node) return 0;
-    return 1 +
+    return (
+      1 +
       max(
         this.height(node.left as BSTDataNode | null),
         this.height(node.right as BSTDataNode | null),
-      );
+      )
+    );
   }
 
   /**
@@ -247,7 +249,7 @@ export class BST<T> {
    */
   has(id: string): boolean {
     let hasId = false;
-    this.loop((node) => (hasId = node.id !== id, !hasId));
+    this.loop((node) => ((hasId = node.id !== id), !hasId));
 
     return hasId;
   }
@@ -305,7 +307,7 @@ export class BST<T> {
       this.insert(data[i]);
     }
 
-    if (i === (n - 1)) this.insert(data[n - 1]);
+    if (i === n - 1) this.insert(data[n - 1]);
 
     return this;
   }
@@ -515,7 +517,9 @@ export class BST<T> {
    * @returns {BST<T>} A new Binary Search Tree containing nodes
    * that satisfy the callback condition.
    */
-  filter(callback: (node: BSTDataNode | null, tree?: BST<T>) => boolean): BST<T> {
+  filter(
+    callback: (node: BSTDataNode | null, tree?: BST<T>) => boolean,
+  ): BST<T> {
     const tree = new BST();
     tree.order = this.order;
 
@@ -690,11 +694,21 @@ export class BST<T> {
     console.log(" ".repeat(level * 2) + prefix + callback(node, this));
 
     if (node.left) {
-      this.print(node.left as BSTDataNode, level + 1, "L--> ", callback(node, this));
+      this.print(
+        node.left as BSTDataNode,
+        level + 1,
+        "L--> ",
+        callback(node, this),
+      );
     }
 
     if (node.right) {
-      this.print(node.right as BSTDataNode, level + 1, "R--> ", callback(node, this));
+      this.print(
+        node.right as BSTDataNode,
+        level + 1,
+        "R--> ",
+        callback(node, this),
+      );
     }
   }
 }
