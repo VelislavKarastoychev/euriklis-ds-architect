@@ -6,7 +6,7 @@ import type {
   Integer,
   NumericType,
 } from "../../../Types";
-import { Matrix } from "../../../Matrix";
+// import { Matrix } from "../../../Matrix";
 
 /**
  * Class representing an edge in a graph.
@@ -174,7 +174,8 @@ export class GraphDataEdge extends GraphDataElement {
     seed: Integer,
     type: NumericType = "float64",
   ): GraphDataEdge {
-    this.weight = Matrix.random(1, size, from, to, type, seed)[0];
+    const matrix = [[]];
+    this.weight = matrix;
 
     return this;
   }
@@ -194,7 +195,8 @@ export class GraphDataEdge extends GraphDataElement {
     to: number,
     type: NumericType = "float64",
   ): GraphDataEdge {
-    this.weight = Matrix.uniqueRandom(1, size, from, to, type)[0];
+    const matrix = [[]];
+    this.weight = matrix;
 
     return this;
   }
@@ -218,7 +220,8 @@ export class GraphDataEdge extends GraphDataElement {
     seed: Integer,
     type: NumericType = "float64",
   ): GraphDataEdge {
-    this.weight = Matrix.random(rows, columns, from, to, type, seed);
+    const matrix = [[]];
+    this.weight = matrix;
 
     return this;
   }
@@ -241,7 +244,8 @@ export class GraphDataEdge extends GraphDataElement {
     to: number,
     type: NumericType = "float64",
   ): GraphDataEdge {
-    this.weight = Matrix.uniqueRandom(rows, columns, from, to, type);
+    const matrix = [[]];
+    this.weight = matrix;
 
     return this;
   }
