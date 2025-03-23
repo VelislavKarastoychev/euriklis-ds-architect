@@ -19,8 +19,9 @@ import {
 } from "../Decorators";
 
 import * as errors from "../Errors";
-import { Matrix } from "../../Matrix";
-import { IsNumber } from "../../Matrix/Conditions";
+import validator from "@euriklis/validator-ts";
+// import { Matrix } from "../../Matrix";
+// import { IsNumber } from "../../Matrix/Conditions";
 
 /**
  * @class
