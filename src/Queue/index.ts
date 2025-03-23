@@ -3,16 +3,14 @@ import * as errors from "../Errors";
 import validator from "@euriklis/validator-ts";
 import type { Integer } from "../../Types";
 import { LinkedDataNode } from "../DataNode";
-import { Matrix } from "../../Matrix";
+// import { Matrix } from "../../Matrix";
 
 /**
  * This class implements a queue data structure using a linked list.
  */
 export class Queue {
   public static random(n: Integer, from: number = 0, to: number = 1): Queue {
-    return new Queue().enqueueMany(
-      Matrix.random(1, n, from, to, "generic")[0] as number[],
-    );
+    return new Queue().enqueueMany(Array.from({ length: n }).map(Math.random));
   }
 
   private _head: LinkedDataNode | null = null;
@@ -121,8 +119,10 @@ export class Queue {
    */
   enqueueMany(items: any[]): Queue {
     const n = items.length;
-    let i: Integer, node: LinkedDataNode | null, nm1: Integer = n - 1;
-    for (i = n; i-- > 1;) {
+    let i: Integer,
+      node: LinkedDataNode | null,
+      nm1: Integer = n - 1;
+    for (i = n; i-- > 1; ) {
       node = new LinkedDataNode(items[nm1 - i--]);
       this._enqueue(node);
       node = new LinkedDataNode(items[nm1 - i]);
@@ -144,11 +144,11 @@ export class Queue {
   dequeue(): any {
     let data: any = null;
     if (this.isEmpty) errors.StackUnderflow("Queue dequeue")();
-      data = this._head?.data || null;
-      this._head = this._head?.next || null;
-      if (this._head) this._head.prev = null;
-      else this._top = null; // if the head is empty delete the rear.
-      this._length--;
+    data = this._head?.data || null;
+    this._head = this._head?.next || null;
+    if (this._head) this._head.prev = null;
+    else this._top = null; // if the head is empty delete the rear.
+    this._length--;
 
     return data;
   }
@@ -163,7 +163,7 @@ export class Queue {
   dequeueMany(n: Integer = 1): any[] {
     const items: any[] = [];
     let i: Integer, node: LinkedDataNode | null;
-    for (i = n; i-- > 1;) {
+    for (i = n; i-- > 1; ) {
       if (this._head) {
         node = this._head;
         this._head = this._head.next;
