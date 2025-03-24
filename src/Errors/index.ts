@@ -1,5 +1,5 @@
 "use strict";
-import { errorGenerator } from "../../utils";
+import { errorGenerator } from "../utils";
 import {
   InappropriateNodeValuesTypeTxt,
   InappropriateNodesDeclarationTxt,
@@ -20,7 +20,7 @@ import {
 const runError = errorGenerator(
   "@euriklis/mathematics DataStructures library error message",
 );
-export const IncorrectParameterInPushMany: () => never = () =>
+export const IncorrectParameterInPushMany: () => never = (): never =>
   runError(IncorrectParameterInPushManyTxt);
 export const StackUnderflow: (methodName: string) => () => never =
   (methodName) => () =>

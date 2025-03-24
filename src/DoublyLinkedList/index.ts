@@ -1,7 +1,6 @@
 "use strict";
 
 import type { Integer, SecureStoreType } from "../../Types";
-import { IsSame } from "../../utils";
 import { AVLTree } from "../AVL";
 import { LinkedDataNode } from "../DataNode";
 import * as errors from "../Errors";
@@ -242,8 +241,9 @@ export class DoublyLinkedList {
         this.removeLast();
       } else {
         ((node as LinkedDataNode).next as LinkedDataNode).prev = node.prev;
-        ((node as LinkedDataNode).prev as LinkedDataNode).next =
-          (node as LinkedDataNode).next;
+        ((node as LinkedDataNode).prev as LinkedDataNode).next = (
+          node as LinkedDataNode
+        ).next;
       }
 
       node.prev = null;
@@ -407,7 +407,11 @@ export class DoublyLinkedList {
     callback: (d: any, id?: string, list?: DoublyLinkedList) => boolean,
   ): boolean {
     let answer: boolean = false;
-    this.loop((d, id, list) => (answer = callback(d, id, list), answer));
+    this.loop(
+      (d: unknown, id: string, list) => (
+        (answer = callback(d, id, list)), answer
+      ),
+    );
 
     return answer;
   }
@@ -421,7 +425,9 @@ export class DoublyLinkedList {
     callback: (d: any, id?: string, list?: DoublyLinkedList) => boolean,
   ): boolean {
     let answer: boolean = false;
-    this.loop((data, id, list) => (answer = callback(data, id, list), !answer));
+    this.loop(
+      (data, id, list) => ((answer = callback(data, id, list)), !answer),
+    );
 
     return answer;
   }
@@ -511,7 +517,7 @@ export class DoublyLinkedList {
    *
    * @param{DoublyLinkedList} list - the list
    * used for the comparison.
-   * @returns {boolean} "True" if the data and the IDs 
+   * @returns {boolean} "True" if the data and the IDs
    * of list and the current DoublyLinkedList instance
    * are the same as well as the mapType and false otherwise.
    */
@@ -520,10 +526,9 @@ export class DoublyLinkedList {
     let p1 = this._head;
     let p2 = list._head;
 
-
     if (this.length !== list.length) return false;
     if (this._secureStore !== list._secureStore) return false;
-    
+
     return models.IsDLLExactlySame(p1, p2);
   }
 
