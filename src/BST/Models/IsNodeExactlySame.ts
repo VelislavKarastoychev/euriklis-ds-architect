@@ -1,7 +1,7 @@
 "use strict";
 import type { DynamicStack } from "../../Stack";
 import type { BSTDataNode } from "../../DataNode";
-import { IsSame } from "../../../utils";
+import { IsSame } from "../../utils";
 const NodeSimilarity = <AbstractBSTDataNode extends BSTDataNode>(
   S1: DynamicStack<AbstractBSTDataNode | null>,
   S2: DynamicStack<AbstractBSTDataNode | null>,
@@ -12,7 +12,7 @@ const NodeSimilarity = <AbstractBSTDataNode extends BSTDataNode>(
     t1 = S1.pop() as AbstractBSTDataNode;
     t2 = S2.pop() as AbstractBSTDataNode;
     const same: boolean = properties.every((prop) =>
-      IsSame(t1[prop], t2[prop])
+      IsSame(t1[prop], t2[prop]),
     );
     if (!same) return false;
     if (t1.left) S1.push(t1.left as AbstractBSTDataNode);
