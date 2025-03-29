@@ -686,7 +686,8 @@ export class BST<T> {
     node: BSTDataNode | null = this._root,
     level: Integer = 0,
     prefix: string = "Root: ",
-    callback: (node: BSTDataNode, tree?: BST<T>) => any = (node) => node.id,
+    callback: (node: BSTDataNode, tree?: BST<T>) => any = (node) =>
+      node.id || null,
   ): void {
     if (node === null) {
       return;
@@ -694,21 +695,11 @@ export class BST<T> {
     console.log(" ".repeat(level * 2) + prefix + callback(node, this));
 
     if (node.left) {
-      this.print(
-        node.left as BSTDataNode,
-        level + 1,
-        "L--> ",
-        callback(node, this),
-      );
+      this.print(node.left as BSTDataNode, level + 1, "L--> ", callback);
     }
 
     if (node.right) {
-      this.print(
-        node.right as BSTDataNode,
-        level + 1,
-        "R--> ",
-        callback(node, this),
-      );
+      this.print(node.right as BSTDataNode, level + 1, "R--> ", callback);
     }
   }
 }
