@@ -1,5 +1,5 @@
 "use strict";
-import { IsSame } from "../../../utils";
+import { IsSame } from "../../utils";
 import type { LinkedDataNode } from "../../DataNode";
 
 const DLLSame = (
@@ -10,7 +10,7 @@ const DLLSame = (
   if (n1 && n2) {
     if (
       properties.every((prop) =>
-        IsSame((n1 as LinkedDataNode)[prop], (n2 as LinkedDataNode)[prop])
+        IsSame((n1 as LinkedDataNode)[prop], (n2 as LinkedDataNode)[prop]),
       )
     ) {
       n1 = n1.next;
