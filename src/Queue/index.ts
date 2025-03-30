@@ -3,29 +3,37 @@ import * as errors from "../Errors";
 import validator from "@euriklis/validator-ts";
 import type { Integer } from "../../Types";
 import { LinkedDataNode } from "../DataNode";
-// import { Matrix } from "../../Matrix";
 
 /**
- * This class implements a queue data structure using a linked list.
+ * This class implements a queue data structure
+ * using a linked list.
  */
-export class Queue {
-  public static random(n: Integer, from: number = 0, to: number = 1): Queue {
-    return new Queue().enqueueMany(Array.from({ length: n }).map(Math.random));
+export class Queue<T = unknown> {
+  public static random(
+    n: Integer,
+    from: number = 0,
+    to: number = 1,
+  ): Queue<number> {
+    return new Queue<number>().enqueueMany(
+      Array.from({ length: n }).map(
+        (_: unknown): number => from + Math.random() * (to - from),
+      ),
+    );
   }
 
-  private _head: LinkedDataNode | null = null;
-  private _top: LinkedDataNode | null = null;
+  private _head: LinkedDataNode<T> | null = null;
+  private _top: LinkedDataNode<T> | null = null;
   private _size: Integer = Infinity;
   private _length: Integer = 0;
 
   /**
    * Creates an instance of Queue.
-   * @param {any} [data] - The initial data to enqueue.
+   * @param {T} [data] - The initial data to enqueue.
    * @param {Integer} [size=Infinity] - The maximum size of the queue.
    */
-  constructor(data?: any, size: Integer = Infinity) {
+  constructor(data?: T, size: Integer = Infinity) {
     this.size = size;
-    this.enqueue(data);
+    if (data) this.enqueue(data);
   }
 
   /**
@@ -59,18 +67,18 @@ export class Queue {
   /**
    * Views the front item without removing it.
    * Time complexity: O(1).
-   * @returns {any} The front data.
+   * @returns {T} The front data.
    */
-  get peek(): any {
+  get peek(): T {
     return this._head?.data || null;
   }
 
   /**
    * Views the last item without adding
    * another element.
-   * @returns {any} The last element.
+   * @returns {T} The last element.
    */
-  get rear(): any {
+  get rear(): T {
     return this._top?.data || null;
   }
 
@@ -78,9 +86,9 @@ export class Queue {
    * @private
    * Enqueues a node into the queue.
    * Time complexity: O(1).
-   * @param {LinkedDataNode} node - The node to enqueue.
+   * @param {LinkedDataNode<T>} node - The node to enqueue.
    */
-  private _enqueue(node: LinkedDataNode) {
+  private _enqueue(node: LinkedDataNode<T>): void {
     if (this._size < this._length + 1) {
       errors.StackOverflow("Queue enqueue")();
     }
@@ -98,12 +106,12 @@ export class Queue {
   /**
    * Adds data to the end of the queue.
    * Time complexity: O(1).
-   * @param {any} data - The data to enqueue.
-   * @returns {Queue} The updated queue.
+   * @param {T} data - The data to enqueue.
+   * @returns {Queue<T>} The updated queue.
    */
-  enqueue(data: any): Queue {
+  enqueue(data: T): Queue<T> {
     if (data) {
-      const node = new LinkedDataNode(data);
+      const node = new LinkedDataNode<T>(data);
       this._enqueue(node);
     }
 
@@ -114,22 +122,22 @@ export class Queue {
    * Adds multiple items to the queue.
    * Time complexity: O(n), where the "n"  is the
    * length of the length of the "items" parameter.
-   * @param {any[]} items - The items to enqueue.
-   * @returns {Queue} The updated queue.
+   * @param {T[]} items - The items to enqueue.
+   * @returns {Queue<T>} The updated queue.
    */
-  enqueueMany(items: any[]): Queue {
+  enqueueMany(items: T[]): Queue<T> {
     const n = items.length;
     let i: Integer,
       node: LinkedDataNode | null,
       nm1: Integer = n - 1;
     for (i = n; i-- > 1; ) {
-      node = new LinkedDataNode(items[nm1 - i--]);
+      node = new LinkedDataNode<T>(items[nm1 - i--]);
       this._enqueue(node);
-      node = new LinkedDataNode(items[nm1 - i]);
+      node = new LinkedDataNode<T>(items[nm1 - i]);
       this._enqueue(node);
     }
     if (i === 0) {
-      node = new LinkedDataNode(items[nm1]);
+      node = new LinkedDataNode<T>(items[nm1]);
       this._enqueue(node);
     }
 
@@ -139,10 +147,10 @@ export class Queue {
   /**
    * Removes and returns the first item in the queue.
    * Time complexity: O(1).
-   * @returns {any} The dequeued data.
+   * @returns {T | null} The dequeued data.
    */
-  dequeue(): any {
-    let data: any = null;
+  dequeue(): T | null {
+    let data: T | null = null;
     if (this.isEmpty) errors.StackUnderflow("Queue dequeue")();
     data = this._head?.data || null;
     this._head = this._head?.next || null;
@@ -158,11 +166,11 @@ export class Queue {
    * Time complexity: O(n), where the "n" is the count of the elements
    * which have to be deleted.
    * @param {Integer} [n=1] - The number of items to dequeue.
-   * @returns {any[]} The dequeued data items.
+   * @returns {T[]} The dequeued data items.
    */
-  dequeueMany(n: Integer = 1): any[] {
-    const items: any[] = [];
-    let i: Integer, node: LinkedDataNode | null;
+  dequeueMany(n: Integer = 1): T[] {
+    const items: T[] = [];
+    let i: Integer, node: LinkedDataNode<T> | null;
     for (i = n; i-- > 1; ) {
       if (this._head) {
         node = this._head;
@@ -203,12 +211,12 @@ export class Queue {
    * Time complexity: O(n), where the "n" is the length of the queue.
    * @param {function} callback - The function to apply to each node.
    * @param {boolean} [inversed=false] - Whether to traverse in reverse order.
-   * @returns {Queue} The traversed queue.
+   * @returns {Queue<T>} The traversed queue.
    */
   traverse(
-    callback: (node: LinkedDataNode, queue: Queue) => void,
+    callback: (node: LinkedDataNode<T>, queue: Queue<T>) => void,
     inversed: boolean = false,
-  ): Queue {
+  ): Queue<T> {
     let node = inversed ? this._top : this._head;
     while (node) {
       callback(node, this);
@@ -224,9 +232,11 @@ export class Queue {
    * @param {function} callback - The function to apply to each node.
    * @returns {Queue} The filtered queue.
    */
-  filter(callback: (node: LinkedDataNode, queue?: Queue) => boolean): Queue {
-    const queue = new Queue();
-    let node: LinkedDataNode | null = this._head;
+  filter(
+    callback: (node: LinkedDataNode<T>, queue?: Queue<T>) => boolean,
+  ): Queue<T> {
+    const queue = new Queue<T>();
+    let node: LinkedDataNode<T> | null = this._head;
     while (node) {
       if (callback(node, this)) {
         queue.enqueue(node.data);
@@ -239,11 +249,11 @@ export class Queue {
   /**
    * Checks if the queue contains a specific element.
    * Time complexity: 0(n), where the "n" is the length of the queue.
-   * @param {any} data - The data to search for.
+   * @param {T} data - The data to search for.
    * @returns {boolean} True if the queue contains the element, false otherwise.
    */
-  contains(data: any): boolean {
-    let node: LinkedDataNode | null = this._head;
+  contains(data: T): boolean {
+    let node: LinkedDataNode<T> | null = this._head;
     while (node) {
       const answer = new validator(node.data).isSame(data).answer;
       if (answer) return true;
@@ -255,11 +265,11 @@ export class Queue {
 
   /**
    * Reverses the order of elements in the queue.
-   * @returns {Queue} The reversed queue.
+   * @returns {Queue<T>} The reversed queue.
    */
-  reverse(): Queue {
-    let node: LinkedDataNode | null = this._head,
-      temp: LinkedDataNode | null = null;
+  reverse(): Queue<T> {
+    let node: LinkedDataNode<T> | null = this._head,
+      temp: LinkedDataNode<T> | null = null;
     this._top = this._head;
     while (node) {
       temp = node.prev;
@@ -277,9 +287,9 @@ export class Queue {
 
   /**
    * Clears the queue.
-   * @returns {Queue} The emmpy queue.
+   * @returns {Queue<T>} The emmpy queue.
    */
-  clean(): Queue {
+  clean(): Queue<T> {
     this._head = null;
     this._top = null;
     this._size = Infinity;
@@ -291,13 +301,13 @@ export class Queue {
   /**
    * Creates a shallow copy of the queue.
    * Time complexity: O(n), where the "n" is the number of the elements of the queue.
-   * @returns {Queue} A new queue instance with the same elements as the current queue.
+   * @returns {Queue<T>} A new queue instance with the same elements as the current queue.
    */
-  copy(): Queue {
-    const queue: Queue = new Queue();
-    let node: LinkedDataNode | null = this._head;
+  copy(): Queue<T> {
+    const queue = new Queue<T>();
+    let node: LinkedDataNode<T> | null = this._head;
     while (node) {
-      const temp: LinkedDataNode = new LinkedDataNode(node.data);
+      const temp: LinkedDataNode<T> = new LinkedDataNode<T>(node.data);
       temp.id = node.id;
       queue._enqueue(temp);
       node = node.next;
@@ -311,10 +321,10 @@ export class Queue {
   /**
    * Merges another queue into this queue.
    * Complexity: O(1).
-   * @param {Queue} queue - The queue to merge into this one.
-   * @returns {Queue} The updated queue.
+   * @param {Queue<T>} queue - The queue to merge into this one.
+   * @returns {Queue<T>} The updated queue.
    */
-  merge(queue: Queue): Queue {
+  merge(queue: Queue<T>): Queue<T> {
     if (this.isEmpty) {
       this._head = queue._head;
       this._top = queue._top;
@@ -332,10 +342,10 @@ export class Queue {
 
   /**
    * Converts the queue to an array.
-   * @returns {any[]} The array representation of the queue.
+   * @returns {T[]} The array representation of the queue.
    */
-  toArray(): any[] {
-    const values: any[] = [];
+  toArray(): T[] {
+    const values: T[] = [];
     this.traverse((node) => values.push(node.data));
 
     return values;
