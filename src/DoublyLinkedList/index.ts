@@ -41,8 +41,8 @@ export class DoublyLinkedList<T> {
   private _head: LinkedDataNode | null = null;
   private _top: LinkedDataNode | null = null;
   private _currentSize = 0;
-  private _secureStore: SecureStoreType = null;
-  private _map: null | Map<string, LinkedDataNode> | AVLTree = null;
+  private _secureStore: SecureStoreType = "Map";
+  private _map: null | Map<string, LinkedDataNode> | AVLTree<T> = null;
 
   /**
    * Generates a DoublyLinkedList filled
@@ -94,12 +94,12 @@ export class DoublyLinkedList<T> {
 
   /**
    * Creates an instance of DoublyLinkedList.
-   * @param {any} [data] - The initial data to add to the list.
+   * @param {T} [data] - The initial data to add to the list.
    * @param {Integer} [size=Infinity] - The maximum size of the list.
    */
   constructor(data?: T, size: Integer = Infinity) {
     this.size = size;
-    this.addLast(data);
+    if (data) this.addLast(data);
   }
 
   /**
@@ -116,7 +116,7 @@ export class DoublyLinkedList<T> {
 
   set mapType(type: SecureStoreType) {
     this._secureStore = type;
-    this._map = models.GenerateMap(this.mapType);
+    this._map = models.GenerateMap<T>(this.mapType);
   }
 
   /**
@@ -329,7 +329,9 @@ export class DoublyLinkedList<T> {
    */
   values(): Map<string, any> {
     const values = new Map();
-    this.traverse((data, id) => values.set(id, data));
+    this.traverse(
+      (data: T, id: string | undefined): Map<string, T> => values.set(id, data),
+    );
 
     return values;
   }
@@ -371,7 +373,7 @@ export class DoublyLinkedList<T> {
    * method.
    */
   loop(
-    callback: (d: any, id: string, list?: DoublyLinkedList<T>) => boolean,
+    callback: (d: T, id: string, list?: DoublyLinkedList<T>) => boolean,
     inversed: boolean = true,
   ): DoublyLinkedList<T> {
     const pointer = inversed ? this._top : this._head;
