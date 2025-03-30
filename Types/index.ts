@@ -4,6 +4,8 @@ export type AbstractAttributesType = {
   [property: string]: unknown;
 };
 
+export type SecureStoreType = "AVL" | "Map";
+
 export type NodeType = {
   id: string | number;
   name: string;
