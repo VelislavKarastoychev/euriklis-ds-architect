@@ -36,7 +36,7 @@ import * as models from "./Models";
  * @classdesc This class represents a doubly linked list
  * with optional size limitation.
  */
-export class DoublyLinkedList {
+export class DoublyLinkedList<T> {
   private _size: Integer = Infinity;
   private _head: LinkedDataNode | null = null;
   private _top: LinkedDataNode | null = null;
@@ -70,9 +70,13 @@ export class DoublyLinkedList {
     from?: Integer;
     to?: Integer;
     seed?: Integer;
-    callback?: (d: any, id?: string, list?: DoublyLinkedList) => any;
+    callback?: (
+      d: any,
+      id?: string,
+      list?: DoublyLinkedList<number | unknown>,
+    ) => any;
     mapType?: SecureStoreType;
-  }): DoublyLinkedList {
+  }): DoublyLinkedList<number | unknown> {
     const {
       length,
       from = 0,
@@ -81,7 +85,7 @@ export class DoublyLinkedList {
       callback,
       mapType = "Map",
     } = options;
-    const l = new DoublyLinkedList();
+    const l = new DoublyLinkedList<number | unknown>();
     l.mapType = mapType;
     models.FillDLLWithRandomNumbers(l, length, from, to, seed, callback);
 
@@ -93,7 +97,7 @@ export class DoublyLinkedList {
    * @param {any} [data] - The initial data to add to the list.
    * @param {Integer} [size=Infinity] - The maximum size of the list.
    */
-  constructor(data?: any, size: Integer = Infinity) {
+  constructor(data?: T, size: Integer = Infinity) {
     this.size = size;
     this.addLast(data);
   }
@@ -133,9 +137,9 @@ export class DoublyLinkedList {
 
   /**
    * Gets the data of the top (last) node.
-   * @returns {any}
+   * @returns {T | null}
    */
-  get top(): any {
+  get top(): T | null {
     return this._top?.data || null;
   }
 
@@ -161,7 +165,7 @@ export class DoublyLinkedList {
    * @param{string} id? - The id property of the data node.
    * @returns {DoublyLinkedList} The updated list.
    */
-  addLast(data: any, id?: string): DoublyLinkedList {
+  addLast(data: T, id?: string): DoublyLinkedList<T> {
     if (data) {
       if (this._size < this._currentSize + 1) {
         errors.StackOverflow("DoublyLinkedList addLast")();
@@ -183,9 +187,9 @@ export class DoublyLinkedList {
 
   /**
    * Removes the last node from the list.
-   * @returns {any} The data of the removed node.
+   * @returns {T | null} The data of the removed node.
    */
-  removeLast(): DoublyLinkedList {
+  removeLast(): T | null {
     if (!this._head) {
       errors.StackUnderflow("DoublyLinkedList removeLast")();
     }
@@ -205,9 +209,9 @@ export class DoublyLinkedList {
 
   /**
    * Removes the first node from the list.
-   * @returns {any} The data of the removed node.
+   * @returns {T | null} The data of the removed node.
    */
-  removeFirst(): any {
+  removeFirst(): T | null {
     if (!this._head) {
       errors.StackUnderflow("DoublyLinkedList removeFirst")();
     }
@@ -229,9 +233,9 @@ export class DoublyLinkedList {
   /**
    * Removes a node by its ID.
    * @param {string} id - The ID of the node to remove.
-   * @returns {any} The data of the removed node.
+   * @returns {T | null} The data of the removed node.
    */
-  remove(id: string): any {
+  remove(id: string): T | null {
     const node: LinkedDataNode | null = this._findNodeById(id);
     if (node) {
       models.MapDeletion(node.id, this._map);
@@ -250,18 +254,20 @@ export class DoublyLinkedList {
       node.next = null;
       this._currentSize--;
 
-      return node.data;
+      return node.data as T | null;
     }
+
+    return null;
   }
 
   /**
    * Inserts a node with the given data after the node with the specified ID.
    * @param {string} id - The ID of the node to insert after.
-   * @param {any} data - The data to insert.
+   * @param {T} data - The data to insert.
    * @param {string} dataId? - the "id" property of the new node.
-   * @returns {DoublyLinkedList} The updated list.
+   * @returns {DoublyLinkedList<T>} The updated list.
    */
-  insertAfter(id: string, data: any, dataId?: string): DoublyLinkedList {
+  insertAfter(id: string, data: T, dataId?: string): DoublyLinkedList<T> {
     const node = this._findNodeById(id);
     const newNode: LinkedDataNode | null = new LinkedDataNode(data);
     if (dataId) newNode.id = dataId;
@@ -288,11 +294,11 @@ export class DoublyLinkedList {
   /**
    * Inserts a node with the given data before the node with the specified ID.
    * @param {string} id - The ID of the node to insert before.
-   * @param {any} data - The data to insert.
+   * @param {T} data - The data to insert.
    * @param{string} dataId? - The id property of the data node which will be created.
-   * @returns {DoublyLinkedList} The updated list.
+   * @returns {DoublyLinkedList<T>} The updated list.
    */
-  insertBefore(id: string, data: any, dataId?: string): DoublyLinkedList {
+  insertBefore(id: string, data: T, dataId?: string): DoublyLinkedList<T> {
     const node: LinkedDataNode | null = this._findNodeById(id);
     const newNode = new LinkedDataNode(data);
     if (dataId) newNode.id = dataId;
@@ -341,22 +347,33 @@ export class DoublyLinkedList {
    * Traverses the list, applying the given callback to each node.
    * @param {function} callback - The function to apply to each node.
    * @param {boolean} [inversed=false] - Whether to traverse in reverse order.
-   * @returns {DoublyLinkedList} The traversed list.
+   * @returns {DoublyLinkedList<T>} The traversed list.
    */
   traverse(
-    callback: (d: any, id?: string, list?: DoublyLinkedList) => any,
+    callback: (d: any, id?: string, list?: DoublyLinkedList<T>) => unknown,
     inversed: boolean = false,
-  ): DoublyLinkedList {
+  ): DoublyLinkedList<T> {
     const pointer: LinkedDataNode | null = inversed ? this._top : this._head;
     models.DLLTraverse(callback, pointer, this, inversed);
 
     return this;
   }
 
+  /**
+   * Traverses through the nodes of the doubly linked
+   * list until the callback function returns true or
+   * the final node has reached.
+   * @param{function} callback - A function which returns a boolean
+   * @param {boolean} inversed - A boolean. If true, then the traversing
+   * of the doubly linked list starts from the final node.
+   * @returns{DoublyLinkedList<T>} The initial doubly linked list instance.
+   * Note that the values may be changed from the callback function of the
+   * method.
+   */
   loop(
-    callback: (d: any, id: string, list?: DoublyLinkedList) => boolean,
+    callback: (d: any, id: string, list?: DoublyLinkedList<T>) => boolean,
     inversed: boolean = true,
-  ): DoublyLinkedList {
+  ): DoublyLinkedList<T> {
     const pointer = inversed ? this._top : this._head;
     models.DLLLoop(callback, pointer, this, inversed);
 
@@ -367,13 +384,13 @@ export class DoublyLinkedList {
    * Filters the list, returning a new list with nodes that match the given callback.
    * @param {function} callback - The function to apply to each node.
    * @param {boolean} [inversed=false] - Whether to traverse in reverse order.
-   * @returns {DoublyLinkedList} The filtered list.
+   * @returns {DoublyLinkedList<T>} The filtered list.
    */
   filter(
-    callback: (d: any, id?: string, list?: DoublyLinkedList) => boolean,
+    callback: (d: T, id?: string, list?: DoublyLinkedList<T>) => boolean,
     inversed: boolean = false,
-  ): DoublyLinkedList {
-    const list = new DoublyLinkedList(),
+  ): DoublyLinkedList<T> {
+    const list = new DoublyLinkedList<T>(),
       pointer: LinkedDataNode | null = inversed ? this._top : this._head;
     models.FilterDLL(pointer, callback, this, list, inversed);
 
@@ -383,13 +400,13 @@ export class DoublyLinkedList {
   /**
    * Creates a copy of the list.
    * @param {boolean} [inversed=false] - Whether to traverse in reverse order.
-   * @returns {DoublyLinkedList} The copied list.
+   * @returns {DoublyLinkedList<T>} The copied list.
    */
-  copy(inversed: boolean = false): DoublyLinkedList {
-    const DLL = new DoublyLinkedList();
+  copy(inversed: boolean = false): DoublyLinkedList<T> {
+    const DLL = new DoublyLinkedList<T>();
     DLL.size = this.size;
     DLL._secureStore = this._secureStore;
-    this.traverse((data, id) => {
+    this.traverse((data: T, id: string | undefined): void => {
       const node = new LinkedDataNode(data);
       node.id = id as string;
       DLL.addLast(node.data);
@@ -404,11 +421,11 @@ export class DoublyLinkedList {
    * @returns {boolean} True if all nodes satisfy the callback, otherwise false.
    */
   every(
-    callback: (d: any, id?: string, list?: DoublyLinkedList) => boolean,
+    callback: (d: any, id?: string, list?: DoublyLinkedList<T>) => boolean,
   ): boolean {
     let answer: boolean = false;
     this.loop(
-      (d: unknown, id: string, list) => (
+      (d: T, id: string, list: DoublyLinkedList<T> | undefined): boolean => (
         (answer = callback(d, id, list)), answer
       ),
     );
@@ -422,11 +439,13 @@ export class DoublyLinkedList {
    * @returns {boolean} True if any node satisfies the callback, otherwise false.
    */
   any(
-    callback: (d: any, id?: string, list?: DoublyLinkedList) => boolean,
+    callback: (d: T, id?: string, list?: DoublyLinkedList<T>) => boolean,
   ): boolean {
     let answer: boolean = false;
     this.loop(
-      (data, id, list) => ((answer = callback(data, id, list)), !answer),
+      (data: T, id: string, list: DoublyLinkedList<T> | undefined): boolean => (
+        (answer = callback(data, id, list)), !answer
+      ),
     );
 
     return answer;
@@ -434,9 +453,9 @@ export class DoublyLinkedList {
 
   /**
    * Clears the list.
-   * @returns {DoublyLinkedList} The cleared list.
+   * @returns {DoublyLinkedList<T>} The cleared list.
    */
-  clean(): DoublyLinkedList {
+  clean(): DoublyLinkedList<T> {
     this._size = Infinity;
     this._currentSize = 0;
     this._head = null;
@@ -449,10 +468,10 @@ export class DoublyLinkedList {
 
   /**
    * Merges another doubly linked list into this list.
-   * @param {DoublyLinkedList} list - The list to merge.
-   * @returns {DoublyLinkedList} The merged list.
+   * @param {DoublyLinkedList<T>} list - The list to merge.
+   * @returns {DoublyLinkedList<T>} The merged list.
    */
-  merge(list: DoublyLinkedList): DoublyLinkedList {
+  merge(list: DoublyLinkedList<T>): DoublyLinkedList<T> {
     if (!list.isEmpty) {
       this._size = this._size + list._size;
       if (this.isEmpty) {
@@ -476,13 +495,13 @@ export class DoublyLinkedList {
    * other iterable contexts. The iterator
    * traverses the list from head to tail.
    *
-   * @returns {Iterator<any>} An iterator that
+   * @returns {Iterator<T>} An iterator that
    * yields the data of each node in the DoublyLinkedList.
    */
-  [Symbol.iterator](): Iterator<any> {
+  [Symbol.iterator](): Iterator<T> {
     let pointer = this._head;
     return {
-      next(): IteratorResult<any> {
+      next(): IteratorResult<T> {
         if (pointer) {
           const value = pointer.data;
           pointer = pointer.next;
@@ -497,13 +516,13 @@ export class DoublyLinkedList {
    * Checks if two doubly linekd lists contains
    * the same data.
    *
-   * @param{DoublyLinkedList} list - the list
+   * @param{DoublyLinkedList<T>} list - the list
    * used for the comparison.
    * @returns {boolean} "True" if the data of list
    * and the current DoublyLinkedList instance
    * are the same and false otherwise.
    */
-  isSame(list: DoublyLinkedList): boolean {
+  isSame(list: DoublyLinkedList<T>): boolean {
     let p1 = this._head;
     let p2 = list._head;
 
@@ -515,14 +534,14 @@ export class DoublyLinkedList {
    * Checks if two doubly linekd lists contains
    * the same data and IDs.
    *
-   * @param{DoublyLinkedList} list - the list
+   * @param{DoublyLinkedList<T>} list - the list
    * used for the comparison.
    * @returns {boolean} "True" if the data and the IDs
    * of list and the current DoublyLinkedList instance
    * are the same as well as the mapType and false otherwise.
    */
 
-  isExactlySame(list: DoublyLinkedList): boolean {
+  isExactlySame(list: DoublyLinkedList<T>): boolean {
     let p1 = this._head;
     let p2 = list._head;
 
