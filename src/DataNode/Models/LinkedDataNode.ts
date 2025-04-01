@@ -5,7 +5,7 @@ import { DataNode } from "./DataNode";
  * which can point to the next and previous nodes.
  * Inherits from the DataNode class.
  */
-export class LinkedDataNode<T = unknown> extends DataNode {
+export class LinkedDataNode<T = unknown> extends DataNode<T> {
   /**
    * Reference to the next linked data node.
    * @protected
@@ -32,8 +32,8 @@ export class LinkedDataNode<T = unknown> extends DataNode {
    * Gets the reference to the next linked data node.
    * @returns {LinkedDataNode<T> | null} - The next linked data node.
    */
-  get next(): LinkedDataNode | null {
-    return (this as LinkedDataNode)._next;
+  get next(): LinkedDataNode<T> | null {
+    return (this as LinkedDataNode<T>)._next;
   }
 
   /**
@@ -46,7 +46,7 @@ export class LinkedDataNode<T = unknown> extends DataNode {
 
   /**
    * Gets the reference to the previous linked data node.
-   * @returns {LinkedDataNode | null} - The previous linked data node.
+   * @returns {LinkedDataNode<T> | null} - The previous linked data node.
    */
   get prev(): LinkedDataNode<T> | null {
     return this._prev;
