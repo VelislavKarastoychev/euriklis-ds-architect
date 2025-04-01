@@ -104,7 +104,7 @@ export class AVLTree<T> extends BST<T> {
    * `1` if it is greater, or `0` if it is the target node.
    * @returns {AVLDataNode<T> | null} The deleted node, or null if no node was found.
    */
-  override deleteNode(
+  deleteNode(
     callback: (node: AVLDataNode<T>, tree?: AVLTree<T>) => -1 | 0 | 1,
   ): AVLDataNode<T> | null {
     const node = this.binarySearchNode(callback) as AVLDataNode<T> | null;
@@ -163,15 +163,15 @@ export class AVLTree<T> extends BST<T> {
    * start printing from. Defaults to the root node.
    * @param {Integer} [level=0] - The current level in the tree (used for indentation).
    * @param {string} [prefix="Root: "] - The prefix string to print before the node's data.
-   * @param {(node: AVLDataNode, tree?: AVLTree) => any} [callback=(node) => node.data] - A
+   * @param {(node: AVLDataNode<T>, tree?: AVLTree<T>) => any} [callback=(node) => node.data] - A
    * callback function to customize the output of each node.
    * @returns {void}
    */
   print(
-    node: BSTDataNode | null = this._root as BSTDataNode<T>,
+    node: AVLDataNode<T> | null = this._root as AVLDataNode<T>,
     level: Integer = 0,
     prefix: string = "Root: ",
-    callback: (node: AVLDataNode, tree?: AVLTree<T>) => any = (node) =>
+    callback: (node: AVLDataNode<T>, tree?: AVLTree<T>) => any = (node) =>
       node.data,
   ): void {
     if (node === null) {
