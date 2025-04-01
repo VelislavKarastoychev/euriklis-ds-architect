@@ -1,11 +1,10 @@
 "use strict";
 
 import { BST } from "../BST";
-import { AVLDataNode } from "../DataNode";
+import { AVLDataNode, BSTDataNode } from "../DataNode";
 import { BinarySearch, DeleteNodeInBST, InsertNodeInBST } from "../BST/Models";
 import * as models from "./Models";
 import type { BSTNodeValueComparisonCallbackType, Integer } from "../../Types";
-type T = NonNullable<any>;
 
 /**
  * AVLTree class extends the Binary Search Tree (BST) class and implements
@@ -35,7 +34,7 @@ export class AVLTree<T> extends BST<T> {
    * @returns {T | null} The data of the root node,
    * or null if the tree is empty.
    */
-  get root(): T {
+  override get root(): T | null {
     return this._root?.data || null;
   }
 
@@ -46,8 +45,8 @@ export class AVLTree<T> extends BST<T> {
    * @param {T} data - The data to set as the root of the
    * tree. If data is provided, it creates a new AVLDataNode with this data.
    */
-  set root(data: T) {
-    if (data) this._root = new AVLDataNode(data) as AVLDataNode;
+  override set root(data: T) {
+    if (data) this._root = new AVLDataNode<T>(data);
   }
 
   /**
@@ -60,11 +59,11 @@ export class AVLTree<T> extends BST<T> {
    * data contains an `id`, it will be used.
    * @param {string} [id] - The optional identifier for the node.
    * If not provided, the `id` from the data will be used if available.
-   * @returns {AVLTree} The current instance of the AVL tree.
+   * @returns  The current instance of the AVL tree.
    */
-  insert(data: T, id?: string): AVLTree<T> {
+  override insert(data: T, id?: string) {
     if (data?.id) id = data.id;
-    const n = new AVLDataNode(data);
+    const n = new AVLDataNode<T>(data);
     const node = InsertNodeInBST(this, n, id);
     // set the balance factors recursively for the all nodes of the tree.
     if (node) models.SetBalanceFactorsBackward(node, this);
@@ -99,16 +98,16 @@ export class AVLTree<T> extends BST<T> {
    * This method overrides the `deleteNode` method in the `BST` class.
    *
    * @override
-   * @param {(node: AVLDataNode, tree?: AVLTree) => -1 | 0 | 1} callback - A
+   * @param {(node: AVLDataNode<T>, tree?: AVLTree<T>) => -1 | 0 | 1} callback - A
    * callback function used to locate the node to be deleted.
    * The function should return `-1` if the current node is less than the target node,
    * `1` if it is greater, or `0` if it is the target node.
-   * @returns {AVLDataNode | null} The deleted node, or null if no node was found.
+   * @returns {AVLDataNode<T> | null} The deleted node, or null if no node was found.
    */
-  deleteNode(
-    callback: (node: AVLDataNode, tree?: AVLTree<T>) => -1 | 0 | 1,
-  ): AVLDataNode | null {
-    const node = this.binarySearchNode(callback) as AVLDataNode | null;
+  override deleteNode(
+    callback: (node: AVLDataNode<T>, tree?: AVLTree<T>) => -1 | 0 | 1,
+  ): AVLDataNode<T> | null {
+    const node = this.binarySearchNode(callback) as AVLDataNode<T> | null;
     if (!node) return null;
     const predecessor = DeleteNodeInBST(node, this) as AVLDataNode | null;
     models.SetBalanceFactorsAfterDeletion(predecessor, this);
@@ -125,17 +124,34 @@ export class AVLTree<T> extends BST<T> {
    * This method overrides the `copy` method in the `BST` class.
    *
    * @override
-   * @returns {AVLTree} A new instance of AVLTree that is a copy of the current tree.
+   * @returns {this} A new instance of AVLTree that is a copy of the current tree.
    */
-  copy(): AVLTree<T> {
-    const tree = new AVLTree<T>();
+  copy(): this {
+    // const tree = new AVLTree<T>();
+    // this.BFS((node) => {
+    //   const copiedNode = new AVLDataNode<T>(node.data as T);
+    //   copiedNode.id = node.id;
+    //   const insertedNode = InsertNodeInBST(tree, copiedNode, undefined);
+    //   if (insertedNode) models.SetBalanceFactorsBackward<T>(insertedNode, this);
+    // });
+    // return tree;
+    const Ctor = this.constructor as {
+      new (...args: any[]): AVLTree<T>;
+    };
+
+    // 2) Construct a new BST<T>, then assert it back to `this`
+    const newTree = new Ctor() as this;
+    // const newTree = new AVLTree<T>();
+    // Copy parent properties if needed:
+    newTree.order = this.order;
+    newTree.search = this.search;
+    newTree.unique = this.unique;
+
+    // Re‐insert all nodes in BFS order.
     this.BFS((node) => {
-      const copiedNode = new AVLDataNode(node.data);
-      copiedNode.id = node.id;
-      const insertedNode = InsertNodeInBST(tree, copiedNode, undefined);
-      if (insertedNode) models.SetBalanceFactorsBackward(insertedNode, this);
+      newTree.insert(node.data as T, node.id);
     });
-    return tree;
+    return newTree;
   }
 
   /**
@@ -152,17 +168,20 @@ export class AVLTree<T> extends BST<T> {
    * @returns {void}
    */
   print(
-    node: AVLDataNode | null = this._root as AVLDataNode,
+    node: BSTDataNode | null = this._root as BSTDataNode<T>,
     level: Integer = 0,
     prefix: string = "Root: ",
-    callback: (node: AVLDataNode, tree?: AVLTree<T>) => any = (node) => node.data,
+    callback: (node: AVLDataNode, tree?: AVLTree<T>) => any = (node) =>
+      node.data,
   ): void {
     if (node === null) {
       return;
     }
     console.log(
-      " ".repeat(level * 2) + prefix + callback(node, this) +
-        ` [BF = ${node.balance}]`,
+      " ".repeat(level * 2) +
+        prefix +
+        callback(node as AVLDataNode<T>, this) +
+        ` [BF = ${(node as AVLDataNode<T>).balance}]`,
     );
 
     if (node.left) {
