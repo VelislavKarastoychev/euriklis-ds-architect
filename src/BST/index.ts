@@ -42,10 +42,10 @@ export class BST<T> {
    * The root node of the BST.
    * This node serves as the starting
    * point for all BST operations.
-   * @type {BSTDataNode | null}
+   * @type {BSTDataNode<T> | null}
    * @protected
    */
-  protected _root: BSTDataNode | null = null;
+  protected _root: BSTDataNode<T> | null = null;
 
   /**
    * Indicates whether the BST allows only unique node values.
@@ -64,7 +64,7 @@ export class BST<T> {
    * If not provided, the BST is initialized empty.
    */
   constructor(data?: T) {
-    this.root = data;
+    if (data) this.root = data;
   }
 
   /**
@@ -72,7 +72,7 @@ export class BST<T> {
    *
    * @returns {T} The data of the root node, or null if the BST is empty.
    */
-  get root(): T {
+  get root(): T | null {
     return this._root?.data || null;
   }
 
@@ -84,32 +84,32 @@ export class BST<T> {
    * @param {T} data - The data to set as the root
    * of the BST. If not provided, the root remains unchanged.
    */
-  set root(data: any) {
+  set root(data: T) {
     if (data) {
-      this._root = new BSTDataNode(data);
+      this._root = new BSTDataNode<T>(data);
     }
   }
 
   /**
    * Gets the root node of the BST.
    *
-   * @returns {BSTDataNode | null} The root node
+   * @returns {BSTDataNode<T> | null} The root node
    * of the BST, or null if the BST is empty.
    */
-  get rootNode(): BSTDataNode | null {
-    return this._root as BSTDataNode;
+  get rootNode(): BSTDataNode<T> | null {
+    return this._root;
   }
 
   /**
    * Sets the root node of the BST to the provided node.
    *
-   * @param {BSTDataNode} node - The node to set as the root of the BST.
+   * @param {BSTDataNode<T>} node - The node to set as the root of the BST.
    *
    * @remarks
    * Be cautious when using the `rootNode` setter, as directly setting the root node can bypass
    * certain invariants or validations that might be enforced by other methods in the class.
    */
-  set rootNode(node: BSTDataNode) {
+  set rootNode(node: BSTDataNode<T>) {
     this._root = node;
   }
 
@@ -154,17 +154,17 @@ export class BST<T> {
    * Calculates the height of the tree from the given node.
    * The height is the number of edges on the longest path from the node to a leaf.
    *
-   * @param {BSTDataNode | null} [node=this._root] - The
+   * @param {BSTDataNode<T> | null} [node=this._root] - The
    * node from which to calculate the height. Defaults to the root node.
    * @returns {Integer} The height of the tree from the given node.
    */
-  height(node: BSTDataNode | null = this._root): Integer {
+  height(node: BSTDataNode<T> | null = this._root): Integer {
     if (!node) return 0;
     return (
       1 +
       max(
-        this.height(node.left as BSTDataNode | null),
-        this.height(node.right as BSTDataNode | null),
+        this.height(node.left as BSTDataNode<T> | null),
+        this.height(node.right as BSTDataNode<T> | null),
       )
     );
   }
@@ -191,15 +191,21 @@ export class BST<T> {
    * same order and search criteria as the
    * original tree.
    */
-  copy(): BST<T> {
-    const tree = new BST();
+  copy(): this {
+    // 1) Cast the constructor to a function returning a BST<T>
+    const Ctor = this.constructor as {
+      new (...args: any[]): BST<T>;
+    };
+
+    // 2) Construct a new BST<T>, then assert it back to `this`
+    const tree = new Ctor() as this;
     tree.order = this.order;
     tree.search = this.search;
     this.BFS((node) => {
-      tree.insert(node?.data, node?.id);
+      tree.insert(node?.data as T, node?.id);
     });
 
-    return tree as BST<T>;
+    return tree;
   }
 
   /**
@@ -213,8 +219,8 @@ export class BST<T> {
   isExactlySame(tree: BST<T>): boolean {
     const r1 = this._root,
       r2 = tree._root,
-      S1 = new DynamicStack(r1),
-      S2 = new DynamicStack(r2);
+      S1 = new DynamicStack<BSTDataNode<T> | null>(r1),
+      S2 = new DynamicStack<BSTDataNode<T> | null>(r2);
 
     if (!S1.isEmpty && !S2.isEmpty) return models.IsNodeExactlySame(S1, S2);
 
@@ -232,8 +238,8 @@ export class BST<T> {
   isSame(tree: BST<T>): boolean {
     const r1 = this._root,
       r2 = tree._root,
-      S1 = new DynamicStack(r1),
-      S2 = new DynamicStack(r2);
+      S1 = new DynamicStack<BSTDataNode<T> | null>(r1),
+      S2 = new DynamicStack<BSTDataNode<T> | null>(r2);
 
     if (!S1.isEmpty && !S2.isEmpty) return models.IsNodeSame(S1, S2);
 
@@ -259,12 +265,12 @@ export class BST<T> {
    * traversal (BFS) and applies a callback
    * function to each node.
    *
-   * @param {(node: BSTDataNode, tree: BST<T>) => boolean} callback - The callback
+   * @param {(node: BSTDataNode<T>, tree: BST<T>) => boolean} callback - The callback
    * function to apply to each node. The callback receives the current node
    * and the BST as arguments. If the callback returns `false`, the traversal stops.
    */
-  loop(callback: (node: BSTDataNode, tree: BST<T>) => boolean): void {
-    const queue = new Queue(this._root);
+  loop(callback: (node: BSTDataNode<T>, tree: BST<T>) => boolean): void {
+    const queue = new Queue<BSTDataNode<T> | null>(this._root);
 
     return models.BSTLoop(callback, queue, this);
   }
@@ -278,11 +284,13 @@ export class BST<T> {
    * @param {T} data The data to be inserted into the tree.
    * @param {string} [id] Optional ID for the node. If not
    * provided, 'data.id' will be used if available.
-   * @returns {BST<T>} The updated Binary Search Tree after insertion.
+   * @returns {this} The updated Binary Search Tree after insertion.
    */
-  insert(data: T, id?: string): BST<T> {
-    if (data?.id) id = data.id;
-    const node = new BSTDataNode(data);
+  insert(data: T, id?: string): this {
+    if (typeof data === "object") {
+      if (data?.id) id = data.id;
+    }
+    const node = new BSTDataNode<T>(data);
     models.InsertNodeInBST(this, node, id);
 
     return this;
@@ -325,7 +333,7 @@ export class BST<T> {
   delete(
     value: T,
     callback: BSTNodeValueComparisonCallbackType = this.search,
-  ): any | null {
+  ): T | null {
     const node = models.BinarySearch(this._root, value, callback);
     models.DeleteNodeInBST(node, this);
     // It is no needed to delete the node connection
@@ -337,16 +345,16 @@ export class BST<T> {
    * Deletes a specific node from the Binary Search Tree
    * using a callback function to find the node.
    *
-   * @param {(node: BSTDataNode, tree?: BST<T>) => -1 | 0 | 1} callback - A
+   * @param {(node: BSTDataNode<T>, tree?: BST<T>) => -1 | 0 | 1} callback - A
    * callback function that returns
    *        -1 if the node should be searched in the left subtree,
    *         0 if the node is found,
    *         1 if the node should be searched in the right subtree.
-   * @returns {BSTDataNode | null} The deleted node if found and deleted; otherwise, null.
+   * @returns {BSTDataNode<T> | null} The deleted node if found and deleted; otherwise, null.
    */
   deleteNode(
-    callback: (node: BSTDataNode, tree?: BST<T>) => -1 | 0 | 1,
-  ): BSTDataNode | null {
+    callback: (node: BSTDataNode<T>, tree?: BST<T>) => -1 | 0 | 1,
+  ): BSTDataNode<T> | null {
     const node = this.binarySearchNode(callback);
     if (!node) return null;
     models.DeleteNodeInBST(node, this);
@@ -378,14 +386,14 @@ export class BST<T> {
    * Searches for a node in the Binary Search Tree
    * based on the given callback function.
    *
-   * @param {(node: BSTDataNode, tree?: BST<T>) => -1 | 0 | 1} callback - The
+   * @param {(node: BSTDataNode<T>, tree?: BST<T>) => -1 | 0 | 1} callback - The
    * callback function that determines the comparison logic between nodes.
-   * @returns {BSTDataNode | null} The node matching the callback condition
+   * @returns {BSTDataNode<T> | null} The node matching the callback condition
    * if found; otherwise, null.
    */
   binarySearchNode(
-    callback: (node: BSTDataNode, tree?: BST<T>) => -1 | 0 | 1,
-  ): BSTDataNode | null {
+    callback: (node: BSTDataNode<T>, tree?: BST<T>) => -1 | 0 | 1,
+  ): BSTDataNode<T> | null {
     return models.BinarySearchNode(this, this._root, callback);
   }
 
@@ -393,14 +401,14 @@ export class BST<T> {
    * Finds the minimum value in the Binary Search Tree
    * starting from the specified node.
    *
-   * @param {BSTDataNode | null} x The starting node to search from.
+   * @param {BSTDataNode<T> | null} x The starting node to search from.
    * Defaults to the root of the tree.
    * @returns {T} The minimum value found, or null if the tree is empty.
    */
-  min(x: BSTDataNode | null = this._root): any {
+  min(x: BSTDataNode<T> | null = this._root): any {
     // shallow copy of x!
-    let y: BSTDataNode | null = x;
-    if (y?.left) return this.min(y.left as BSTDataNode);
+    let y: BSTDataNode<T> | null = x;
+    if (y?.left) return this.min(y.left as BSTDataNode<T>);
 
     return y?.data || null;
   }
@@ -409,14 +417,14 @@ export class BST<T> {
    * Finds the node containing the minimum value in the
    * Binary Search Tree starting from the specified node.
    *
-   * @param {BSTDataNode | null} x The starting node to search from.
+   * @param {BSTDataNode<T> | null} x The starting node to search from.
    * Defaults to the root of the tree.
-   * @returns {BSTDataNode | null} The node containing the minimum value,
+   * @returns {BSTDataNode<T> | null} The node containing the minimum value,
    * or null if the tree is empty.
    */
-  minNode(x: BSTDataNode | null = this._root): BSTDataNode | null {
-    let y: BSTDataNode | null = x;
-    if (y?.left) return this.minNode(y.left as BSTDataNode);
+  minNode(x: BSTDataNode<T> | null = this._root): BSTDataNode<T> | null {
+    let y: BSTDataNode<T> | null = x;
+    if (y?.left) return this.minNode(y.left as BSTDataNode<T>);
     return y;
   }
 
@@ -424,14 +432,14 @@ export class BST<T> {
    * Finds the maximum value in the Binary Search Tree
    * starting from the specified node.
    *
-   * @param {BSTDataNode | null} x The starting node to search from.
+   * @param {BSTDataNode<T> | null} x The starting node to search from.
    * Defaults to the root of the tree.
-   * @returns {T} The maximum value found in the tree,
+   * @returns {T | null} The maximum value found in the tree,
    * or null if the tree is empty.
    */
-  max(x: BSTDataNode | null = this._root): T {
-    let y: BSTDataNode | null = x;
-    if (y?.right) return this.max(y.right as BSTDataNode);
+  max(x: BSTDataNode<T> | null = this._root): T | null {
+    let y: BSTDataNode<T> | null = x;
+    if (y?.right) return this.max(y.right as BSTDataNode<T>);
     return y?.data || null;
   }
 
@@ -439,14 +447,14 @@ export class BST<T> {
    * Finds the node with the maximum value in the Binary Search Tree
    * starting from the specified node.
    *
-   * @param {BSTDataNode | null} x The starting node to search from. Defaults to
+   * @param {BSTDataNode<T> | null} x The starting node to search from. Defaults to
    * the root of the tree.
-   * @returns {BSTDataNode | null} The node containing the maximum value found
+   * @returns {BSTDataNode<T> | null} The node containing the maximum value found
    * in the tree, or null if the tree is empty.
    */
-  maxNode(x: BSTDataNode | null = this._root): BSTDataNode | null {
-    let y: BSTDataNode | null = x;
-    if (y?.right) return this.maxNode(y.right as BSTDataNode | null);
+  maxNode(x: BSTDataNode<T> | null = this._root): BSTDataNode<T> | null {
+    let y: BSTDataNode<T> | null = x;
+    if (y?.right) return this.maxNode(y.right as BSTDataNode<T> | null);
     return y;
   }
 
@@ -454,13 +462,13 @@ export class BST<T> {
    * Finds the predecessor value of a given node
    * in the Binary Search Tree.
    *
-   * @param {BSTDataNode | null} x The node for which to find
+   * @param {BSTDataNode<T> | null} x The node for which to find
    * the predecessor. Defaults to the root of the tree.
    * @returns {T | null} The predecessor value of the
    * given node, or null if the node is not found.
    */
-  predecessor(x: BSTDataNode | null = this._root): T | null {
-    if (x?.left) return this.max(x.left as BSTDataNode);
+  predecessor(x: BSTDataNode<T> | null = this._root): T | null {
+    if (x?.left) return this.max(x.left as BSTDataNode<T>);
     else return models.LeftBackward(x)?.data || null;
   }
 
@@ -468,28 +476,30 @@ export class BST<T> {
    * Finds the predecessor node of a given node
    * in the Binary Search Tree.
    *
-   * @param {BSTDataNode | null} x - The node for which to find
+   * @param {BSTDataNode<T> | null} x - The node for which to find
    * kkkkkkthe predecessor node.
    * Defaults to the root of the tree.
-   * @returns {BSTDataNode | null} The predecessor node of the given
+   * @returns {BSTDataNode<T> | null} The predecessor node of the given
    * node, or null if the node is not found.
    */
-  predecessorNode(x: BSTDataNode | null = this._root): BSTDataNode | null {
-    if (x?.left) return this.maxNode(x.left as BSTDataNode);
-    else return models.LeftBackward(x) as BSTDataNode | null;
+  predecessorNode(
+    x: BSTDataNode<T> | null = this._root,
+  ): BSTDataNode<T> | null {
+    if (x?.left) return this.maxNode(x.left as BSTDataNode<T>);
+    else return models.LeftBackward(x) as BSTDataNode<T> | null;
   }
 
   /**
    * Finds the successor value of a given node in the
    * Binary Search Tree.
    *
-   * @param {BSTDataNode | null} x The node for which to find the
+   * @param {BSTDataNode<T> | null} x The node for which to find the
    * successor value. Defaults to the root of the tree.
    * @returns {T | null} The successor value of the given node,
    * or null if the node is not found.
    */
-  successor(x: BSTDataNode | null = this._root): T | null {
-    if (x?.right) return this.min(x.right as BSTDataNode);
+  successor(x: BSTDataNode<T> | null = this._root): T | null {
+    if (x?.right) return this.min(x.right as BSTDataNode<T>);
     else return models.RightBackward(x)?.data || null;
   }
 
@@ -497,14 +507,14 @@ export class BST<T> {
    * Finds the successor node of a given node in the
    * Binary Search Tree.
    *
-   * @param {BSTDataNode | null} x - The node for which to find
+   * @param {BSTDataNode<T> | null} x - The node for which to find
    * the successor node. Defaults to the root of the tree.
-   * @returns {BSTDataNode | null} The successor node of the given node,
+   * @returns {BSTDataNode<T> | null} The successor node of the given node,
    * or null if the node is not found.
    */
-  successorNode(x: BSTDataNode | null = this._root): BSTDataNode | null {
-    if (x?.right) return this.minNode(x.right as BSTDataNode | null);
-    else return models.RightBackward(x) as BSTDataNode | null;
+  successorNode(x: BSTDataNode<T> | null = this._root): BSTDataNode<T> | null {
+    if (x?.right) return this.minNode(x.right as BSTDataNode<T> | null);
+    else return models.RightBackward(x) as BSTDataNode<T> | null;
   }
 
   /**
@@ -518,14 +528,14 @@ export class BST<T> {
    * that satisfy the callback condition.
    */
   filter(
-    callback: (node: BSTDataNode | null, tree?: BST<T>) => boolean,
+    callback: (node: BSTDataNode<T> | null, tree?: BST<T>) => boolean,
   ): BST<T> {
-    const tree = new BST();
+    const tree = new BST<T>();
     tree.order = this.order;
 
     // Perform Breadth-First Search (BFS) to traverse the tree
     this.BFS((node, bst) => {
-      if (callback(node as BSTDataNode, bst)) tree.insert(node?.data);
+      if (callback(node as BSTDataNode<T>, bst)) tree.insert(node?.data as T);
     });
 
     return tree as BST<T>;
@@ -541,9 +551,9 @@ export class BST<T> {
    * on each node. Receives the node and the current BST instance.
    * @returns {BST<T>} The Binary Search Tree instance after BFS traversal.
    */
-  BFS(callback: (node: BSTDataNode, tree: BST<T>) => void): BST<T> {
+  BFS(callback: (node: BSTDataNode<T>, tree: BST<T>) => void): BST<T> {
     // Initialize a queue with the root node
-    const Q = new Queue(this._root);
+    const Q = new Queue<BSTDataNode<T> | null>(this._root);
     // Call BFS implementation with the queue and callback
     models.CallBFS(this, Q, callback);
 
@@ -561,9 +571,9 @@ export class BST<T> {
    * on each node. Receives the node and the current BST instance.
    * @returns {BST<T>} The Binary Search Tree instance after DFS traversal.
    */
-  DFS(callback: (node: BSTDataNode, tree: BST<T>) => void): BST<T> {
+  DFS(callback: (node: BSTDataNode<T>, tree: BST<T>) => void): BST<T> {
     // Initialize a stack with the root node
-    const S = new DynamicStack(this._root);
+    const S = new DynamicStack<BSTDataNode<T> | null>(this._root);
     // call the DFS implementation with the stack and the callback.
     models.CallDFS(this, S, callback);
 
@@ -575,10 +585,10 @@ export class BST<T> {
    * Performs a single right rotation on the specified node.
    * This operation is typically used to rebalance an AVL tree.
    *
-   * @param {BSTDataNode | null} node - The node on which to perform the right rotation.
+   * @param {BSTDataNode<T> | null} node - The node on which to perform the right rotation.
    * @returns {BST<T>} The updated tree after the rotation.
    */
-  singleRightRotation(node: BSTDataNode | null): BST<T> {
+  singleRightRotation(node: BSTDataNode<T> | null): BST<T> {
     if (!node!) return this;
     models.SingleRightRotation(node, this);
 
@@ -589,10 +599,10 @@ export class BST<T> {
    * Performs a single left rotation on the specified node.
    * This operation is typically used to rebalance an AVL tree.
    *
-   * @param {BSTDataNode | null} node - The node on which to perform the left rotation.
+   * @param {BSTDataNode<T> | null} node - The node on which to perform the left rotation.
    * @returns {BST<T>} The updated tree after the rotation.
    */
-  singleLeftRotation(node: BSTDataNode | null): BST<T> {
+  singleLeftRotation(node: BSTDataNode<T> | null): BST<T> {
     if (!node) return this;
     models.SingleLeftRotation(node, this);
 
@@ -604,10 +614,10 @@ export class BST<T> {
    * This operation is typically used to rebalance an AVL tree when
    * a left-right imbalance is detected.
    *
-   * @param {BSTDataNode | null} node - The node on which to perform the double left-right rotation.
+   * @param {BSTDataNode<T> | null} node - The node on which to perform the double left-right rotation.
    * @returns {BST<T>} The updated tree after the rotation.
    */
-  doubleLeftRightRotation(node: BSTDataNode | null): BST<T> {
+  doubleLeftRightRotation(node: BSTDataNode<T> | null): BST<T> {
     if (!node) return this;
     models.DoubleLeftRightRotation(node, this);
 
@@ -619,10 +629,10 @@ export class BST<T> {
    * This operation is typically used to rebalance an AVL tree when
    * a right-left imbalance is detected.
    *
-   * @param {BSTDataNode} node - The node on which to perform the double right-left rotation.
+   * @param {BSTDataNode<T>} node - The node on which to perform the double right-left rotation.
    * @returns {BST<T>} The updated tree after the rotation.
    */
-  doubleRightLeftRotation(node: BSTDataNode): BST<T> {
+  doubleRightLeftRotation(node: BSTDataNode<T>): BST<T> {
     if (!node) return this;
     models.DoubleRightLeftRotation(node, this);
 
@@ -642,7 +652,7 @@ export class BST<T> {
    */
   toArray(mode: "BFS" | "DFS" = "DFS"): any[] {
     const __values__: T[] = [];
-    this[mode]((node) => __values__.push(node?.data));
+    this[mode]((node) => __values__.push(node?.data as T));
 
     return __values__;
   }
@@ -653,16 +663,16 @@ export class BST<T> {
    *
    * @returns {Iterator<T>} An iterator that yields the data of each node in the tree.
    */
-  [Symbol.iterator](): Iterator<T> {
-    let S = new Queue();
+  [Symbol.iterator](): Iterator<T | null> {
+    let S = new Queue<BSTDataNode<T> | null>();
     S.enqueue(this._root);
     return {
-      next(): IteratorResult<T> {
+      next(): IteratorResult<T | null> {
         if (!S.isEmpty) {
           const node = S.dequeue() as BSTDataNode;
-          const value = node.data;
-          if (node.right) S.enqueue(node.right);
-          if (node.left) S.enqueue(node.left);
+          const value = node.data as T;
+          if (node.right) S.enqueue(node.right as BSTDataNode<T>);
+          if (node.left) S.enqueue(node.left as BSTDataNode<T>);
           return { value, done: false };
         }
         return { value: undefined, done: true };
@@ -674,7 +684,7 @@ export class BST<T> {
    * Prints the structure of the Binary Search Tree
    * starting from the specified node.
    *
-   * @param {BSTDataNode | null} node The starting node to begin
+   * @param {BSTDataNode<T> | null} node The starting node to begin
    * printing the BST structure (default: this._root).
    * @param {Integer} level The current level of the node
    * in the BST (default: 0).
@@ -683,10 +693,10 @@ export class BST<T> {
    * @returns {void}
    */
   print(
-    node: BSTDataNode | null = this._root,
+    node: BSTDataNode<T> | null = this._root,
     level: Integer = 0,
     prefix: string = "Root: ",
-    callback: (node: BSTDataNode, tree?: BST<T>) => any = (node) =>
+    callback: (node: BSTDataNode<T>, tree?: BST<T>) => any = (node) =>
       node.id || null,
   ): void {
     if (node === null) {
@@ -695,11 +705,11 @@ export class BST<T> {
     console.log(" ".repeat(level * 2) + prefix + callback(node, this));
 
     if (node.left) {
-      this.print(node.left as BSTDataNode, level + 1, "L--> ", callback);
+      this.print(node.left as BSTDataNode<T>, level + 1, "L--> ", callback);
     }
 
     if (node.right) {
-      this.print(node.right as BSTDataNode, level + 1, "R--> ", callback);
+      this.print(node.right as BSTDataNode<T>, level + 1, "R--> ", callback);
     }
   }
 }
