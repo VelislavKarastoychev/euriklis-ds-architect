@@ -1,3 +1,5 @@
+import type { BSTDataNode } from "../src/DataNode";
+
 export type Integer = number;
 export type GraphDataType = null;
 export type AbstractAttributesType = {
@@ -14,3 +16,17 @@ export type NodeType = {
     [property: string]: unknown;
   };
 };
+
+export type BSTNodeComparisonCallbackType = <T extends BSTDataNode>(
+  x: T,
+  y: T,
+) => -1 | 0 | 1;
+export type BSTNodeValueComparisonCallbackType = <T extends BSTDataNode>(
+  x: T,
+  value: any,
+) => -1 | 0 | 1;
+
+type K<T> = NonNullable<T>;
+
+export type ExtendedBSTDataNode<T> =
+  K<T> extends BSTDataNode<T> ? K<T> : BSTDataNode<T>;
