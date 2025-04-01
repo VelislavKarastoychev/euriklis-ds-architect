@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
  * Abstract class representing a generic data node.
  * This class serves as a base for different types of data nodes.
  */
-export abstract class DataNode {
+export abstract class DataNode<T = unknown> {
   /**
    * Unique identifier for the data node.
    * @protected
@@ -16,18 +16,18 @@ export abstract class DataNode {
   /**
    * Data associated with the node.
    * @protected
-   * @type {*}
+   * @type {T | null}
    */
-  protected _data: any = null;
+  protected _data: T | null = null;
 
   /**
    * Creates an instance of DataNode.
-   * @param {*} [data] - Optional data to associate with the node.
+   * @param {T} [data] - Optional data to associate with the node.
    * If the "data" argument is an object whch contains
    * the property id, then the id will be set from the
    * data, otherwise, the id property will be set automatically.
    */
-  constructor(data?: any) {
+  constructor(data?: T) {
     this.data = data;
     if (data?.id && !this.id) this.id = data.id;
     else if (typeof data === "string" || typeof data === "number") {
@@ -53,17 +53,17 @@ export abstract class DataNode {
 
   /**
    * Gets the data associated with the node.
-   * @returns {*} - The data associated with the node.
+   * @returns {T | null} - The data associated with the node.
    */
-  get data(): any {
+  get data(): T | null {
     return this._data;
   }
 
   /**
    * Sets the data associated with the node.
-   * @param {*} d - The data to associate with the node.
+   * @param {T} d - The data to associate with the node.
    */
-  set data(d: any) {
+  set data(d: T | undefined) {
     if (typeof d !== "undefined") this._data = d;
   }
 }
