@@ -67,18 +67,18 @@ export class Queue<T = unknown> {
   /**
    * Views the front item without removing it.
    * Time complexity: O(1).
-   * @returns {T} The front data.
+   * @returns {T | null} The front data.
    */
-  get peek(): T {
+  get peek(): T | null {
     return this._head?.data || null;
   }
 
   /**
    * Views the last item without adding
    * another element.
-   * @returns {T} The last element.
+   * @returns {T | null} The last element.
    */
-  get rear(): T {
+  get rear(): T | null {
     return this._top?.data || null;
   }
 
@@ -132,13 +132,13 @@ export class Queue<T = unknown> {
       nm1: Integer = n - 1;
     for (i = n; i-- > 1; ) {
       node = new LinkedDataNode<T>(items[nm1 - i--]);
-      this._enqueue(node);
+      this._enqueue(node as LinkedDataNode<T>);
       node = new LinkedDataNode<T>(items[nm1 - i]);
-      this._enqueue(node);
+      this._enqueue(node as LinkedDataNode<T>);
     }
     if (i === 0) {
       node = new LinkedDataNode<T>(items[nm1]);
-      this._enqueue(node);
+      this._enqueue(node as LinkedDataNode<T>);
     }
 
     return this;
@@ -177,7 +177,7 @@ export class Queue<T = unknown> {
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
         else this._top = null;
-        items.push(node.data);
+        items.push(node.data as T);
         this._length--;
         i--;
       } else errors.StackUnderflow("Queue dequeueMany")();
@@ -187,7 +187,7 @@ export class Queue<T = unknown> {
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
         else this._top = null;
-        items.push(node.data);
+        items.push(node.data as T);
         this._length--;
       } else errors.StackUnderflow("Queue dequeueMany")();
     }
@@ -198,7 +198,7 @@ export class Queue<T = unknown> {
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
         else this._top = null;
-        items.push(node.data);
+        items.push(node.data as T);
         this._length--;
       } else errors.StackUnderflow("Queue dequeueMany")();
     }
@@ -239,7 +239,7 @@ export class Queue<T = unknown> {
     let node: LinkedDataNode<T> | null = this._head;
     while (node) {
       if (callback(node, this)) {
-        queue.enqueue(node.data);
+        queue.enqueue(node.data as T);
       }
       node = node.next;
     }
@@ -307,7 +307,7 @@ export class Queue<T = unknown> {
     const queue = new Queue<T>();
     let node: LinkedDataNode<T> | null = this._head;
     while (node) {
-      const temp: LinkedDataNode<T> = new LinkedDataNode<T>(node.data);
+      const temp: LinkedDataNode<T> = new LinkedDataNode<T>(node.data as T);
       temp.id = node.id;
       queue._enqueue(temp);
       node = node.next;
@@ -346,8 +346,22 @@ export class Queue<T = unknown> {
    */
   toArray(): T[] {
     const values: T[] = [];
-    this.traverse((node) => values.push(node.data));
+    this.traverse((node) => values.push(node.data as T));
 
     return values;
+  }
+
+  [Symbol.iterator](): Iterator<T | null> {
+    let pointer = this._head;
+    return {
+      next(): IteratorResult<T | null> {
+        if (pointer) {
+          const value = pointer.data;
+          pointer = pointer.next;
+          return { value, done: false };
+        }
+        return { value: undefined, done: true };
+      },
+    };
   }
 }
