@@ -12,15 +12,15 @@ import { ifIsNotArrayThrow } from "../Decorators";
  * node is kept.
  * If the top element is null, then the Stack is empty.
  */
-export class DynamicStack<T extends any> {
+export class DynamicStack<T extends unknown> {
   /**
    * Holder for the top element of the Stack.
    * This property references the top node of the
    * stack chain.
-   * @type {LinkedDataNode | null}
+   * @type {LinkedDataNode<T> | null}
    * @private
    */
-  private _top: LinkedDataNode | null = null;
+  private _top: LinkedDataNode<T> | null = null;
 
   /**
    * Represents the current size (number of elements) of the Stack.
@@ -45,7 +45,7 @@ export class DynamicStack<T extends any> {
    * @param {T} data - The initial data to be stored in the stack (optional).
    */
   constructor(data?: T) {
-    this.push(data);
+    if (data) this.push(data);
   }
 
   /**
@@ -70,10 +70,10 @@ export class DynamicStack<T extends any> {
 
   /**
    * Retrieves the top element of the stack without removing it.
-   * @returns {T} The top element of the stack (last element).
+   * @returns {T | null} The top element of the stack (last element).
    */
-  get top(): T {
-    return (this._top as LinkedDataNode)?.data;
+  get top(): T | null {
+    return (this._top as LinkedDataNode<T>)?.data;
   }
 
   /**
@@ -87,10 +87,10 @@ export class DynamicStack<T extends any> {
       if (this.limit === this.size + 1) {
         errors.StackOverflow("Stack push");
       }
-      const newNode = new LinkedDataNode(data);
+      const newNode = new LinkedDataNode<T>(data);
       newNode.prev = this._top;
       if (this._top) {
-        (this._top as LinkedDataNode).next = newNode;
+        (this._top as LinkedDataNode<T>).next = newNode;
       }
       this._top = newNode;
       this._size++;
@@ -102,10 +102,10 @@ export class DynamicStack<T extends any> {
   /**
    * Pushes multiple items onto the stack.
    * If any item is valid (not undefined), it is added to the top of the stack.
-   * @param {any[]} items - An array of items to be pushed onto the stack.
+   * @param {T[]} items - An array of items to be pushed onto the stack.
    * @returns {DynamicStack} The updated stack after pushing the items.
    */
-  @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
+  // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
   pushMany(items: T[]): DynamicStack<T> {
     const n: Integer = items.length;
     let i: Integer;
@@ -128,9 +128,9 @@ export class DynamicStack<T extends any> {
   pop(): T | null {
     let data: T | null = null;
     if (this._size) {
-      data = (this._top as LinkedDataNode).data;
-      this._top = (this._top as LinkedDataNode).prev;
-      if (this._top) (this._top as LinkedDataNode).next = null;
+      data = (this._top as LinkedDataNode<T>).data;
+      this._top = (this._top as LinkedDataNode<T>).prev;
+      if (this._top) (this._top as LinkedDataNode<T>).next = null;
       this._size--;
     }
 
@@ -148,19 +148,19 @@ export class DynamicStack<T extends any> {
     const data: T[] = [];
     if (n > this.size) n = this.size;
     for (i = 0; i < n - 1; i += 2) {
-      item = (this._top as LinkedDataNode).data;
-      this._top = (this._top as LinkedDataNode).prev;
-      (this._top as LinkedDataNode).next = null;
+      item = (this._top as LinkedDataNode<T>).data as T;
+      this._top = (this._top as LinkedDataNode<T>).prev;
+      (this._top as LinkedDataNode<T>).next = null;
       data[i] = item;
-      item = (this._top as LinkedDataNode).data;
-      this._top = (this._top as LinkedDataNode).prev;
-      (this._top as LinkedDataNode).next = null;
+      item = (this._top as LinkedDataNode<T>).data as T;
+      this._top = (this._top as LinkedDataNode<T>).prev;
+      (this._top as LinkedDataNode<T>).next = null;
       data[i + 1] = item;
       this._size -= 2;
     }
     if (i === n - 1) {
-      item = (this._top as LinkedDataNode).data;
-      this._top = (this._top as LinkedDataNode).prev;
+      item = (this._top as LinkedDataNode<T>).data as T;
+      this._top = (this._top as LinkedDataNode<T>).prev;
       if (this._top) this._top.next = null;
       data[i] = item;
       this._size--;
@@ -175,9 +175,10 @@ export class DynamicStack<T extends any> {
    * @returns {T[]} An array containing all elements of the stack.
    */
   get list(): T[] {
-    const list: T[] = [], n: Integer = this.size;
+    const list: T[] = [],
+      n: Integer = this.size;
     let i: Integer;
-    for (i = n; i-- > 1;) {
+    for (i = n; i-- > 1; ) {
       list[i--] = this.pop() as T;
       list[i] = this.pop() as T;
     }
@@ -196,8 +197,8 @@ export class DynamicStack<T extends any> {
   traverse(callback: (el: T, stack: DynamicStack<T>) => void): DynamicStack<T> {
     let current = this._top;
     while (current) {
-      callback(current.data, this);
-      current = (current as LinkedDataNode).prev;
+      callback(current.data as T, this);
+      current = (current as LinkedDataNode<T>).prev;
     }
 
     return this;
@@ -208,7 +209,7 @@ export class DynamicStack<T extends any> {
    * and collects the popped elements into an array in the order of removal (from top to bottom).
    * @param {Function} callback A function that will be executed on each popped element.
    * It receives the popped element and the stack itself as parameters.
-   * @returns {any[]} An array containing all popped elements in the order of removal (from top to bottom).
+   * @returns {T[]} An array containing all popped elements in the order of removal (from top to bottom).
    */
   popAndTraverse(callback: (el: T, stack: DynamicStack<T>) => void): T[] {
     const data: T[] = [];
@@ -237,9 +238,10 @@ export class DynamicStack<T extends any> {
     callback: (el: T, stack: DynamicStack<T>) => boolean,
     iterations: Integer = this.size,
   ): DynamicStack<T> {
-    let top = this._top, its = 0;
-    while (top && (its++ < iterations)) {
-      const __continue__ = callback(top.data, this);
+    let top = this._top,
+      its = 0;
+    while (top && its++ < iterations) {
+      const __continue__ = callback(top.data as T, this);
       if (__continue__) top = top.prev;
       else break;
     }
@@ -255,28 +257,30 @@ export class DynamicStack<T extends any> {
    * The function should return a boolean value:
    * - `true` to include the element in the filtered stack.
    * - `false` to exclude the element from the filtered stack.
-   * @returns {DynamicStack} A new DynamicStack containing filtered elements.
+   * @returns {DynamicStack<T>} A new DynamicStack containing filtered elements.
    */
-  filter(callback: (el: T, stack: DynamicStack<T>) => boolean): DynamicStack<T> {
+  filter(
+    callback: (el: T, stack: DynamicStack<T>) => boolean,
+  ): DynamicStack<T> {
     const filteredElements: DynamicStack<T> = new DynamicStack();
     let currentNode: LinkedDataNode | null = null;
     let predecessor: LinkedDataNode;
     let top = this._top;
     while (top) {
-      if (callback(top.data, this)) {
+      if (callback(top.data as T, this)) {
         if (currentNode) {
-          predecessor = new LinkedDataNode(top.data);
+          predecessor = new LinkedDataNode<T>(top.data as T);
           predecessor.next = currentNode;
           currentNode.prev = predecessor;
           currentNode = predecessor;
           filteredElements._size++;
         } else {
-          currentNode = new LinkedDataNode(top.data);
-          filteredElements._top = currentNode;
+          currentNode = new LinkedDataNode<T>(top.data as T);
+          filteredElements._top = currentNode as LinkedDataNode<T>;
           filteredElements._size++;
         }
       }
-      top = (top as LinkedDataNode).prev;
+      top = (top as LinkedDataNode<T>).prev;
     }
     return filteredElements;
   }
@@ -304,13 +308,13 @@ export class DynamicStack<T extends any> {
     top = this._top;
     while (top) {
       if (currentNode) {
-        predecessorNode = new LinkedDataNode(top.data as T);
+        predecessorNode = new LinkedDataNode<T>(top.data as T);
         predecessorNode.next = currentNode;
         currentNode.prev = predecessorNode;
         currentNode = predecessorNode;
       } else {
-        currentNode = new LinkedDataNode(top.data);
-        stack._top = currentNode;
+        currentNode = new LinkedDataNode<T>(top.data as T);
+        stack._top = currentNode as LinkedDataNode<T>;
       }
       stack._size++;
       top = top.prev;
@@ -344,21 +348,35 @@ export class DynamicStack<T extends any> {
 
     return this;
   }
+
+  [Symbol.iterator](): Iterator<T | null> {
+    let pointer = this._top;
+    return {
+      next(): IteratorResult<T | null> {
+        if (pointer) {
+          const value = pointer.data;
+          pointer = pointer.prev;
+          return { value, done: false };
+        }
+        return { value: undefined, done: true };
+      },
+    };
+  }
 }
 
 /**
  * Represents a static implementation of the stack data structure.
  * This class uses an array to manage stack elements.
  */
-export class StaticStack {
+export class StaticStack<T = unknown> {
   /**
    * Represents the top of the stack, implemented as a private array.
    * This array stores the elements of the stack with the top element
    * positioned at the end (highest index) of the array.
-   * @type {any[]}
+   * @type {T[]}
    * @private
    */
-  private _top: any[] = [];
+  private _top: T[] = [];
 
   /**
    * Pros:
@@ -373,11 +391,11 @@ export class StaticStack {
    *
    * Constructs a new instance of StaticStack.
    * If an initial element `d` is provided, it will be pushed onto the stack.
-   * @param {any} d - Optional initial element to push onto the stack.
+   * @param {T} d - Optional initial element to push onto the stack.
    * If provided, it will be added to the top of the stack.
    */
-  constructor(d?: any) {
-    this.push(d);
+  constructor(d?: T) {
+    if (d) this.push(d);
   }
 
   /**
@@ -398,18 +416,18 @@ export class StaticStack {
 
   /**
    * Retrieves the top element of the stack without removing it.
-   * @returns {any} The top element of the stack.
+   * @returns {T} The top element of the stack.
    */
-  get top(): any {
+  get top(): T {
     return this._top[this._top.length - 1];
   }
 
   /**
    * Adds an element to the top of the stack.
-   * @param {any} d The element to be pushed onto the stack.
-   * @returns {StaticStack} The updated stack after pushing the element.
+   * @param {T} d The element to be pushed onto the stack.
+   * @returns {StaticStack<T>} The updated stack after pushing the element.
    */
-  push(d: any): StaticStack {
+  push(d: T): StaticStack<T> {
     if (typeof d !== "undefined") {
       this._top[this._top.length] = d;
     }
@@ -419,16 +437,17 @@ export class StaticStack {
 
   /**
    * Pushes multiple elements onto the stack.
-   * @param {any[]} data An array of elements to push onto the stack.
-   * @returns {StaticStack} The updated stack after pushing the elements.
+   * @param {T[]} data An array of elements to push onto the stack.
+   * @returns {StaticStack<T>} The updated stack after pushing the elements.
    * @throws {Error} Throws an error if the parameter is not an array.
    */
-  @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
-  pushMany(data: any[]): StaticStack {
+  // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
+  pushMany(data: T[]): StaticStack<T> {
     const stack = this._top;
     const n = data.length;
-    let i: Integer, k: Integer = stack.length;
-    for (i = n; i-- > 1;) {
+    let i: Integer,
+      k: Integer = stack.length;
+    for (i = n; i-- > 1; ) {
       stack[k + i] = data[i--];
       stack[k + i] = data[i];
     }
@@ -439,10 +458,10 @@ export class StaticStack {
 
   /**
    * Removes and returns the top element from the stack.
-   * @returns {any} The element that was removed from the top of the stack.
+   * @returns {T | null} The element that was removed from the top of the stack.
    */
-  pop(): any {
-    let d: any = null;
+  pop(): T | null {
+    let d: T | null = null;
     if (this.size) {
       d = this.top;
       this._top.length--;
@@ -456,15 +475,16 @@ export class StaticStack {
    * If the specified number of elements to remove (n) is greater than the current stack size,
    * it will remove all elements from the stack and return them.
    * @param {Integer} n - The number of elements to remove from the stack.
-   * @returns {any[]} An array containing the removed elements from the top of the stack.
+   * @returns {[]} An array containing the removed elements from the top of the stack.
    */
-  popMany(n: Integer): any[] {
-    let i: Integer, j: Integer = -1;
-    const d: any[] = [];
+  popMany(n: Integer): T[] {
+    let i: Integer,
+      j: Integer = -1;
+    const d: T[] = [];
     const stack = this._top;
     const l = stack.length;
     if (this.size < n) n = this.size;
-    for (i = l; (j++, i-- > n + 1);) {
+    for (i = l; j++, i-- > n + 1; ) {
       d[j++] = stack[i--];
       d[j] = stack[i];
     }
@@ -481,10 +501,10 @@ export class StaticStack {
   /**
    * Executes a callback function on each element of the stack without removing them,
    * iterating from the top to the bottom of the stack.
-   * @param {(el: any, stack: StaticStack) => void} callback - The callback function to execute on each element.
-   * @returns {StaticStack} The current instance of the stack after traversal.
+   * @param {(el: T, stack: StaticStack<T>) => void} callback - The callback function to execute on each element.
+   * @returns {StaticStack<T>} The current instance of the stack after traversal.
    */
-  traverse(callback: (el: any, stack: StaticStack) => void): StaticStack {
+  traverse(callback: (el: T, stack: StaticStack<T>) => void): StaticStack<T> {
     let top = this.size;
     while (top) {
       const d = this._top[--top];
@@ -500,8 +520,8 @@ export class StaticStack {
    * @param {(el: any, stack: StaticStack) => void} callback - The callback function to execute on each removed element.
    * @returns {any[]} An array containing the elements that were removed from the stack.
    */
-  popAndTraverse(callback: (el: any, stack: StaticStack) => void): any[] {
-    const data: any[] = [];
+  popAndTraverse(callback: (el: T, stack: StaticStack<T>) => void): T[] {
+    const data: T[] = [];
     while (this.size) {
       const d: any = this.pop();
       callback(d, this);
@@ -513,15 +533,16 @@ export class StaticStack {
 
   /**
    * Creates a new StaticStack containing elements that pass the specified filter callback function.
-   * @param {(el: any, stack: StaticStack) => boolean} callback - The callback function used to filter elements.
-   * @returns {StaticStack} A new StaticStack containing elements that passed the filter.
+   * @param {(el: T, stack: StaticStack<T>) => boolean} callback - The callback function used to filter elements.
+   * @returns {StaticStack<T>} A new StaticStack containing elements that passed the filter.
    */
-  filter(callback: (el: any, stack: StaticStack) => boolean): StaticStack {
-    const filtered: StaticStack = new StaticStack();
+  filter(callback: (el: T, stack: StaticStack<T>) => boolean): StaticStack<T> {
+    const filtered: StaticStack<T> = new StaticStack();
     const filteredStack = filtered._top;
     const n = this._top.length;
     const stack = this._top;
-    let i: Integer, k: Integer = 0;
+    let i: Integer,
+      k: Integer = 0;
     for (i = 0; i < n - 1; i += 2) {
       if (callback(stack[i], this)) filteredStack[k++] = stack[i];
       if (callback(stack[i + 1], this)) filteredStack[k++] = stack[i + 1];
@@ -535,9 +556,9 @@ export class StaticStack {
 
   /**
    * Retrieves all elements from the StaticStack and resets the stack to an empty state.
-   * @returns {any[]} An array containing all elements retrieved from the StaticStack.
+   * @returns {T[]} An array containing all elements retrieved from the StaticStack.
    */
-  get list(): any[] {
+  get list(): T[] {
     const list = this._top;
     this._top = [];
 
@@ -553,14 +574,15 @@ export class StaticStack {
    * on each element. It should accept the element and the stack as arguments and return a boolean.
    * @param {Integer} iterations The maximum number of
    * iterations to execute. If not provided, defaults to the size of the stack.
-   * @returns {StaticStack} The updated StaticStack instance after completing the loop.
+   * @returns {StaticStack<T>} The updated StaticStack instance after completing the loop.
    */
   loop(
-    callback: (el: any, stack: StaticStack) => boolean,
+    callback: (el: T, stack: StaticStack<T>) => boolean,
     iterations: Integer,
-  ): StaticStack {
-    let top = this.size, its: Integer = 0;
-    while (top && (its++ < iterations)) {
+  ): StaticStack<T> {
+    let top = this.size,
+      its: Integer = 0;
+    while (top && its++ < iterations) {
       const __continue__ = callback(this._top[--top], this);
       if (!__continue__) break;
     }
@@ -570,16 +592,16 @@ export class StaticStack {
 
   /**
    * Creates a copy of the StaticStack with the same elements.
-   * @returns {StaticStack} A new StaticStack instance
+   * @returns {StaticStack<T>} A new StaticStack instance
    * containing a copy of the elements from the original stack.
    */
-  copy(): StaticStack {
+  copy(): StaticStack<T> {
     let i: Integer;
-    const stack = new StaticStack();
+    const stack = new StaticStack<T>();
     const top0 = this._top;
     const top1 = stack._top;
     const n = top0.length;
-    for (i = n; i-- > 1;) {
+    for (i = n; i-- > 1; ) {
       top1[i] = top0[i--];
       top1[i] = top0[i];
     }
@@ -591,9 +613,9 @@ export class StaticStack {
 
   /**
    * Removes all elements from the StaticStack, making it empty.
-   * @returns {StaticStack} The StaticStack instance after clearing its elements.
+   * @returns {StaticStack<T>} The StaticStack instance after clearing its elements.
    */
-  clear(): StaticStack {
+  clear(): StaticStack<T> {
     this._top = [];
     return this;
   }
@@ -602,20 +624,20 @@ export class StaticStack {
    * Appends elements to the StaticStack based on a callback function.
    * @param {Function} callback - The callback function that generates elements to append.
    * @param {Integer} [size=0] - The number of elements to append.
-   * @returns {StaticStack} The StaticStack instance after appending elements.
+   * @returns {StaticStack<T>} The StaticStack instance after appending elements.
    */
   append(
-    callback: (index: Integer, stack?: StaticStack) => any,
+    callback: (index: Integer, stack?: StaticStack<T>) => T,
     size: Integer = 0,
-  ): StaticStack {
+  ): StaticStack<T> {
     let i: Integer;
     const n = this._top.length;
     const staticStackInstance = this._top;
-    for (i = size; i-- > 1;) {
+    for (i = size; i-- > 1; ) {
       staticStackInstance[n + i] = callback(i--, this);
       staticStackInstance[n + i] = callback(i, this);
     }
-    if (i === 0) staticStackInstance[n] = callback(0, this);
+    if (i === 0) staticStackInstance[n] = callback(i, this);
 
     return this;
   }
