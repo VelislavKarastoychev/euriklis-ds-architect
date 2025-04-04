@@ -15,7 +15,7 @@ export const DoubleLeftRightRotation = <
   if (a.prev) {
     if (a === a.prev.left) a.prev.left = c;
     else a.prev.right = c;
-  } else tree.rootNode = c;
+  } else (tree.rootNode as AbstractBSTDataNode) = c;
 
   c.prev = a.prev || null;
   a.prev = c;
