@@ -288,7 +288,8 @@ export class BST<T> {
    */
   insert(data: T, id?: string): this {
     if (typeof data === "object") {
-      if (data?.id) id = data.id;
+      if ((data as { [prop: string]: unknown })?.id)
+        id = (data as { [prop: string]: unknown }).id as string;
     }
     const node = new BSTDataNode<T>(data);
     models.InsertNodeInBST(this, node, id);
