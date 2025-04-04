@@ -16,7 +16,7 @@ export const DeleteNodeInBST = <
   else if (!node.right) ShiftNodes(tree, node, node?.left || null);
   else {
     const successor = tree.successorNode(
-      node as AbstractBSTDataNode,
+      node as BSTDataNode<T>,
     ) as AbstractBSTDataNode;
     if (successor.prev !== node) {
       ShiftNodes(tree, successor, successor.right as AbstractBSTDataNode);
@@ -24,7 +24,7 @@ export const DeleteNodeInBST = <
       (successor.right as AbstractBSTDataNode).prev = successor;
     }
     ShiftNodes(tree, node, successor);
-    if (!node.prev) tree.rootNode = successor;
+    if (!node.prev) (tree.rootNode as AbstractBSTDataNode) = successor;
     if (node === node.prev?.left) node.prev.left = successor;
     if (node === node.prev?.right) node.prev.right = successor;
     successor.left = node.left;
