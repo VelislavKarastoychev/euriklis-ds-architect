@@ -62,7 +62,8 @@ export class AVLTree<T> extends BST<T> {
    * @returns  The current instance of the AVL tree.
    */
   override insert(data: T, id?: string) {
-    if (data?.id) id = data.id;
+    if ((data as { [prop: string]: unknown })?.id)
+      id = (data as { [prop: string]: unknown }).id as string;
     const n = new AVLDataNode<T>(data);
     const node = InsertNodeInBST(this, n, id);
     // set the balance factors recursively for the all nodes of the tree.
@@ -105,7 +106,7 @@ export class AVLTree<T> extends BST<T> {
    * @returns {AVLDataNode<T> | null} The deleted node, or null if no node was found.
    */
   deleteNode(
-    callback: (node: AVLDataNode<T>, tree?: AVLTree<T>) => -1 | 0 | 1,
+    callback: (node: BSTDataNode<T>, tree?: BST<T>) => -1 | 0 | 1,
   ): AVLDataNode<T> | null {
     const node = this.binarySearchNode(callback) as AVLDataNode<T> | null;
     if (!node) return null;
@@ -185,11 +186,11 @@ export class AVLTree<T> extends BST<T> {
     );
 
     if (node.left) {
-      this.print(node.left as AVLDataNode, level + 1, "L--> ", callback);
+      this.print(node.left as AVLDataNode<T>, level + 1, "L--> ", callback);
     }
 
     if (node.right) {
-      this.print(node.right as AVLDataNode, level + 1, "R--> ", callback);
+      this.print(node.right as AVLDataNode<T>, level + 1, "R--> ", callback);
     }
   }
 }
