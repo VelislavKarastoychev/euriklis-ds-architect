@@ -29,7 +29,8 @@ export abstract class DataNode<T = unknown> {
    */
   constructor(data?: T) {
     this.data = data;
-    if (data?.id && !this.id) this.id = data.id;
+    if ((data as { id: string; [prop: string]: unknown })?.id && !this.id)
+      this.id = (data as { id: string; [prop: string]: unknown }).id;
     else if (typeof data === "string" || typeof data === "number") {
       this.id = data + "";
     } else this.id = uuidv4();
