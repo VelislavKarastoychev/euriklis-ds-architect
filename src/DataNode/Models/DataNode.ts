@@ -1,4 +1,30 @@
 "use strict";
+// 02 / 9759052
+// 0888239365
+// Wrong or missing product - we have to call the Primio api and to check
+// which products are part of this order and their prices. Sometimes
+// when someone byy a product he can get a gift. So the product is not
+// wrong but is a gift.
+// Order not shipped - we have to use the order status check.
+// cancel order - I have to send a request to the Primio
+// reversal in the prim.
+// modify order - we have to ask the Prim.
+// loyalty program issue - we have to provide the model with the
+// yotpo points.
+// order_information - like a prompt we have to check in primio
+// what is the comments in the getSingleSalesOrder.
+// reship order - If someone ask again to sent his order we
+// have to check in primio API the parameters of the order and
+// to ensure throuh communication with the client that these
+// parameters remain as before.
+// product return: We have to inform the client what kind of
+// actions are needed to be made in order to return the product.
+// To check in teams.
+// escalate to humman - to send the conversation in infobip.
+// Order status check - the same in order_informattion.
+// loyalty_points_check - we have check
+// loyalty_birthday_check - to check if the client has got
+// points for its birthday.
 import { v4 as uuidv4 } from "uuid";
 
 /**
