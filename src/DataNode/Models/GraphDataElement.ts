@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
  *
  * @abstract
  */
-export abstract class GraphDataElement {
+export abstract class GraphDataElement<T> {
   /**
    * Unique identifier for the graph data element.
    * @protected
