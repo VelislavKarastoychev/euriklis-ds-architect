@@ -1,33 +1,47 @@
 "use strict";
 
 import { DataNode } from "./DataNode";
-import { DirectedGraphDataNode } from "./GraphDataNode";
+import {
+  DirectedGraphDataNode,
+  UndirectedGraphDataNode,
+} from "./GraphDataNode";
 
 export class GraphDataEdge<
   NData = unknown,
   EData = unknown,
 > extends DataNode<EData> {
-  protected _link?: DirectedGraphDataNode<NData, EData>;
-  protected __weight__: number = 1;
+  protected _link?:
+    | DirectedGraphDataNode<NData, EData>
+    | UndirectedGraphDataNode<NData, EData>;
+  protected __weight__?: number = 1;
   constructor({
     link,
     data,
     weight,
   }: {
-    link: DirectedGraphDataNode<NData, EData>;
+    link:
+      | DirectedGraphDataNode<NData, EData>
+      | UndirectedGraphDataNode<NData, EData>;
     data: EData;
-    weight: number;
+    weight?: number;
   }) {
     super(data);
     this.link = link;
     this.__weight__ = weight;
   }
 
-  get link(): DirectedGraphDataNode<NData, EData> | undefined {
+  get link():
+    | DirectedGraphDataNode<NData, EData>
+    | UndirectedGraphDataNode<NData, EData>
+    | undefined {
     return this._link;
   }
 
-  set link(link: DirectedGraphDataNode<NData, EData>) {
+  set link(
+    link:
+      | DirectedGraphDataNode<NData, EData>
+      | UndirectedGraphDataNode<NData, EData>,
+  ) {
     this._link = link;
   }
 
@@ -39,7 +53,7 @@ export class GraphDataEdge<
     this._data = d;
   }
 
-  get weight(): number {
+  get weight(): number | undefined {
     return this.__weight__;
   }
 
