@@ -7,7 +7,9 @@ export {
   DataNode,
   GraphDataElement,
   GraphDataEdge,
-  GraphDataNode,
+  BaseGraphDataNode,
+  DirectedGraphDataNode,
+  UndirectedGraphDataNode,
   HeapDataNode,
   LinkedDataNode,
 } from "./Models";
