@@ -13,17 +13,17 @@ export class GraphDataEdge<
   protected _link?:
     | DirectedGraphDataNode<NData, EData>
     | UndirectedGraphDataNode<NData, EData>;
-  protected __weight__?: number = 1;
+  protected __weight__: number = 1;
   constructor({
     link,
     data,
-    weight,
+    weight = 1,
   }: {
     link:
       | DirectedGraphDataNode<NData, EData>
       | UndirectedGraphDataNode<NData, EData>;
     data: EData;
-    weight?: number;
+    weight: number;
   }) {
     super(data);
     this.link = link;
@@ -53,7 +53,7 @@ export class GraphDataEdge<
     this._data = d;
   }
 
-  get weight(): number | undefined {
+  get weight(): number {
     return this.__weight__;
   }
 
