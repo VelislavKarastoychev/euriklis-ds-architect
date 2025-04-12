@@ -1,17 +1,29 @@
 "use strict";
 
+import type { GraphEdgeType } from "../../Graph/Types";
 import * as errors from "../Errors";
 import { DataNode } from "./DataNode";
 import { GraphDataEdge } from "./GraphDataEdge";
 
-class BaseGraphDataNode<NData = unknown> extends DataNode<NData> {
+export class BaseGraphDataNode<
+  NData = unknown,
+  EData = unknown,
+> extends DataNode<NData> {
   protected __name__: string = "";
-  protected __value__?: number = 1;
+  protected __value__: number = 1;
 
-  constructor(options: { name: string; data: NData; value?: number }) {
-    super(options.data);
-    this.name = options.name;
-    this.value = options.value;
+  constructor({
+    name,
+    data,
+    value = 1,
+  }: {
+    name: string;
+    data: NData;
+    value: number;
+  }) {
+    super(data);
+    this.name = name;
+    this.value = value;
   }
 
   get name(): string {
@@ -30,19 +42,19 @@ class BaseGraphDataNode<NData = unknown> extends DataNode<NData> {
     this._data = d;
   }
 
-  get value(): number | undefined {
+  get value(): number {
     return this.__value__;
   }
 
-  set value(v: number | undefined) {
-    if (typeof v !== "undefined" || v !== null) this.__value__ = v;
+  set value(v: number) {
+    this.__value__ = v;
   }
 }
 
 export class DirectedGraphDataNode<
   NData = unknown,
   EData = unknown,
-> extends BaseGraphDataNode<NData> {
+> extends BaseGraphDataNode<NData, EData> {
   protected __inEdges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
   protected __outEdges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
 
@@ -66,69 +78,121 @@ export class DirectedGraphDataNode<
     this.__outEdges__ = outputEdges;
   }
 
-  public async addIncommingEdge({
+  public addIncommingEdge({
     source,
     data,
     weight = 1,
   }: {
     source: DirectedGraphDataNode<NData, EData>;
     data: EData;
-    weight?: number;
-  }): Promise<DirectedGraphDataNode<NData, EData>> {
+    weight: number;
+  }): DirectedGraphDataNode<NData, EData> {
     // check if the node already exists:
     if (this.__inEdges__.has(source.name))
       errors.EdgeAlreadyExists(source.name);
     const edge = new GraphDataEdge({ link: source, data, weight });
     this.__inEdges__.set(source.name, edge);
+    source.__outEdges__.set(this.name, edge);
 
     return this;
   }
 
-  public async addOutgoingEdge({
+  public addOutgoingEdge({
     target,
     data,
-    weight,
+    weight = 1,
   }: {
     target: DirectedGraphDataNode<NData, EData>;
     data: EData;
     weight: number;
-  }): Promise<DirectedGraphDataNode<NData, EData>> {
+  }): DirectedGraphDataNode<NData, EData> {
     if (this.__outEdges__.has(target.name))
       errors.EdgeAlreadyExists(target.name);
     const edge = new GraphDataEdge({ link: target, data, weight });
     this.__outEdges__.set(target.name, edge);
+    target.__inEdges__.set(this.name, edge);
 
     return this;
   }
 
-  public async findIncomingEdgeByName(
+  public findIncomingEdgeByName(
     name: string,
-  ): Promise<GraphDataEdge<NData, EData> | null> {
+  ): GraphDataEdge<NData, EData> | null {
     return this.__inEdges__.get(name) || null;
   }
 
-  public async findOutgoingEdgeByName(
+  public findOutgoingEdgeByName(
     name: string,
-  ): Promise<GraphDataEdge<NData, EData> | null> {
+  ): GraphDataEdge<NData, EData> | null {
     return this.__outEdges__.get(name) || null;
   }
 
-  public async removeIncommingEdge(
+  public removeIncommingEdge(
     source: DirectedGraphDataNode<NData, EData>,
-  ): Promise<GraphDataEdge<NData, EData> | undefined> {
+  ): GraphDataEdge<NData, EData> | undefined {
     const edge = this.__inEdges__.get(source.name);
     this.__inEdges__.delete(source.name);
+    source.__outEdges__.delete(this.name);
 
     return edge;
   }
+
+  public removeOutgoingEdge(
+    target: DirectedGraphDataNode<NData, EData>,
+  ): GraphDataEdge<NData, EData> | undefined {
+    const edge = this.__outEdges__.get(target.name);
+    this.__outEdges__.delete(target.name);
+    target.__inEdges__.delete(this.name);
+
+    return edge;
+  }
+
+  clearEdges(): this {
+    this.__inEdges__ = new Map();
+    this.__outEdges__ = new Map();
+
+    return this;
+  }
+
+  getIncommingEdges(): GraphEdgeType<EData>[] {
+    const edges: GraphEdgeType<EData>[] = [];
+    for (const [_, edge] of this.__inEdges__) {
+      const source = ((edge as GraphDataEdge).link as DirectedGraphDataNode)
+        .name;
+      edges.push({
+        source,
+        target: this.name,
+        data: edge.data,
+        weight: edge.weight,
+      });
+    }
+
+    return edges;
+  }
+
+  getOutgoingEdges(): GraphEdgeType<EData>[] {
+    const edges: GraphEdgeType<EData>[] = [];
+    for (const [_, edge] of this.__outEdges__) {
+      const source = ((edge as GraphDataEdge).link as DirectedGraphDataNode)
+        .name;
+      edges.push({
+        source,
+        target: this.name,
+        data: edge.data,
+        weight: edge.weight,
+      });
+    }
+
+    return edges;
+  }
 }
 
-export class UndirectedGraphDataNode<
+export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
   NData,
-  EData,
-> extends BaseGraphDataNode<NData> {
+  EData
+> {
   private __edges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
-  constructor(options: { name: string; data: NData; value?: number }) {
+  constructor(options: { name: string; data: NData; value: number }) {
     super(options);
   }
 
@@ -140,15 +204,15 @@ export class UndirectedGraphDataNode<
     this.__edges__ = edges;
   }
 
-  public async addEdge({
+  public addEdge({
     target,
     data,
-    weight,
+    weight = 1,
   }: {
     target: UndirectedGraphDataNode<NData, EData>;
     data: EData;
-    weight?: number;
-  }): Promise<UndirectedGraphDataNode<NData, EData>> {
+    weight: number;
+  }): UndirectedGraphDataNode<NData, EData> {
     if (this.__edges__.has(target.name)) {
       errors.EdgeAlreadyExists(target.name);
     }
@@ -166,19 +230,23 @@ export class UndirectedGraphDataNode<
     return this;
   }
 
-  public async findEdge(
-    target: string,
-  ): Promise<GraphDataEdge<NData, EData> | null> {
+  public findEdge(target: string): GraphDataEdge<NData, EData> | null {
     return this.__edges__.get(target) || null;
   }
 
-  public async removeEdge(
+  public removeEdge(
     target: UndirectedGraphDataNode<NData, EData>,
-  ): Promise<GraphDataEdge<NData, EData> | undefined> {
+  ): GraphDataEdge<NData, EData> | undefined {
     const edge = this.__edges__.get(target.name);
     this.__edges__.delete(target.name);
     target.__edges__.delete(this.name);
 
     return edge;
+  }
+
+  clearEdges(): this {
+    this.__edges__ = new Map();
+
+    return this;
   }
 }
