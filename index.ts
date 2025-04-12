@@ -1,13 +1,11 @@
 "use strict";
 
-import { AVLTree } from "./src";
+import { Graph } from "./src";
 
-const avl = new AVLTree<{ name: string; description: string }>();
-
-avl.insert({
-  name: "Union",
-  description: "A transport company.",
+const g = new Graph();
+g.addNode({
+  name: "v0",
+  data: { type: "Numeric" },
+  value: Math.PI,
 });
-avl.insert({ name: "Arda Tour", description: "A bus company." });
-
-avl.print(undefined, undefined, undefined, (node) => node.data?.description);
+console.log(g);
