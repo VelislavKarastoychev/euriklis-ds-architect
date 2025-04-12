@@ -11,6 +11,8 @@ import {
   ifSourceOrTargetNodeNotExistThrow,
 } from "./Decorators";
 import type { GraphEdgeType, GraphNodeType } from "./Types";
+import { Queue } from "../Queue";
+import { DynamicStack } from "../Stack";
 
 export class Graph<
   NodeType extends
@@ -91,16 +93,16 @@ export class Graph<
     return edges;
   }
 
-  hasNode(name: string): boolean {
+  public hasNode(name: string): boolean {
     return this.__graph__.has(name);
   }
 
-  getNode(name: string): NodeType | undefined {
+  public getNode(name: string): NodeType | undefined {
     return this.__graph__.get(name);
   }
 
   @ifNodeExistsThrow(errors.NodeAlreadyExists)
-  addNode({
+  public addNode({
     name,
     data,
     value = 1,
@@ -119,7 +121,7 @@ export class Graph<
     return this;
   }
 
-  updateNode({
+  public updateNode({
     name,
     data,
     value,
@@ -136,7 +138,7 @@ export class Graph<
     return this;
   }
 
-  removeNode(name: string): NodeType | undefined {
+  public removeNode(name: string): NodeType | undefined {
     const node: NodeType | undefined = this.getNode(name);
     if (!node) return node;
     this.__graph__.delete(name);
@@ -153,7 +155,7 @@ export class Graph<
   }
 
   @ifSourceOrTargetNodeNotExistThrow(errors.NodeNotExists)
-  addEdge({
+  public addEdge({
     source,
     target,
     data,
@@ -166,18 +168,111 @@ export class Graph<
   }): this {
     const sourceNode = this.getNode(source);
     const targetNode = this.getNode(target);
-    if (this.NODE_CONSTRUCTOR === DirectedGraphDataNode)
+    if (this.NODE_CONSTRUCTOR === DirectedGraphDataNode) {
       (sourceNode as DirectedGraphDataNode<NData, EData>).addOutgoingEdge({
         target: targetNode as DirectedGraphDataNode<NData, EData>,
         data,
         weight,
       });
-    else if (this.NODE_CONSTRUCTOR === UndirectedGraphDataNode) {
+    } else if (this.NODE_CONSTRUCTOR === UndirectedGraphDataNode) {
       (sourceNode as UndirectedGraphDataNode<NData, EData>).addEdge({
         target: targetNode as UndirectedGraphDataNode<NData, EData>,
         data,
         weight,
       });
+    }
+
+    return this;
+  }
+
+  public getEdge({
+    source,
+    target,
+  }: {
+    source: string;
+    target: string;
+  }): GraphDataEdge<NData, EData> | undefined {
+    const node: NodeType | undefined = this.getNode(source);
+    let edge: GraphDataEdge<NData, EData> | undefined;
+    if (!node) return undefined;
+    if (node instanceof DirectedGraphDataNode) {
+      edge = node.getOutgoingEdgeByName(target);
+    } else if (node instanceof UndirectedGraphDataNode) {
+      edge = node.getEdge(target);
+    }
+
+    return edge;
+  }
+
+  public hasEdge({
+    source,
+    target,
+  }: {
+    source: string;
+    target: string;
+  }): boolean {
+    return !!this.getEdge({ source, target });
+  }
+
+  public BFS(
+    node: string | NodeType, // the starting node.
+    callback: (node: NodeType, g?: this) => void = (_: NodeType): void => {},
+    inversed: boolean = false,
+  ): this {
+    let gNode: NodeType | undefined;
+    if (typeof node === "string") gNode = this.getNode(node);
+    else gNode = node;
+    if (!gNode) return this;
+    const queue = new Queue<NodeType>();
+    const visitedNodes = new Set();
+    queue.enqueue(gNode);
+    while (!queue.isEmpty) {
+      const currentNode = queue.dequeue();
+      if (!currentNode) break; // if is null by mistake
+      if (visitedNodes.has(currentNode.name)) continue;
+      visitedNodes.add(currentNode.name);
+      let edges: Map<string, GraphDataEdge<NData, EData>>;
+      callback(currentNode, this);
+      if (currentNode instanceof DirectedGraphDataNode) {
+        edges = !inversed ? currentNode.outEdges : currentNode.inEdges;
+      } else edges = currentNode.edges;
+      for (const [_, edge] of edges) {
+        const n: NodeType = edge.link as NodeType;
+        queue.enqueue(n);
+      }
+    }
+
+    return this;
+  }
+
+  public DFS(
+    node: string | NodeType,
+    callback: (node: NodeType, g?: this) => void = (_: NodeType): void => {},
+    inversed: boolean = false,
+  ): this {
+    let gNode: NodeType | undefined;
+    if (typeof node === "string") gNode = this.getNode(node);
+    else gNode = node;
+    // if node with this name does not exists
+    // stop the graph traversing.
+    if (!gNode) return this;
+    const stack = new DynamicStack<NodeType>();
+    let visitedNodes = new Set<string>();
+    stack.push(gNode as NodeType);
+    while (!stack.isEmpty) {
+      const currentNode = stack.pop();
+      if (!currentNode) break;
+      if (visitedNodes.has(currentNode.name)) continue;
+      visitedNodes.add(currentNode.name);
+      callback(currentNode, this);
+      let edges: Map<string, GraphDataEdge<NData, EData>>;
+      if (currentNode instanceof DirectedGraphDataNode) {
+        edges = !inversed ? currentNode.outEdges : currentNode.inEdges;
+      } else edges = currentNode.edges;
+      for (const [_, edge] of edges) {
+        const n: NodeType = edge.link as NodeType;
+        stack.push(n);
+      }
     }
 
     return this;
