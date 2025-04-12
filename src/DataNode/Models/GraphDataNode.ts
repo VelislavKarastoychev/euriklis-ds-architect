@@ -115,16 +115,16 @@ export class DirectedGraphDataNode<
     return this;
   }
 
-  public findIncomingEdgeByName(
+  public getIncomingEdgeByName(
     name: string,
-  ): GraphDataEdge<NData, EData> | null {
-    return this.__inEdges__.get(name) || null;
+  ): GraphDataEdge<NData, EData> | undefined {
+    return this.__inEdges__.get(name);
   }
 
-  public findOutgoingEdgeByName(
+  public getOutgoingEdgeByName(
     name: string,
-  ): GraphDataEdge<NData, EData> | null {
-    return this.__outEdges__.get(name) || null;
+  ): GraphDataEdge<NData, EData> | undefined {
+    return this.__outEdges__.get(name);
   }
 
   public removeIncommingEdge(
@@ -230,8 +230,8 @@ export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
     return this;
   }
 
-  public findEdge(target: string): GraphDataEdge<NData, EData> | null {
-    return this.__edges__.get(target) || null;
+  public getEdge(target: string): GraphDataEdge<NData, EData> | undefined {
+    return this.__edges__.get(target) || undefined;
   }
 
   public removeEdge(
