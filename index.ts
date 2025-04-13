@@ -8,4 +8,21 @@ g.addNode({
   data: { type: "Numeric" },
   value: Math.PI,
 });
-console.log(g);
+
+g.addNode({
+  name: "v1",
+  data: { type: "String" },
+  value: Math.E,
+});
+
+g.addEdge({
+  source: "v0",
+  target: "v1",
+  data: "This is an edge",
+  weight: Math.random(),
+});
+
+console.log("Nodes");
+console.log(g.nodes);
+console.log("Edges");
+console.log(g.edges);
