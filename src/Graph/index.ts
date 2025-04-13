@@ -84,9 +84,13 @@ export class Graph<
   get edges(): GraphEdgeType<EData>[] {
     const edges: GraphEdgeType<EData>[] = [];
     for (const [_, node] of this.__graph__) {
-      if (this.symmetric)
+      if (!this.symmetric)
         edges.push(
           ...(node as DirectedGraphDataNode<NData, EData>).getIncommingEdges(),
+        );
+      else
+        edges.push(
+          ...(node as UndirectedGraphDataNode<NData, EData>).getEdges(),
         );
     }
 
