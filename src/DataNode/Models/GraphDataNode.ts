@@ -244,6 +244,19 @@ export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
     return edge;
   }
 
+  public getEdges(): GraphEdgeType<EData>[] {
+    const edges: GraphEdgeType<EData>[] = [];
+    for (const [_, edge] of this.__edges__) {
+      edges.push({
+        source: this.name,
+        target: (edge.link as UndirectedGraphDataNode<NData, EData>).name,
+        data: edge.data,
+        weight: edge.weight,
+      });
+    }
+    return edges;
+  }
+
   clearEdges(): this {
     this.__edges__ = new Map();
 
