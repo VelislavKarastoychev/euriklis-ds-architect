@@ -6,9 +6,10 @@ import { DataNode } from "./DataNode";
 import { GraphDataEdge } from "./GraphDataEdge";
 
 export class BaseGraphDataNode<
-  NData = unknown,
+  INData = unknown, // the data which the node may accept
+  ONData = unknown, // The output nide data
   EData = unknown,
-> extends DataNode<NData> {
+> extends DataNode<ONData> {
   protected __name__: string = "";
   protected __value__: number = 1;
 
@@ -18,7 +19,7 @@ export class BaseGraphDataNode<
     value = 1,
   }: {
     name: string;
-    data: NData;
+    data: ONData;
     value: number;
   }) {
     super(data);
@@ -34,11 +35,11 @@ export class BaseGraphDataNode<
     this.__name__ = name;
   }
 
-  get data(): NData | null {
+  get data(): ONData | null {
     return this._data;
   }
 
-  set data(d: NData) {
+  set data(d: ONData) {
     this._data = d;
   }
 
@@ -52,29 +53,32 @@ export class BaseGraphDataNode<
 }
 
 export class DirectedGraphDataNode<
-  NData = unknown,
+  INData = unknown, // the data which the node may accept
+  ONData = unknown,
   EData = unknown,
-> extends BaseGraphDataNode<NData, EData> {
-  protected __inEdges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
-  protected __outEdges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
+> extends BaseGraphDataNode<INData, ONData, EData> {
+  protected __inEdges__: Map<string, GraphDataEdge<INData, ONData, EData>> =
+    new Map();
+  protected __outEdges__: Map<string, GraphDataEdge<ONData, INData, EData>> =
+    new Map();
 
-  constructor(options: { name: string; data: NData; value: number }) {
+  constructor(options: { name: string; data: ONData; value: number }) {
     super(options);
   }
 
-  get inEdges(): Map<string, GraphDataEdge<NData, EData>> {
+  get inEdges(): Map<string, GraphDataEdge<INData, ONData, EData>> {
     return this.__inEdges__;
   }
 
-  set inEdges(inputEdges: Map<string, GraphDataEdge<NData, EData>>) {
+  set inEdges(inputEdges: Map<string, GraphDataEdge<INData, ONData, EData>>) {
     this.__inEdges__ = inputEdges;
   }
 
-  get outEdges(): Map<string, GraphDataEdge<NData, EData>> {
+  get outEdges(): Map<string, GraphDataEdge<ONData, INData, EData>> {
     return this.__outEdges__;
   }
 
-  set outEdges(outputEdges: Map<string, GraphDataEdge<NData, EData>>) {
+  set outEdges(outputEdges: Map<string, GraphDataEdge<ONData, INData, EData>>) {
     this.__outEdges__ = outputEdges;
   }
 
@@ -83,10 +87,10 @@ export class DirectedGraphDataNode<
     data,
     weight = 1,
   }: {
-    source: DirectedGraphDataNode<NData, EData>;
+    source: DirectedGraphDataNode<ONData, INData, EData>;
     data: EData;
     weight: number;
-  }): DirectedGraphDataNode<NData, EData> {
+  }): this {
     // check if the node already exists:
     if (this.__inEdges__.has(source.name))
       errors.EdgeAlreadyExists(source.name);
@@ -102,10 +106,10 @@ export class DirectedGraphDataNode<
     data,
     weight = 1,
   }: {
-    target: DirectedGraphDataNode<NData, EData>;
+    target: DirectedGraphDataNode<INData, ONData, EData>;
     data: EData;
     weight: number;
-  }): DirectedGraphDataNode<NData, EData> {
+  }): this {
     if (this.__outEdges__.has(target.name))
       errors.EdgeAlreadyExists(target.name);
     const edge = new GraphDataEdge({ link: target, data, weight });
@@ -117,19 +121,19 @@ export class DirectedGraphDataNode<
 
   public getIncomingEdgeByName(
     name: string,
-  ): GraphDataEdge<NData, EData> | undefined {
+  ): GraphDataEdge<ONData, INData, EData> | undefined {
     return this.__inEdges__.get(name);
   }
 
   public getOutgoingEdgeByName(
     name: string,
-  ): GraphDataEdge<NData, EData> | undefined {
+  ): GraphDataEdge<INData, ONData, EData> | undefined {
     return this.__outEdges__.get(name);
   }
 
   public removeIncommingEdge(
-    source: DirectedGraphDataNode<NData, EData>,
-  ): GraphDataEdge<NData, EData> | undefined {
+    source: DirectedGraphDataNode<INData, ONData, EData>,
+  ): GraphDataEdge<INData, EData> | undefined {
     const edge = this.__inEdges__.get(source.name);
     this.__inEdges__.delete(source.name);
     source.__outEdges__.delete(this.name);
@@ -138,8 +142,8 @@ export class DirectedGraphDataNode<
   }
 
   public removeOutgoingEdge(
-    target: DirectedGraphDataNode<NData, EData>,
-  ): GraphDataEdge<NData, EData> | undefined {
+    target: DirectedGraphDataNode<INData, ONData, EData>,
+  ): GraphDataEdge<INData, ONData, EData> | undefined {
     const edge = this.__outEdges__.get(target.name);
     this.__outEdges__.delete(target.name);
     target.__inEdges__.delete(this.name);
@@ -189,18 +193,20 @@ export class DirectedGraphDataNode<
 
 export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
   NData,
+  NData,
   EData
 > {
-  private __edges__: Map<string, GraphDataEdge<NData, EData>> = new Map();
+  private __edges__: Map<string, GraphDataEdge<NData, NData, EData>> =
+    new Map();
   constructor(options: { name: string; data: NData; value: number }) {
     super(options);
   }
 
-  get edges(): Map<string, GraphDataEdge<NData, EData>> {
+  get edges(): Map<string, GraphDataEdge<NData, NData, EData>> {
     return this.__edges__;
   }
 
-  set edges(edges: Map<string, GraphDataEdge<NData, EData>>) {
+  set edges(edges: Map<string, GraphDataEdge<NData, NData, EData>>) {
     this.__edges__ = edges;
   }
 
@@ -219,7 +225,7 @@ export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
 
     this.__edges__.set(
       target.name,
-      new GraphDataEdge({ link: target, data, weight }),
+      new GraphDataEdge<NData, NData, EData>({ link: target, data, weight }),
     );
 
     target.__edges__.set(
@@ -236,7 +242,7 @@ export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
 
   public removeEdge(
     target: UndirectedGraphDataNode<NData, EData>,
-  ): GraphDataEdge<NData, EData> | undefined {
+  ): GraphDataEdge<NData, NData, EData> | undefined {
     const edge = this.__edges__.get(target.name);
     this.__edges__.delete(target.name);
     target.__edges__.delete(this.name);
