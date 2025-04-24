@@ -7,12 +7,13 @@ import {
 } from "./GraphDataNode";
 
 export class GraphDataEdge<
+  INData = unknown,
   NData = unknown,
   EData = unknown,
 > extends DataNode<EData> {
   protected _link?:
-    | DirectedGraphDataNode<NData, EData>
-    | UndirectedGraphDataNode<NData, EData>;
+    | DirectedGraphDataNode<NData, INData, EData>
+    | UndirectedGraphDataNode<NData, INData, EData>;
   protected __weight__: number = 1;
   constructor({
     link,
@@ -20,8 +21,8 @@ export class GraphDataEdge<
     weight = 1,
   }: {
     link:
-      | DirectedGraphDataNode<NData, EData>
-      | UndirectedGraphDataNode<NData, EData>;
+      | DirectedGraphDataNode<NData, INData, EData>
+      | UndirectedGraphDataNode<NData, INData, EData>;
     data: EData;
     weight: number;
   }) {
@@ -31,16 +32,16 @@ export class GraphDataEdge<
   }
 
   get link():
-    | DirectedGraphDataNode<NData, EData>
-    | UndirectedGraphDataNode<NData, EData>
+    | DirectedGraphDataNode<NData, INData, EData>
+    | UndirectedGraphDataNode<NData, INData, EData>
     | undefined {
     return this._link;
   }
 
   set link(
     link:
-      | DirectedGraphDataNode<NData, EData>
-      | UndirectedGraphDataNode<NData, EData>,
+      | DirectedGraphDataNode<NData, INData, EData>
+      | UndirectedGraphDataNode<NData, INData, EData>,
   ) {
     this._link = link;
   }
