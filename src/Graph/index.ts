@@ -195,14 +195,14 @@ export class Graph<
   }: {
     source: string;
     target: string;
-  }): GraphDataEdge<NData, EData> | undefined {
+  }): EdgeType | undefined {
     const node: NodeType | undefined = this.getNode(source);
-    let edge: GraphDataEdge<NData, EData> | undefined;
+    let edge: EdgeType | undefined;
     if (!node) return undefined;
     if (node instanceof DirectedGraphDataNode) {
-      edge = node.getOutgoingEdgeByName(target);
+      edge = node.getOutgoingEdgeByName(target) as EdgeType | undefined;
     } else if (node instanceof UndirectedGraphDataNode) {
-      edge = node.getEdge(target);
+      edge = node.getEdge(target) as EdgeType | undefined;
     }
 
     return edge;
@@ -268,10 +268,12 @@ export class Graph<
       if (visitedNodes.has(currentNode.name)) continue;
       visitedNodes.add(currentNode.name);
       callback(currentNode, this);
-      let edges: Map<string, GraphDataEdge<NData, EData>>;
+      let edges: Map<string, EdgeType>;
       if (currentNode instanceof DirectedGraphDataNode) {
-        edges = !inversed ? currentNode.outEdges : currentNode.inEdges;
-      } else edges = currentNode.edges;
+        edges = !inversed
+          ? (currentNode.outEdges as Map<string, EdgeType>)
+          : (currentNode.inEdges as Map<string, EdgeType>);
+      } else edges = currentNode.edges as Map<string, EdgeType>;
       for (const [_, edge] of edges) {
         stack.push(edge.link as NodeType);
       }
@@ -300,10 +302,12 @@ export class Graph<
       if (visitedNodes.has(currentNode.name)) continue;
       visitedNodes.add(currentNode.name);
       await callback(currentNode, this);
-      let edges: Map<string, GraphDataEdge<NData, EData>>;
+      let edges: Map<string, EdgeType>;
       if (currentNode instanceof DirectedGraphDataNode) {
-        edges = !inversed ? currentNode.outEdges : currentNode.inEdges;
-      } else edges = currentNode.edges;
+        edges = !inversed
+          ? (currentNode.outEdges as Map<string, EdgeType>)
+          : (currentNode.inEdges as Map<string, EdgeType>);
+      } else edges = currentNode.edges as Map<string, EdgeType>;
 
       for (const [_, edge] of edges) {
         queue.enqueue(edge.link as NodeType);
@@ -332,13 +336,103 @@ export class Graph<
       if (visitedNodes.has(currentNode.name)) continue;
       visitedNodes.add(currentNode.name);
       await callback(currentNode, this);
-      let edges: Map<string, GraphDataEdge<NData, EData>>;
+      let edges: Map<string, EdgeType>;
       if (currentNode instanceof DirectedGraphDataNode) {
-        edges = !inversed ? currentNode.outEdges : currentNode.inEdges;
-      } else edges = currentNode.edges;
+        edges = !inversed
+          ? (currentNode.outEdges as Map<string, EdgeType>)
+          : (currentNode.inEdges as Map<string, EdgeType>);
+      } else edges = currentNode.edges as Map<string, EdgeType>;
 
       for (const [_, edge] of edges) {
         stack.push(edge.link as NodeType);
+      }
+    }
+
+    return this;
+  }
+
+  traverse(
+    node: string | NodeType,
+    filterCallback: (
+      edge: EdgeType,
+      source?: NodeType,
+      target?: NodeType,
+      g?: this,
+    ) => boolean,
+    callback: (node: NodeType, g?: this) => void,
+    allowVisited: boolean = true,
+    inversed: boolean = false,
+  ): this {
+    let gNode: NodeType | undefined;
+    if (typeof node === "string") gNode = this.getNode(node);
+    else gNode = node;
+    if (!gNode) return this;
+    const queue = new Queue<NodeType>();
+    const visitedNodes = new Set<string>();
+    queue.enqueue(gNode);
+    while (!queue.isEmpty) {
+      const currentNode = queue.dequeue();
+      if (!currentNode) break;
+      if (allowVisited) {
+        if (visitedNodes.has(currentNode.name)) continue;
+        visitedNodes.add(currentNode.name);
+      }
+      callback(currentNode, this);
+      let edges: Map<string, EdgeType>;
+      if (currentNode instanceof DirectedGraphDataNode) {
+        edges = !inversed
+          ? (currentNode.outEdges as Map<string, EdgeType>)
+          : (currentNode.inEdges as Map<string, EdgeType>);
+      } else edges = currentNode.edges as Map<string, EdgeType>;
+
+      for (const [_, edge] of edges) {
+        const target: NodeType = edge.link as NodeType;
+        if (filterCallback(edge, currentNode, target, this))
+          queue.enqueue(target);
+      }
+    }
+
+    return this;
+  }
+
+  async traverseAsync(
+    node: string | NodeType,
+    filterCallback: (
+      edge: GraphDataEdge<NData, EData>,
+      source?: NodeType,
+      target?: NodeType,
+      g?: this,
+    ) => Promise<boolean> | boolean,
+    callback: (node: NodeType, g?: this) => Promise<void> | void,
+    allowVisited: boolean = true,
+    inversed: boolean = false,
+  ): Promise<this> {
+    let gNode: NodeType | undefined;
+    if (typeof node === "string") gNode = this.getNode(node);
+    else gNode = node;
+    if (!gNode) return this;
+    const queue = new Queue<NodeType>();
+    const visitedNodes = new Set<string>();
+    queue.enqueue(gNode);
+    while (!queue.isEmpty) {
+      const currentNode = queue.dequeue();
+      if (!currentNode) break;
+      if (allowVisited) {
+        if (visitedNodes.has(currentNode.name)) continue;
+        visitedNodes.add(currentNode.name);
+      }
+      await callback(currentNode, this);
+      let edges: Map<string, EdgeType>;
+      if (currentNode instanceof DirectedGraphDataNode) {
+        edges = !inversed
+          ? (currentNode.outEdges as Map<string, EdgeType>)
+          : (currentNode.inEdges as Map<string, EdgeType>);
+      } else edges = currentNode.edges as Map<string, EdgeType>;
+
+      for (const [_, edge] of edges) {
+        const target: NodeType = edge.link as NodeType;
+        if (await filterCallback(edge, currentNode, target, this))
+          queue.enqueue(target);
       }
     }
 
