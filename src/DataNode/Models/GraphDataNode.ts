@@ -1,271 +1,177 @@
 "use strict";
 
-import type { GraphEdgeType } from "../../Graph/Types";
 import * as errors from "../Errors";
-import { DataNode } from "./DataNode";
-import { GraphDataEdge } from "./GraphDataEdge";
+import { v4 as uuid } from "uuid";
+import { GraphDataEdge, Edge, Arc } from "./GraphDataEdge";
 
-export class BaseGraphDataNode<
-  INData = unknown, // the data which the node may accept
-  ONData = unknown, // The output nide data
-  EData = unknown,
-> extends DataNode<ONData> {
-  protected __name__: string = "";
-  protected __value__: number = 1;
-
-  constructor({
-    name,
-    data,
-    value = 1,
-  }: {
-    name: string;
-    data: ONData;
-    value: number;
-  }) {
-    super(data);
+export abstract class GraphDataNode<
+  O = unknown,
+  E extends GraphDataEdge<
+    GraphDataNode<any, E>,
+    GraphDataNode<any, E>,
+    unknown
+  > = GraphDataEdge<GraphDataNode<any, any>, GraphDataNode<any, any>, unknown>,
+> {
+  private __ID__: string = "";
+  protected __NAME__: string = "";
+  protected __DATA__: O | null = null;
+  protected __IN__: Map<string, E> = new Map();
+  protected __OUT__: Map<string, E> = new Map();
+  constructor({ name, data }: { name: string; data: O }) {
+    if (!name) errors.NameIsRequired();
+    this.id = uuid();
     this.name = name;
-    this.value = value;
+    if (typeof data !== "undefined") this.data = data;
+  }
+
+  get id(): string {
+    return this.__ID__;
+  }
+
+  set id(id: string) {
+    this.__ID__ = id;
   }
 
   get name(): string {
-    return this.__name__;
+    return this.__NAME__;
   }
 
   set name(name: string) {
-    this.__name__ = name;
+    this.__NAME__ = name;
   }
 
-  get data(): ONData | null {
-    return this._data;
+  get data(): O | null {
+    return this.__DATA__;
   }
 
-  set data(d: ONData) {
-    this._data = d;
+  set data(d: O) {
+    this.__DATA__ = d;
+  }
+
+  get incomming(): Map<string, E> {
+    return this.__IN__;
+  }
+
+  get outgoing(): Map<string, E> {
+    return this.__OUT__;
+  }
+
+  /** Override this to construct your concrete edge subclass */
+  protected abstract createEdge<D = unknown>(
+    target: GraphDataNode<any, E>,
+    data?: D,
+    params?: { [param: string]: any },
+  ): E;
+
+  connect<D = unknown>({
+    node,
+    data,
+    params,
+  }: {
+    node: GraphDataNode<any, E>;
+    data: D;
+    params: { [param: string]: any };
+  }): this {
+    if (this.outgoing.has(node.name)) errors.EdgeAlreadyExists(node.name);
+    const e = this.createEdge(node, data, params);
+    this.outgoing.set(node.name, e);
+    node.incomming.set(this.name, e);
+
+    return this;
+  }
+
+  findConnections(callback: (edge: E) => boolean): Map<string, E> {
+    const edges: Map<string, E> = new Map();
+    this.outgoing.forEach((edge, name) =>
+      callback(edge) ? edges.set(name, edge) : null,
+    );
+
+    return edges;
+  }
+
+  getConnection(target: string | GraphDataNode): E | undefined {
+    let targetName: string = "";
+    if (typeof target === "string") targetName = target;
+    else targetName = target.name;
+
+    return this.outgoing.get(targetName);
+  }
+
+  removeConnection({
+    node,
+    nodeName,
+  }: {
+    nodeName?: string;
+    node?: GraphDataNode<any, E>;
+  }): E | undefined {
+    let e: E | undefined;
+    if (!nodeName && !node) {
+      errors.NameIsRequired();
+    }
+    if (node) {
+      e = this.outgoing.get(node.name);
+      this.outgoing.delete(node.name);
+      node.incomming.delete(this.name);
+    } else {
+      const e = this.outgoing.get(nodeName as string);
+      if (e) {
+        this.outgoing.delete(nodeName as string);
+        (e.target as GraphDataNode<any, E>).incomming.delete(this.name);
+      }
+    }
+
+    return e;
+  }
+
+  get inDegree(): number {
+    return this.incomming.size;
+  }
+
+  get outDegree(): number {
+    return this.outgoing.size;
+  }
+}
+
+export class Vertex<D = unknown> extends GraphDataNode<D, Edge<any>> {
+  protected createEdge<T = unknown>(target: Vertex<any>, data: T): Edge<T> {
+    return new Edge({ source: this, target, data });
+  }
+}
+
+export class Node<D = unknown> extends GraphDataNode<D, Arc<any>> {
+  protected __VALUE__: number = 1;
+
+  constructor({ name, data, value }: { name: string; data: D; value: number }) {
+    super({ name, data });
+    if (typeof value !== "undefined") this.value = value;
   }
 
   get value(): number {
-    return this.__value__;
+    return this.__VALUE__;
   }
 
   set value(v: number) {
-    this.__value__ = v;
+    this.__VALUE__ = v;
   }
-}
-
-export class DirectedGraphDataNode<
-  INData = unknown, // the data which the node may accept
-  ONData = unknown,
-  EData = unknown,
-> extends BaseGraphDataNode<INData, ONData, EData> {
-  protected __inEdges__: Map<string, GraphDataEdge<INData, ONData, EData>> =
-    new Map();
-  protected __outEdges__: Map<string, GraphDataEdge<ONData, INData, EData>> =
-    new Map();
-
-  constructor(options: { name: string; data: ONData; value: number }) {
-    super(options);
+  protected override createEdge<T = unknown>(
+    target: Node<any>,
+    data: T,
+    { weight }: { weight: number },
+  ): Arc<T> {
+    return new Arc({ source: this, target, data, weight });
   }
 
-  get inEdges(): Map<string, GraphDataEdge<INData, ONData, EData>> {
-    return this.__inEdges__;
+  weightedInDegree(): number {
+    let inDegree: number = 0;
+    this.incomming.forEach((arc) => (inDegree += arc.weight));
+
+    return inDegree;
   }
 
-  set inEdges(inputEdges: Map<string, GraphDataEdge<INData, ONData, EData>>) {
-    this.__inEdges__ = inputEdges;
-  }
+  weightedOutDegree(): number {
+    let outDegree: number = 0;
+    this.outgoing.forEach((arc) => (outDegree += arc.weight));
 
-  get outEdges(): Map<string, GraphDataEdge<ONData, INData, EData>> {
-    return this.__outEdges__;
-  }
-
-  set outEdges(outputEdges: Map<string, GraphDataEdge<ONData, INData, EData>>) {
-    this.__outEdges__ = outputEdges;
-  }
-
-  public addIncommingEdge({
-    source,
-    data,
-    weight = 1,
-  }: {
-    source: DirectedGraphDataNode<ONData, INData, EData>;
-    data: EData;
-    weight: number;
-  }): this {
-    // check if the node already exists:
-    if (this.__inEdges__.has(source.name))
-      errors.EdgeAlreadyExists(source.name);
-    const edge = new GraphDataEdge({ link: source, data, weight });
-    this.__inEdges__.set(source.name, edge);
-    source.__outEdges__.set(this.name, edge);
-
-    return this;
-  }
-
-  public addOutgoingEdge({
-    target,
-    data,
-    weight = 1,
-  }: {
-    target: DirectedGraphDataNode<INData, ONData, EData>;
-    data: EData;
-    weight: number;
-  }): this {
-    if (this.__outEdges__.has(target.name))
-      errors.EdgeAlreadyExists(target.name);
-    const edge = new GraphDataEdge({ link: target, data, weight });
-    this.__outEdges__.set(target.name, edge);
-    target.__inEdges__.set(this.name, edge);
-
-    return this;
-  }
-
-  public getIncomingEdgeByName(
-    name: string,
-  ): GraphDataEdge<ONData, INData, EData> | undefined {
-    return this.__inEdges__.get(name);
-  }
-
-  public getOutgoingEdgeByName(
-    name: string,
-  ): GraphDataEdge<INData, ONData, EData> | undefined {
-    return this.__outEdges__.get(name);
-  }
-
-  public removeIncommingEdge(
-    source: DirectedGraphDataNode<INData, ONData, EData>,
-  ): GraphDataEdge<INData, EData> | undefined {
-    const edge = this.__inEdges__.get(source.name);
-    this.__inEdges__.delete(source.name);
-    source.__outEdges__.delete(this.name);
-
-    return edge;
-  }
-
-  public removeOutgoingEdge(
-    target: DirectedGraphDataNode<INData, ONData, EData>,
-  ): GraphDataEdge<INData, ONData, EData> | undefined {
-    const edge = this.__outEdges__.get(target.name);
-    this.__outEdges__.delete(target.name);
-    target.__inEdges__.delete(this.name);
-
-    return edge;
-  }
-
-  clearEdges(): this {
-    this.__inEdges__ = new Map();
-    this.__outEdges__ = new Map();
-
-    return this;
-  }
-
-  getIncommingEdges(): GraphEdgeType<EData>[] {
-    const edges: GraphEdgeType<EData>[] = [];
-    for (const [_, edge] of this.__inEdges__) {
-      const source = ((edge as GraphDataEdge).link as DirectedGraphDataNode)
-        .name;
-      edges.push({
-        source,
-        target: this.name,
-        data: edge.data,
-        weight: edge.weight,
-      });
-    }
-
-    return edges;
-  }
-
-  getOutgoingEdges(): GraphEdgeType<EData>[] {
-    const edges: GraphEdgeType<EData>[] = [];
-    for (const [_, edge] of this.__outEdges__) {
-      const source = ((edge as GraphDataEdge).link as DirectedGraphDataNode)
-        .name;
-      edges.push({
-        source,
-        target: this.name,
-        data: edge.data,
-        weight: edge.weight,
-      });
-    }
-
-    return edges;
-  }
-}
-
-export class UndirectedGraphDataNode<NData, EData> extends BaseGraphDataNode<
-  NData,
-  NData,
-  EData
-> {
-  private __edges__: Map<string, GraphDataEdge<NData, NData, EData>> =
-    new Map();
-  constructor(options: { name: string; data: NData; value: number }) {
-    super(options);
-  }
-
-  get edges(): Map<string, GraphDataEdge<NData, NData, EData>> {
-    return this.__edges__;
-  }
-
-  set edges(edges: Map<string, GraphDataEdge<NData, NData, EData>>) {
-    this.__edges__ = edges;
-  }
-
-  public addEdge({
-    target,
-    data,
-    weight = 1,
-  }: {
-    target: UndirectedGraphDataNode<NData, EData>;
-    data: EData;
-    weight: number;
-  }): UndirectedGraphDataNode<NData, EData> {
-    if (this.__edges__.has(target.name)) {
-      errors.EdgeAlreadyExists(target.name);
-    }
-
-    this.__edges__.set(
-      target.name,
-      new GraphDataEdge<NData, NData, EData>({ link: target, data, weight }),
-    );
-
-    target.__edges__.set(
-      this.name,
-      new GraphDataEdge({ link: this, data, weight }),
-    );
-
-    return this;
-  }
-
-  public getEdge(target: string): GraphDataEdge<NData, EData> | undefined {
-    return this.__edges__.get(target) || undefined;
-  }
-
-  public removeEdge(
-    target: UndirectedGraphDataNode<NData, EData>,
-  ): GraphDataEdge<NData, NData, EData> | undefined {
-    const edge = this.__edges__.get(target.name);
-    this.__edges__.delete(target.name);
-    target.__edges__.delete(this.name);
-
-    return edge;
-  }
-
-  public getEdges(): GraphEdgeType<EData>[] {
-    const edges: GraphEdgeType<EData>[] = [];
-    for (const [_, edge] of this.__edges__) {
-      edges.push({
-        source: this.name,
-        target: (edge.link as UndirectedGraphDataNode<NData, EData>).name,
-        data: edge.data,
-        weight: edge.weight,
-      });
-    }
-    return edges;
-  }
-
-  clearEdges(): this {
-    this.__edges__ = new Map();
-
-    return this;
+    return outDegree;
   }
 }
