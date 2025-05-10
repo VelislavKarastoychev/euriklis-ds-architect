@@ -8,15 +8,16 @@ export abstract class GraphDataEdge<
   D = unknown,
 > {
   private __ID__: string = "";
-  protected __SOURCE__: S | null = null;
-  protected __TARGET__: T | null = null;
-  protected __DATA__: D | null = null;
+  // protected __SOURCE__: S;
+  // protected __TARGET__: T;
+  // protected __DATA__: D | null = null;
 
-  constructor({ source, target, data }: { source: S; target: T; data?: D }) {
+  constructor(
+    protected __SOURCE__: S,
+    protected __TARGET__: T,
+    protected __DATA__: D | null = null,
+  ) {
     this.id = uuid();
-    this.source = source;
-    this.target = target;
-    if (typeof data !== "undefined") this.data = data;
   }
 
   get id(): string {
@@ -26,7 +27,7 @@ export abstract class GraphDataEdge<
   set id(id: string) {
     this.__ID__ = uuid();
   }
-  get source(): S | null {
+  get source(): S {
     return this.__SOURCE__;
   }
 
@@ -34,7 +35,7 @@ export abstract class GraphDataEdge<
     this.__SOURCE__ = s;
   }
 
-  get target(): T | null {
+  get target(): T {
     return this.__TARGET__;
   }
 
@@ -52,8 +53,8 @@ export abstract class GraphDataEdge<
 }
 
 export class Edge<D = unknown> extends GraphDataEdge<
-  Vertex<any>,
-  Vertex<any>,
+  Vertex<unknown>,
+  Vertex<unknown>,
   D
 > {
   constructor({
@@ -65,7 +66,7 @@ export class Edge<D = unknown> extends GraphDataEdge<
     target: Vertex<any>;
     data: D;
   }) {
-    super({ source, target, data });
+    super(source, target, data);
   }
 }
 
@@ -82,7 +83,7 @@ export class Arc<D = unknown> extends GraphDataEdge<Node<any>, Node<any>, D> {
     data: D;
     weight?: number;
   }) {
-    super({ source, target, data });
+    super(source, target, data);
     if (typeof weight !== "undefined") this.weight = weight;
   }
 
