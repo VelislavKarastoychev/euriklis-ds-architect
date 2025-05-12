@@ -5,6 +5,13 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VelislavKarastoychev/euriklis-ds-architect.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
@@ -13,4 +20,3 @@
     "uuid": "^11.1.0"
   }
 }
-
