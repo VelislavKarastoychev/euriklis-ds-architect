@@ -1,5 +1,5 @@
 {
-  "name": "@euriklis/graphworld",
+  "name": "@euriklis/ds-architect",
   "module": "src/index.ts",
   "type": "module",
   "devDependencies": {
@@ -13,3 +13,4 @@
     "uuid": "^11.1.0"
   }
 }
+
