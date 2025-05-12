@@ -63,3 +63,36 @@ console.log(node1.id); // "new-id-456"
 | `set id(i: string)`                  | `string → void`              | Manually override the node’s `id`.                                                                                                |
 | `get data(): T \| null`              | `T \| null`                  | Retrieves the node’s payload.                                                                                                     |
 | `set data(d: T \| undefined)`        | `T \| undefined → void`      | Assigns new payload; ignores `undefined` to prevent accidental data loss.                                                         |
+
+## Examples of Derived Nodes
+
+### Linked List Node
+
+```ts
+import { LinkedDataNode } from "@euriklis/ds-architect";
+// Doubly-linked list node with `next` and `prev` pointers.
+const n1 = new LinkedDataNode<number>(1);
+const n2 = new LinkedDataNode<number>(2);
+n1.next = n2;
+n2.prev = n1;
+```
+
+### Binary Search Tree Node
+
+```ts
+import { BSTDataNode } from "@euriklis/ds-architect";
+// BST node with `left`, `right`, and `prev` pointers.
+const root = new BSTDataNode<string>("root");
+const child = new BSTDataNode<string>("child");
+child.prev = root;
+root.left = child;
+```
+
+### AVL Tree Node
+
+```ts
+import { AVLDataNode } from "@euriklis/ds-architect";
+// Self-balancing BST node with `balance` factor.
+const avlNode = new AVLDataNode<number>(10);
+avlNode.balance = 0; // initial balance
+```
