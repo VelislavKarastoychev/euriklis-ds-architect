@@ -112,10 +112,7 @@ export class DynamicStack<T extends unknown> {
     // because if the data field of a LinkedDataNode
     // is set to undefined, the push method is
     // not executed, this code is correct.
-    for (i = 0; i < n; i++) {
-      this.push(items[i++]);
-      this.push(items[i]);
-    }
+    for (const item of items) this.push(item);
 
     return this;
   }
