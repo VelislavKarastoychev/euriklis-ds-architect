@@ -418,7 +418,7 @@ export class StaticStack<T = unknown> {
    * @param {T} d The element to be pushed onto the stack.
    * @returns {StaticStack<T>} The updated stack after pushing the element.
    */
-  push(d: T): StaticStack<T> {
+  push(d: T): this {
     if (typeof d !== "undefined") {
       this._top[this._top.length] = d;
     }
@@ -433,17 +433,9 @@ export class StaticStack<T = unknown> {
    * @throws {Error} Throws an error if the parameter is not an array.
    */
   // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
-  pushMany(data: T[]): StaticStack<T> {
+  pushMany(data: T[]): this {
     const stack = this._top;
-    const n = data.length;
-    let i: Integer,
-      k: Integer = stack.length;
-    for (i = n; i-- > 1; ) {
-      stack[k + i] = data[i--];
-      stack[k + i] = data[i];
-    }
-    if (i === 0) stack[k] = data[0];
-
+    for (const d of data) stack.push(d);
     return this;
   }
 
@@ -495,7 +487,7 @@ export class StaticStack<T = unknown> {
    * @param {(el: T, stack: StaticStack<T>) => void} callback - The callback function to execute on each element.
    * @returns {StaticStack<T>} The current instance of the stack after traversal.
    */
-  traverse(callback: (el: T, stack: StaticStack<T>) => void): StaticStack<T> {
+  traverse(callback: (el: T, stack: StaticStack<T>) => void): this {
     let top = this.size;
     while (top) {
       const d = this._top[--top];
@@ -570,7 +562,7 @@ export class StaticStack<T = unknown> {
   loop(
     callback: (el: T, stack: StaticStack<T>) => boolean,
     iterations: Integer,
-  ): StaticStack<T> {
+  ): this {
     let top = this.size,
       its: Integer = 0;
     while (top && its++ < iterations) {
@@ -606,7 +598,7 @@ export class StaticStack<T = unknown> {
    * Removes all elements from the StaticStack, making it empty.
    * @returns {StaticStack<T>} The StaticStack instance after clearing its elements.
    */
-  clear(): StaticStack<T> {
+  clear(): this {
     this._top = [];
     return this;
   }
@@ -620,7 +612,7 @@ export class StaticStack<T = unknown> {
   append(
     callback: (index: Integer, stack?: StaticStack<T>) => T,
     size: Integer = 0,
-  ): StaticStack<T> {
+  ): this {
     let i: Integer;
     const n = this._top.length;
     const staticStackInstance = this._top;
@@ -631,5 +623,15 @@ export class StaticStack<T = unknown> {
     if (i === 0) staticStackInstance[n] = callback(i, this);
 
     return this;
+  }
+
+  [Symbol.iterator](): Iterator<T> {
+    let idx = this._top.length;
+    return {
+      next: (): IteratorResult<T> => {
+        if (idx === 0) return { done: true, value: undefined as any };
+        return { done: false, value: this._top[--idx] };
+      },
+    };
   }
 }
