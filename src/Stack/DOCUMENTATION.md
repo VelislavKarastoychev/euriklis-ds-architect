@@ -25,5 +25,6 @@ console.log(stack.size); // 3
 
 ## API Reference:
 
-| Method | Type | Description |
-| ------ | ---- | ----------- |
+| Method                        | Type                     | Description                                                  |
+| ----------------------------- | ------------------------ | ------------------------------------------------------------ |
+| new DynamicStack<T>(initial?) | constructor(initial?: T) | Create an empty stack (or seed it with one initial element). |
