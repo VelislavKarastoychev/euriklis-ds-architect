@@ -58,6 +58,7 @@ import { StaticStack } from "@euriklis/ds-architect";
 
 ## Usage:
 
+```ts
 const stack = new StaticStack<number>();
 stack.push(10);
 stack.pushMany([20, 30, 40]);
@@ -68,6 +69,10 @@ console.log(stack.top); // 40
 const popped = stack.pop(); // 40
 console.log(popped); // 40
 console.log(stack.size); // 3
+// get the stack as array:
+
+const list = [...stack];
+```
 
 API Reference
 
