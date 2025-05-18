@@ -71,21 +71,22 @@ console.log(stack.size); // 3
 
 API Reference
 
-| Method                                                                          | Description                                                                                 |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `new StaticStack<T>(initial?: T)`                                               | Create a new stack, optionally seeded with initial element.                                 |
-| `get size(): number`                                                            | Number of elements currently in the stack.                                                  |
-| `get isEmpty(): boolean`                                                        | true if the stack is empty (size === 0), otherwise false.                                   |
-| `get top(): T`                                                                  | Peek at the top element without removing it (calling on empty stack is undefined behavior). |
-| `push(d: T): this`                                                              | Pushes a single element onto the stack.                                                     |
-| `pushMany(data: T[]): this`                                                     | Pushes multiple elements in array order. Throws if data is not an array.                    |
-| `pop(): T                                                                       | null`                                                                                       | Pop and return the top element; returns null if the stack is empty. |
-| `popMany(n: number): T[]`                                                       | Pop up to n elements and return them in removal order.                                      |
-| `traverse(fn: (el: T, stack: StaticStack<T>) => void): this`                    | Execute fn on each element (top → bottom) without removing elements.                        |
-| `popAndTraverse(fn: (el: T, stack: StaticStack<T>) => void): T[]`               | Pop each element, call fn, collect and return popped elements.                              |
-| `filter(fn: (el: T, stack: StaticStack<T>) => boolean): StaticStack<T>`         | Returns a new StaticStack containing only elements for which fn returns true.               |
-| `get list(): T[]`                                                               | Remove all elements and return them as an array (stack is emptied).                         |
-| `loop(fn: (el: T, stack: StaticStack<T>) => boolean, iterations: number): this` | Walk up to iterations elements, calling fn; continue while fn returns true.                 |
-| `copy(): StaticStack<T>`                                                        | Return a shallow copy of the stack (same order, new underlying array).                      |
-| `append(fn: (index: number, stack: StaticStack<T>) => T, size: number): this`   | Generate and push size elements using fn(index, stack).                                     |
-| `clear(): this`                                                                 | Remove all elements, resetting the stack to an empty state.                                 |
+| Method                            | Description                                                              |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `new StaticStack<T>(initial?: T)` | Create a new stack, optionally seeded with initial element.              |
+| `get size(): number`              | Number of elements currently in the stack.                               |
+| `get isEmpty(): boolean`          | true if the stack is empty (size === 0), otherwise false.                |
+| `get top(): T`                    | Peek at the top element without removing it.                             |
+| `push(d: T): this`                | Pushes a single element onto the stack.                                  |
+| `pushMany(data: T[]): this`       | Pushes multiple elements in array order. Throws if data is not an array. |
+
+|`pop(): T \| null`|Pop and return the top element; returns null if the stack is empty.|
+|`popMany(n: number): T[]`|Pop up to n elements and return them in removal order.|
+|`traverse(fn: (el: T, stack: StaticStack<T>) => void): this`|Execute fn on each element (top → bottom) without removing elements.|
+|`popAndTraverse(fn: (el: T, stack: StaticStack<T>) => void): T[]`|Pop each element, call fn, collect and return popped elements.|
+|`filter(fn: (el: T, stack: StaticStack<T>) => boolean): StaticStack<T>`|Returns a new StaticStack containing only elements for which fn returns true.|
+|`get list(): T[]`|Remove all elements and return them as an array (stack is emptied).|
+|`loop(fn: (el: T, stack: StaticStack<T>) => boolean, iterations: number): this`|Walk up to iterations elements, calling fn; continue while fn returns true.|
+|`copy(): StaticStack<T>`|Return a shallow copy of the stack (same order, new underlying array).|
+|`append(fn: (index: number, stack: StaticStack<T>) => T, size: number): this`|Generate and push size elements using fn(index, stack).|
+|`clear(): this`|Remove all elements, resetting the stack to an empty state.|
