@@ -24,3 +24,6 @@ console.log(stack.size); // 3
 ```
 
 ## API Reference:
+
+| Method | Type | Description |
+| ------ | ---- | ----------- |
