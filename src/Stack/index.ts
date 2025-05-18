@@ -107,13 +107,7 @@ export class DynamicStack<T extends unknown> {
    */
   // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
   pushMany(items: T[]): DynamicStack<T> {
-    const n: Integer = items.length;
-    let i: Integer;
-    // because if the data field of a LinkedDataNode
-    // is set to undefined, the push method is
-    // not executed, this code is correct.
     for (const item of items) this.push(item);
-
     return this;
   }
 
