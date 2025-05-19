@@ -5,12 +5,12 @@ import type { LinkedDataNode } from "../../DataNode";
 
 export const GenerateMap = <T>(
   secureStore: SecureStoreType,
-): Map<string, LinkedDataNode<T>> | AVLTree<T> | null => {
+): Map<string, LinkedDataNode<T>> | AVLTree<LinkedDataNode<T>> | null => {
   if (secureStore === "Map") {
     return new Map<string, LinkedDataNode<T>>();
   }
   if (secureStore === "AVL") {
-    const avl = new AVLTree<T>();
+    const avl = new AVLTree<LinkedDataNode<T>>();
     avl.unique = true;
 
     return avl;
