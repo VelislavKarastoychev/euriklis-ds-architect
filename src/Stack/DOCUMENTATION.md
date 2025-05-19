@@ -94,3 +94,4 @@ API Reference
 | `copy(): StaticStack<T>`                                                        | Return a shallow copy of the stack (same order, new underlying array).        |
 | `append(fn: (index: number, stack: StaticStack<T>) => T, size: number): this`   | Generate and push size elements using fn(index, stack).                       |
 | `clear(): this`                                                                 | Remove all elements, resetting the stack to an empty state.                   |
+| `[Symbol.iterator](): Iterator<T>`                                              | Iterate from top→bottom using for (const v of stack) { … }.                   |
