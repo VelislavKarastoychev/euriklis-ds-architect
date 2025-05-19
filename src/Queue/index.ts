@@ -22,7 +22,7 @@ export class Queue<T = unknown> {
   }
 
   private _head: LinkedDataNode<T> | null = null;
-  private _top: LinkedDataNode<T> | null = null;
+  private _tail: LinkedDataNode<T> | null = null;
   private _size: Integer = Infinity;
   private _length: Integer = 0;
 
@@ -57,7 +57,7 @@ export class Queue<T = unknown> {
    * @returns {boolean}
    */
   get isEmpty(): boolean {
-    return this._head === null && this._top === null && this._length === 0;
+    return this._head === null && this._tail === null && this._length === 0;
   }
 
   get length(): Integer {
@@ -79,7 +79,7 @@ export class Queue<T = unknown> {
    * @returns {T | null} The last element.
    */
   get rear(): T | null {
-    return this._top?.data || null;
+    return this._tail?.data || null;
   }
 
   /**
@@ -92,13 +92,13 @@ export class Queue<T = unknown> {
     if (this._size < this._length + 1) {
       errors.StackOverflow("Queue enqueue")();
     }
-    if (!this._top) {
-      this._top = node;
+    if (!this._tail) {
+      this._tail = node;
       this._head = node;
     } else {
-      node.prev = this._top;
-      this._top.next = node;
-      this._top = node;
+      node.prev = this._tail;
+      this._tail.next = node;
+      this._tail = node;
     }
     this._length++;
   }
@@ -150,12 +150,11 @@ export class Queue<T = unknown> {
    * @returns {T | null} The dequeued data.
    */
   dequeue(): T | null {
-    let data: T | null = null;
     if (this.isEmpty) errors.StackUnderflow("Queue dequeue")();
-    data = this._head?.data || null;
+    const data: T | null = this._head?.data || null;
     this._head = this._head?.next || null;
     if (this._head) this._head.prev = null;
-    else this._top = null; // if the head is empty delete the rear.
+    else this._tail = null; // if the head is empty delete the rear.
     this._length--;
 
     return data;
@@ -176,7 +175,7 @@ export class Queue<T = unknown> {
         node = this._head;
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
-        else this._top = null;
+        else this._tail = null;
         items.push(node.data as T);
         this._length--;
         i--;
@@ -186,7 +185,7 @@ export class Queue<T = unknown> {
         node = this._head;
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
-        else this._top = null;
+        else this._tail = null;
         items.push(node.data as T);
         this._length--;
       } else errors.StackUnderflow("Queue dequeueMany")();
@@ -197,7 +196,7 @@ export class Queue<T = unknown> {
         node = this._head;
         this._head = this._head.next;
         if (this._head) this._head.prev = null;
-        else this._top = null;
+        else this._tail = null;
         items.push(node.data as T);
         this._length--;
       } else errors.StackUnderflow("Queue dequeueMany")();
@@ -217,7 +216,7 @@ export class Queue<T = unknown> {
     callback: (node: LinkedDataNode<T>, queue: Queue<T>) => void,
     inversed: boolean = false,
   ): Queue<T> {
-    let node = inversed ? this._top : this._head;
+    let node = inversed ? this._tail : this._head;
     while (node) {
       callback(node, this);
       node = inversed ? node.prev : node.next;
@@ -270,7 +269,7 @@ export class Queue<T = unknown> {
   reverse(): Queue<T> {
     let node: LinkedDataNode<T> | null = this._head,
       temp: LinkedDataNode<T> | null = null;
-    this._top = this._head;
+    this._tail = this._head;
     while (node) {
       temp = node.prev;
       node.prev = node.next;
@@ -291,7 +290,7 @@ export class Queue<T = unknown> {
    */
   clean(): Queue<T> {
     this._head = null;
-    this._top = null;
+    this._tail = null;
     this._size = Infinity;
     this._length = 0;
 
@@ -327,13 +326,13 @@ export class Queue<T = unknown> {
   merge(queue: Queue<T>): Queue<T> {
     if (this.isEmpty) {
       this._head = queue._head;
-      this._top = queue._top;
+      this._tail = queue._tail;
     } else if (queue._head) {
-      if (this._top) {
-        this._top.next = queue._head;
-        queue._head.prev = this._top;
+      if (this._tail) {
+        this._tail.next = queue._head;
+        queue._head.prev = this._tail;
       }
-      this._top = queue._top;
+      this._tail = queue._tail;
     }
     this._length += queue._length;
 
@@ -346,7 +345,9 @@ export class Queue<T = unknown> {
    */
   toArray(): T[] {
     const values: T[] = [];
-    this.traverse((node) => values.push(node.data as T));
+    this.traverse((node: LinkedDataNode<T>): number =>
+      values.push(node.data as T),
+    );
 
     return values;
   }
