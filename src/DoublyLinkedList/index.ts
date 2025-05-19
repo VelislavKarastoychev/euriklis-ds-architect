@@ -38,11 +38,14 @@ import * as models from "./Models";
  */
 export class DoublyLinkedList<T> {
   private _size: Integer = Infinity;
-  private _head: LinkedDataNode | null = null;
-  private _top: LinkedDataNode | null = null;
+  private _head: LinkedDataNode<T> | null = null;
+  private _tail: LinkedDataNode<T> | null = null;
   private _currentSize = 0;
   private _secureStore: SecureStoreType = "Map";
-  private _map: null | Map<string, LinkedDataNode> | AVLTree<T> = null;
+  private _map:
+    | null
+    | Map<string, LinkedDataNode<T>>
+    | AVLTree<LinkedDataNode<T>> = null;
 
   /**
    * Generates a DoublyLinkedList filled
@@ -85,7 +88,7 @@ export class DoublyLinkedList<T> {
       callback,
       mapType = "Map",
     } = options;
-    const l = new DoublyLinkedList<number | unknown>();
+    const l = new DoublyLinkedList<number>();
     l.mapType = mapType;
     models.FillDLLWithRandomNumbers(l, length, from, to, seed, callback);
 
@@ -129,9 +132,9 @@ export class DoublyLinkedList<T> {
 
   /**
    * Gets the data of the head node.
-   * @returns {any}
+   * @returns {T | null}
    */
-  get head(): any {
+  get head(): T | null {
     return this._head?.data || null;
   }
 
@@ -140,7 +143,7 @@ export class DoublyLinkedList<T> {
    * @returns {T | null}
    */
   get top(): T | null {
-    return this._top?.data || null;
+    return (this._tail?.data as T) || null;
   }
 
   /**
@@ -156,7 +159,9 @@ export class DoublyLinkedList<T> {
    * @returns {boolean}
    */
   get isEmpty(): boolean {
-    return this.length === 0 && this._head === this._top && this._head === null;
+    return (
+      this.length === 0 && this._head === this._tail && this._head === null
+    );
   }
 
   /**
@@ -170,14 +175,14 @@ export class DoublyLinkedList<T> {
       if (this._size < this._currentSize + 1) {
         errors.StackOverflow("DoublyLinkedList addLast")();
       }
-      const node: LinkedDataNode = new LinkedDataNode(data);
+      const node: LinkedDataNode<T> = new LinkedDataNode<T>(data);
       if (id) node.id = id;
       if (this._head) {
-        (this._top as LinkedDataNode).next = node;
-        node.prev = this._top;
+        (this._tail as LinkedDataNode<T>).next = node;
+        node.prev = this._tail;
       } else this._head = node;
 
-      this._top = node;
+      this._tail = node;
       this._currentSize++;
       models.MapInsertion(node, this._map);
     }
@@ -194,13 +199,13 @@ export class DoublyLinkedList<T> {
       errors.StackUnderflow("DoublyLinkedList removeLast")();
     }
     const data = this.top;
-    models.MapDeletion(this._top?.id as string, this._map);
-    if (this._head === this._top) {
+    models.MapDeletion(this._tail?.id as string, this._map);
+    if (this._head === this._tail) {
       this._head = null;
-      this._top = null;
+      this._tail = null;
     } else {
-      this._top = (this._top as LinkedDataNode).prev;
-      (this._top as LinkedDataNode).next = null;
+      this._tail = (this._tail as LinkedDataNode<T>).prev;
+      (this._tail as LinkedDataNode<T>).next = null;
     }
     this._currentSize--;
 
@@ -216,14 +221,14 @@ export class DoublyLinkedList<T> {
       errors.StackUnderflow("DoublyLinkedList removeFirst")();
     }
 
-    const data = (this._head as LinkedDataNode)?.data;
+    const data = (this._head as LinkedDataNode<T>)?.data;
     models.MapDeletion(this._head?.id as string, this._map);
-    if (this._head === this._top) {
+    if (this._head === this._tail) {
       this._head = null;
-      this._top = null;
+      this._tail = null;
     } else {
-      this._head = (this._head as LinkedDataNode)?.next;
-      (this._head as LinkedDataNode).prev = null;
+      this._head = (this._head as LinkedDataNode<T>)?.next;
+      (this._head as LinkedDataNode<T>).prev = null;
     }
     this._currentSize--;
 
@@ -236,12 +241,12 @@ export class DoublyLinkedList<T> {
    * @returns {T | null} The data of the removed node.
    */
   remove(id: string): T | null {
-    const node: LinkedDataNode | null = this._findNodeById(id);
+    const node: LinkedDataNode<T> | null = this._findNodeById(id);
     if (node) {
       models.MapDeletion(node.id, this._map);
       if ((this._head as LinkedDataNode).id === id) {
         this.removeFirst();
-      } else if ((this._top as LinkedDataNode).id === id) {
+      } else if ((this._tail as LinkedDataNode).id === id) {
         this.removeLast();
       } else {
         ((node as LinkedDataNode).next as LinkedDataNode).prev = node.prev;
@@ -269,7 +274,7 @@ export class DoublyLinkedList<T> {
    */
   insertAfter(id: string, data: T, dataId?: string): DoublyLinkedList<T> {
     const node = this._findNodeById(id);
-    const newNode: LinkedDataNode | null = new LinkedDataNode(data);
+    const newNode: LinkedDataNode<T> | null = new LinkedDataNode<T>(data);
     if (dataId) newNode.id = dataId;
     if (node) {
       if (this._size < this._currentSize + 1) {
@@ -277,8 +282,8 @@ export class DoublyLinkedList<T> {
       }
       newNode.prev = node;
       newNode.next = node.next;
-      if (node === this._top) {
-        this._top = newNode;
+      if (node === this._tail) {
+        this._tail = newNode;
       } else {
         (node.next as LinkedDataNode).prev = newNode;
       }
@@ -299,8 +304,8 @@ export class DoublyLinkedList<T> {
    * @returns {DoublyLinkedList<T>} The updated list.
    */
   insertBefore(id: string, data: T, dataId?: string): DoublyLinkedList<T> {
-    const node: LinkedDataNode | null = this._findNodeById(id);
-    const newNode = new LinkedDataNode(data);
+    const node: LinkedDataNode<T> | null = this._findNodeById(id);
+    const newNode = new LinkedDataNode<T>(data);
     if (dataId) newNode.id = dataId;
     if (node) {
       if (this._size < this._currentSize + 1) {
@@ -352,11 +357,13 @@ export class DoublyLinkedList<T> {
    * @returns {DoublyLinkedList<T>} The traversed list.
    */
   traverse(
-    callback: (d: any, id?: string, list?: DoublyLinkedList<T>) => unknown,
+    callback: (d: T, id?: string, list?: DoublyLinkedList<T>) => unknown,
     inversed: boolean = false,
   ): DoublyLinkedList<T> {
-    const pointer: LinkedDataNode | null = inversed ? this._top : this._head;
-    models.DLLTraverse(callback, pointer, this, inversed);
+    const pointer: LinkedDataNode<T> | null = inversed
+      ? this._tail
+      : this._head;
+    models.DLLTraverse<T>(callback, pointer, this, inversed);
 
     return this;
   }
@@ -373,11 +380,11 @@ export class DoublyLinkedList<T> {
    * method.
    */
   loop(
-    callback: (d: T, id: string, list?: DoublyLinkedList<T>) => boolean,
+    callback: (d: T | null, id: string, list?: DoublyLinkedList<T>) => boolean,
     inversed: boolean = true,
   ): DoublyLinkedList<T> {
-    const pointer = inversed ? this._top : this._head;
-    models.DLLLoop(callback, pointer, this, inversed);
+    const pointer = inversed ? this._tail : this._head;
+    models.DLLLoop<T>(callback, pointer, this, inversed);
 
     return this;
   }
@@ -393,7 +400,7 @@ export class DoublyLinkedList<T> {
     inversed: boolean = false,
   ): DoublyLinkedList<T> {
     const list = new DoublyLinkedList<T>(),
-      pointer: LinkedDataNode | null = inversed ? this._top : this._head;
+      pointer: LinkedDataNode | null = inversed ? this._tail : this._head;
     models.FilterDLL(pointer, callback, this, list, inversed);
 
     return list;
@@ -411,7 +418,7 @@ export class DoublyLinkedList<T> {
     this.traverse((data: T, id: string | undefined): void => {
       const node = new LinkedDataNode(data);
       node.id = id as string;
-      DLL.addLast(node.data);
+      DLL.addLast(node.data as T);
     }, inversed);
 
     return DLL;
@@ -427,9 +434,11 @@ export class DoublyLinkedList<T> {
   ): boolean {
     let answer: boolean = false;
     this.loop(
-      (d: T, id: string, list: DoublyLinkedList<T> | undefined): boolean => (
-        (answer = callback(d, id, list)), answer
-      ),
+      (
+        d: T | null,
+        id: string,
+        list: DoublyLinkedList<T> | undefined,
+      ): boolean => ((answer = callback(d, id, list)), answer),
     );
 
     return answer;
@@ -441,13 +450,15 @@ export class DoublyLinkedList<T> {
    * @returns {boolean} True if any node satisfies the callback, otherwise false.
    */
   any(
-    callback: (d: T, id?: string, list?: DoublyLinkedList<T>) => boolean,
+    callback: (d: T | null, id?: string, list?: DoublyLinkedList<T>) => boolean,
   ): boolean {
     let answer: boolean = false;
     this.loop(
-      (data: T, id: string, list: DoublyLinkedList<T> | undefined): boolean => (
-        (answer = callback(data, id, list)), !answer
-      ),
+      (
+        data: T | null,
+        id: string,
+        list: DoublyLinkedList<T> | undefined,
+      ): boolean => ((answer = callback(data, id, list)), !answer),
     );
 
     return answer;
@@ -461,7 +472,7 @@ export class DoublyLinkedList<T> {
     this._size = Infinity;
     this._currentSize = 0;
     this._head = null;
-    this._top = null;
+    this._tail = null;
     this._secureStore = "Map";
     this._map = new Map();
 
@@ -478,12 +489,12 @@ export class DoublyLinkedList<T> {
       this._size = this._size + list._size;
       if (this.isEmpty) {
         this._head = list._head;
-        this._top = list._top;
+        this._tail = list._tail;
       } else {
-        const top: LinkedDataNode = this._top as LinkedDataNode;
+        const top: LinkedDataNode = this._tail as LinkedDataNode;
         top.next = list._head;
-        (top.next as LinkedDataNode).prev = this._top;
-        this._top = list._top;
+        (top.next as LinkedDataNode).prev = this._tail;
+        this._tail = list._tail;
       }
       this._currentSize += list._currentSize;
     }
@@ -505,7 +516,7 @@ export class DoublyLinkedList<T> {
     return {
       next(): IteratorResult<T> {
         if (pointer) {
-          const value = pointer.data;
+          const value = pointer.data as T;
           pointer = pointer.next;
           return { value, done: false };
         }
@@ -559,11 +570,11 @@ export class DoublyLinkedList<T> {
    * @param {string} id - The ID of the node to find.
    * @returns {LinkedDataNode | null} The found node or null if not found.
    */
-  private _findNodeById(id: string): LinkedDataNode | null {
-    let node: LinkedDataNode | null = null;
+  private _findNodeById(id: string): LinkedDataNode<T> | null {
+    let node: LinkedDataNode<T> | null = null;
     if (this._map) {
-      node = models.FindNodeFromMap(id, this._map);
-    } else node = models.FindNodeFromDLL(id, this._head);
+      node = models.FindNodeFromMap<T>(id, this._map);
+    } else node = models.FindNodeFromDLL<T>(id, this._head);
     return node;
   }
 }
