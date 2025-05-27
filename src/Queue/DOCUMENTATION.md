@@ -114,7 +114,7 @@ console.log(a.toArray()); // [1,2,3,4,5]
 
 ## Best Practices
 
-- **Capacity Management**: Set ```size```` to prevent unbounded growth in memory-constrained environments.
+- **Capacity Management**: Set `size` to prevent unbounded growth in memory-constrained environments.
 - **Error Handling**: Wrap `enqueue`/`dequeue` calls in try/catch if you rely on overflow/underflow detection.
 - **Iteration**: Prefer `for…of` queue over manual pointer walks; iterator yields only `T` values.
 - **Deep Comparison**: For complex objects, use a user-provided predicate in `filter` or `contains`, rather than strict `===`.
