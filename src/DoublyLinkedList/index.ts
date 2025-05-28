@@ -381,7 +381,7 @@ export class DoublyLinkedList<T> {
    */
   loop(
     callback: (d: T | null, id: string, list?: DoublyLinkedList<T>) => boolean,
-    inversed: boolean = true,
+    inversed: boolean = false,
   ): DoublyLinkedList<T> {
     const pointer = inversed ? this._tail : this._head;
     models.DLLLoop<T>(callback, pointer, this, inversed);
