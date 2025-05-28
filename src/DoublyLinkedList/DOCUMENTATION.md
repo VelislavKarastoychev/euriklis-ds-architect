@@ -1,4 +1,4 @@
-# DoublyLinkedList<T>
+# DoublyLinkedList\<T\>
 
 A `doubly linked list` implementation in `TypeScript` that supports:
 
