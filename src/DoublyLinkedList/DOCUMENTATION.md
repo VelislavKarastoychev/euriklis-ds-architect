@@ -120,6 +120,6 @@ stopsAt3.loop(
     console.log(v);
     return v !== 3; // returns false when v===3 to break
   },
-  true, // start from thte tail to the head (when inversed is set to true)!
+  true, // start from the tail to the head (when inversed is set to true)!
 );
 ```
