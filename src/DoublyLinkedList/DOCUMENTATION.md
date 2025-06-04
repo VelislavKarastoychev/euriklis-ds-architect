@@ -133,10 +133,12 @@ stopsAt3.loop(
   - `maxSize`: upper bound on number of nodes (throws on overflow).
 - `static random(options)`: Create a list pre - filled with random number values.
 
-| Method                                 | Description                                                                    |
-| -------------------------------------- | ------------------------------------------------------------------------------ |
-| `addLast(data: T, id?: string): this`  | Adds a new node to the end. Optionally specify its `id`.                       |
-| `removeFirst(): T \| null`             | Removes and returns the first element of the list. Throws on underflow.        |
-| `removeLast(): T \| null`              | Removes and returns the last element. Throws on underflow.                     |
-| `remove(id: string): T \|n ull`        | Removes the node with the given `id`. Returns its data or `null` if not found. |
-| `insertAfter(id, data, dataId?): this` | Insert a new node after the node with `id`.                                    |
+| Method                                                     | Description                                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `addLast(data: T, id?: string): this`                      | Adds a new node to the end. Optionally specify its `id`.                       |
+| `removeFirst(): T \| null`                                 | Removes and returns the first element of the list. Throws on underflow.        |
+| `removeLast(): T \| null`                                  | Removes and returns the last element. Throws on underflow.                     |
+| `remove(id: string): T \|n ull`                            | Removes the node with the given `id`. Returns its data or `null` if not found. |
+| `insertAfter(id: string, data: T, dataId?: string): this`  | Inserts a new node after the node with `id`.                                   |
+| `insertBefore(id: string, data: T, dataId?: string): this` | Inserts a new node before the node with `id`.                                  |
+| `values(): Map<string,T>`                                  | Returns a Map of all `{ id → data }`.                                          |
