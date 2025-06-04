@@ -468,7 +468,7 @@ export class DoublyLinkedList<T> {
    * Clears the list.
    * @returns {DoublyLinkedList<T>} The cleared list.
    */
-  clean(): DoublyLinkedList<T> {
+  clean(): this {
     this._size = Infinity;
     this._currentSize = 0;
     this._head = null;
@@ -484,7 +484,7 @@ export class DoublyLinkedList<T> {
    * @param {DoublyLinkedList<T>} list - The list to merge.
    * @returns {DoublyLinkedList<T>} The merged list.
    */
-  merge(list: DoublyLinkedList<T>): DoublyLinkedList<T> {
+  merge(list: DoublyLinkedList<T>): this {
     if (!list.isEmpty) {
       this._size = this._size + list._size;
       if (this.isEmpty) {
