@@ -134,7 +134,8 @@ stopsAt3.loop(
 - `static random(options)`: Create a list pre - filled with random number values.
 
 | Method                                | Description                                                             |
-| ------------------------------------- | ----------------------------------------------------------------------- |
+| ------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `addLast(data: T, id?: string): this` | Adds a new node to the end. Optionally specify its `id`.                |
 | `removeFirst(): T \| null`            | Removes and returns the first element of the list. Throws on underflow. |
-| removeLast(): T \| null               | Removes and returns the last element. Throws on underflow.              |
+| `removeLast(): T \| null`             | Removes and returns the last element. Throws on underflow.              |
+| `remove(id: string): T                | null`                                                                   | Removes the node with the given `id`. Returns its data or `null` if not found. |
