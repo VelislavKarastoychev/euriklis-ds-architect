@@ -129,3 +129,6 @@ stopsAt3.loop(
 ### Constructors
 
 - `new DoublyLinkedList<T>(initialData?: T, maxSize: Integer = Infinity)`
+  - `initialData`: optional first element
+  - `maxSize`: upper bound on number of nodes (throws on overflow).
+- `static random(options)`: Create a list pre - filled with random number values.
