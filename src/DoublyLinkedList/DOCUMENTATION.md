@@ -134,6 +134,5 @@ stopsAt3.loop(
 - `static random(options)`: Create a list pre - filled with random number values.
 
 | Method                                | Description                                              |
-| ------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| ------------------------------------- | -------------------------------------------------------- |
 | `addLast(data: T, id?: string): this` | Adds a new node to the end. Optionally specify its `id`. |
-| `removeFirst(): T                     | null`                                                    | Removes and returns the first element from the Doubly linked list. Throws on overflow. |
