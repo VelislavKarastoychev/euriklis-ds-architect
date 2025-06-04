@@ -123,3 +123,9 @@ stopsAt3.loop(
   true, // start from the tail to the head (when inversed is set to true)!
 );
 ```
+
+## API Reference:
+
+### Constructors
+
+- `new DoublyLinkedList<T>(initialData?: T, maxSize: Integer = Infinity)`
