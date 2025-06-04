@@ -36,7 +36,8 @@ export class BST<T> {
    * It compares a node to a value to
    * determine their relative position in the BST.
    */
-  public search = models.CompareNodeWithValue;
+  public search: BSTNodeValueComparisonCallbackType =
+    models.CompareNodeWithValue;
 
   /**
    * The root node of the BST.
@@ -129,7 +130,7 @@ export class BST<T> {
    */
   get size(): Integer {
     let s: Integer = 0;
-    this.BFS((_) => s++);
+    this.BFS((_: BSTDataNode<T>): number => s++);
 
     return s;
   }
@@ -653,7 +654,9 @@ export class BST<T> {
    */
   toArray(mode: "BFS" | "DFS" = "DFS"): any[] {
     const __values__: T[] = [];
-    this[mode]((node) => __values__.push(node?.data as T));
+    this[mode]((node: BSTDataNode<T>): number =>
+      __values__.push(node?.data as T),
+    );
 
     return __values__;
   }
