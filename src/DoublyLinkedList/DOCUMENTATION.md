@@ -133,17 +133,24 @@ stopsAt3.loop(
   - `maxSize`: upper bound on number of nodes (throws on overflow).
 - `static random(options)`: Create a list pre - filled with random number values.
 
-| Method                                                     | Description                                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `addLast(data: T, id?: string): this`                      | Adds a new node to the end. Optionally specify its `id`.                       |
-| `removeFirst(): T \| null`                                 | Removes and returns the first element of the list. Throws on underflow.        |
-| `removeLast(): T \| null`                                  | Removes and returns the last element. Throws on underflow.                     |
-| `remove(id: string): T \|n ull`                            | Removes the node with the given `id`. Returns its data or `null` if not found. |
-| `insertAfter(id: string, data: T, dataId?: string): this`  | Inserts a new node after the node with `id`.                                   |
-| `insertBefore(id: string, data: T, dataId?: string): this` | Inserts a new node before the node with `id`.                                  |
-| `values(): Map<string,T>`                                  | Returns a Map of all `{ id → data }`.                                          |
-| `has(id: string): boolean`                                 | Checks existence of a node by `id`.                                            |
-| `copy(inversed = false): DoublyLinkedList<T>`              | Returns a shallow clone of this list (preserving IDs and order).               |
-| `merge(other: DoublyLinkedList<T>): this`                  | Append all nodes of `other` to the end of this list.                           |
-| `traverse(cb, inversed = false): this`                     | Visit every node in order (or reverse if `inversed=true`).                     |
-| `loop(cb, inversed = false): this`                         | Like `traverse` but stops early when `cb` returns `false`.                     |
+| Method                                                     | Description                                                                                                                                                                             |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addLast(data: T, id?: string): this`                      | Adds a new node to the end. Optionally specify its `id`.                                                                                                                                |
+| `removeFirst(): T \| null`                                 | Removes and returns the first element of the list. Throws on underflow.                                                                                                                 |
+| `removeLast(): T \| null`                                  | Removes and returns the last element. Throws on underflow.                                                                                                                              |
+| `remove(id: string): T \|n ull`                            | Removes the node with the given `id`. Returns its data or `null` if not found.                                                                                                          |
+| `insertAfter(id: string, data: T, dataId?: string): this`  | Inserts a new node after the node with `id`.                                                                                                                                            |
+| `insertBefore(id: string, data: T, dataId?: string): this` | Inserts a new node before the node with `id`.                                                                                                                                           |
+| `values(): Map<string,T>`                                  | Returns a Map of all `{ id → data }`.                                                                                                                                                   |
+| `has(id: string): boolean`                                 | Checks existence of a node by `id`.                                                                                                                                                     |
+| `copy(inversed = false): DoublyLinkedList<T>`              | Returns a shallow clone of this list (preserving IDs and order).                                                                                                                        |
+| `merge(other: DoublyLinkedList<T>): this`                  | Append all nodes of `other` to the end of this list.                                                                                                                                    |
+| `traverse(cb, inversed = false): this`                     | Visit every node in order (or reverse if `inversed=true`).                                                                                                                              |
+| `loop(cb, inversed = false): this`                         | Like `traverse` but stops early when `cb` returns `false`.                                                                                                                              |
+| `filter(cb, inversed = false): this`                       | Build a new list of those nodes for which `cb` returns `true`.                                                                                                                          |
+| `every(cb): boolean`                                       | Are all nodes passing cb?                                                                                                                                                               |
+| `any(cb): boolean`                                         | Does any node pass cb?                                                                                                                                                                  |
+| `[Symbol.iterator](): Iterator<T>`                         | Under the hood, this iterates from head → tail.                                                                                                                                         |
+| `clean(): this`                                            | Cleans the elements in the doubly linked list.                                                                                                                                          |
+| `isSame(list: DoublyLinkedList<T>): boolean`               | Returns `true` if the elements of the current doubly linked list are equivalent to the `list`                                                                                           |
+| `isExactlySame(list: DoublyLinkedList<T>): boolean`        | Returns `true` if all the elements of the current doubly linked list instance are equal to the `list` doubly linked list as well as the ID's of the nodes and the mapType of the lists. |
