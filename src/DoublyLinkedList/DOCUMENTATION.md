@@ -146,3 +146,4 @@ stopsAt3.loop(
 | `copy(inversed = false): DoublyLinkedList<T>`              | Returns a shallow clone of this list (preserving IDs and order).               |
 | `merge(other: DoublyLinkedList<T>): this`                  | Append all nodes of `other` to the end of this list.                           |
 | `traverse(cb, inversed = false): this`                     | Visit every node in order (or reverse if `inversed=true`).                     |
+| `loop(cb, inversed = false): this`                         | Like `traverse` but stops early when `cb` returns `false`.                     |
