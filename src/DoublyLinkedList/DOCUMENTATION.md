@@ -143,3 +143,4 @@ stopsAt3.loop(
 | `insertBefore(id: string, data: T, dataId?: string): this` | Inserts a new node before the node with `id`.                                  |
 | `values(): Map<string,T>`                                  | Returns a Map of all `{ id → data }`.                                          |
 | `has(id: string): boolean`                                 | Checks existence of a node by `id`.                                            |
+| `copy(inversed = false): DoublyLinkedList<T>`              | Returns a shallow clone of this list (preserving IDs and order).               |
