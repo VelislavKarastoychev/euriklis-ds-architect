@@ -133,7 +133,7 @@ stopsAt3.loop(
   - `maxSize`: upper bound on number of nodes (throws on overflow).
 - `static random(options)`: Create a list pre - filled with random number values.
 
-| Method                                | Description                                              |
-| ------------------------------------- | -------------------------------------------------------- |
-| `addLast(data: T, id?: string): this` | Adds a new node to the end. Optionally specify its `id`. |
-| `removeFirst(): T \| null`            | Removes and returns the first element of the list.       |
+| Method                                | Description                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------- |
+| `addLast(data: T, id?: string): this` | Adds a new node to the end. Optionally specify its `id`.                |
+| `removeFirst(): T \| null`            | Removes and returns the first element of the list. Throws on underflow. |
