@@ -170,7 +170,7 @@ export class DoublyLinkedList<T> {
    * @param{string} id? - The id property of the data node.
    * @returns {DoublyLinkedList} The updated list.
    */
-  addLast(data: T, id?: string): DoublyLinkedList<T> {
+  addLast(data: T, id?: string): this {
     if (data) {
       if (this._size < this._currentSize + 1) {
         errors.StackOverflow("DoublyLinkedList addLast")();
@@ -272,7 +272,7 @@ export class DoublyLinkedList<T> {
    * @param {string} dataId? - the "id" property of the new node.
    * @returns {DoublyLinkedList<T>} The updated list.
    */
-  insertAfter(id: string, data: T, dataId?: string): DoublyLinkedList<T> {
+  insertAfter(id: string, data: T, dataId?: string): this {
     const node = this._findNodeById(id);
     const newNode: LinkedDataNode<T> | null = new LinkedDataNode<T>(data);
     if (dataId) newNode.id = dataId;
