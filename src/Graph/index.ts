@@ -112,7 +112,7 @@ export abstract class BaseGraph<
     const targetNode = g.get(target);
     if (!sourceNode) return null;
     if (!targetNode) return null;
-    const edge = sourceNode.getConnection(target) || null;
+    const edge = (sourceNode.getConnection(target) as E) || null;
 
     return edge;
   }
@@ -129,7 +129,7 @@ export abstract class BaseGraph<
     const targetNode = g.get(target);
     if (!sourceNode) return null;
     if (!targetNode) return null;
-    const edgeInstance = sourceNode.getConnection(target);
+    const edgeInstance = (sourceNode.getConnection(target) as E) || null;
     if (!edgeInstance) return null;
     return {
       source: edgeInstance.source.name,
@@ -206,24 +206,6 @@ export abstract class BaseGraph<
     if (!targetNode) return null;
     return sourceNode.removeConnection({ node: targetNode }) || null;
   }
-
-  inDegree(name: string): number {
-    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
-    const g = this.__G__;
-    const node = g.get(name);
-    if (!node) throw new Error(nodeNotExists);
-
-    return node.inDegree;
-  }
-
-  outDegree(name: string): number {
-    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
-    const g = this.__G__;
-    const node = g.get(name);
-    if (!node) throw new Error(nodeNotExists);
-
-    return node.outDegree;
-  }
 }
 
 export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
@@ -241,6 +223,24 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     data: D;
   }): Vertex<D> {
     return new Vertex<D>({ name, data });
+  }
+
+  inDegree(name: string): number {
+    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
+    const g = this.__G__;
+    const node = g.get(name);
+    if (!node) throw new Error(nodeNotExists);
+
+    return node.inDegree;
+  }
+
+  outDegree(name: string): number {
+    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
+    const g = this.__G__;
+    const node = g.get(name);
+    if (!node) throw new Error(nodeNotExists);
+
+    return node.outDegree;
   }
 }
 
@@ -284,5 +284,23 @@ export class Network<V, T, S = unknown> extends BaseGraph<
     const node = g.get(name);
     if (!node) return null;
     return { name: node.name, data: node.data, value: node.value };
+  }
+
+  inDegree(name: string): number {
+    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
+    const g = this.__G__;
+    const node = g.get(name);
+    if (!node) throw new Error(nodeNotExists);
+
+    return node.inDegree;
+  }
+
+  outDegree(name: string): number {
+    const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
+    const g = this.__G__;
+    const node = g.get(name);
+    if (!node) throw new Error(nodeNotExists);
+
+    return node.outDegree;
   }
 }
