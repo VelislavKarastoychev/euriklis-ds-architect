@@ -145,3 +145,4 @@ stopsAt3.loop(
 | `has(id: string): boolean`                                 | Checks existence of a node by `id`.                                            |
 | `copy(inversed = false): DoublyLinkedList<T>`              | Returns a shallow clone of this list (preserving IDs and order).               |
 | `merge(other: DoublyLinkedList<T>): this`                  | Append all nodes of `other` to the end of this list.                           |
+| `traverse(cb, inversed = false): this`                     | Visit every node in order (or reverse if `inversed=true`).                     |
