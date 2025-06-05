@@ -34,8 +34,6 @@ Or via bun:
 bun install @euriklis/ds-architect
 ```
 
-# Usage:
-
 # Documentation
 
 - [DataNode](src/DataNode/DOCUMENTATION.md)
@@ -46,3 +44,40 @@ bun install @euriklis/ds-architect
 - [AVLTree](src/AVL/DOCUMENTATION.md)
 - [Heap](src/Heap/DOCUMENTATION.md)
 - [Graph & Network](src/Graph/DOCUMENTATION.md)
+
+# Usage:
+
+Here is a quick look at how to work with the library.
+
+## Basic Graph
+
+```ts
+import { Graph } from "@euriklis/ds-architect";
+
+const g = new Graph<string>();
+g.addNode({ name: "A", data: "hello" });
+g.addNode({ name: "B", data: "world" });
+
+g.addEdge({ source: "A", target: "B", data: null, params: {} });
+console.log(g.inDegree("B")); // 1
+```
+
+## Building Your Own Structures
+
+The `DataNode` class is the foundation for nodes used by the other data
+structures. You can extend it to craft custom nodes for your own
+structures and algorithms.
+
+```ts
+import { DataNode } from "@euriklis/ds-architect";
+
+class MyNode<T> extends DataNode<T> {
+  // add extra properties or behavior here
+}
+
+const node = new MyNode({ foo: 42 });
+console.log(node.id); // auto-generated UUID
+```
+
+Create arrays, lists, or tree-like structures from these nodes to design
+tailored data structures for your application.
