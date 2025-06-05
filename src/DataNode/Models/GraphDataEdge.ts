@@ -25,7 +25,7 @@ export abstract class GraphDataEdge<
   }
 
   set id(id: string) {
-    this.__ID__ = uuid();
+    this.__ID__ = id;
   }
   get source(): S {
     return this.__SOURCE__;
