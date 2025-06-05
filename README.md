@@ -1,6 +1,4 @@
-# @euriklis/graphworld
-
-@eurikklis/graphworld is a modular and extensible library that provides a rich ecosystem for graph and network-based data structures. Designed with both academic rigor and practical application in mind, this library offers powerful graph algorithms and network functionalities while also including additional data structure components (like AVL trees, BSTs, queues, and heaps) for broader algorithmic programming.
+`@euriklis/ds-architect` is a modular and extensible library that provides a rich ecosystem for graph and network-based data structures. Designed with both academic rigor and practical application in mind, this library offers powerful graph algorithms and network functionalities while also including additional data structure components (like AVL trees, BSTs, queues, and heaps) for broader algorithmic programming.
 
 > **Note:** Some data structures (e.g., AVL, BST, heaps) are under active development and will be refined in future releases.
 
@@ -19,21 +17,32 @@
   - Asynchronous traversal methods (e.g., `BFSAsync`, `DFSAsync`) for integrating LLM or other async operations.
 
 - **Additional Data Structures**
-  - Along with graphs, GraphWorld includes other fundamental data structures—like queues, heaps, and trees—to support algorithmic programming.
-  - Designed to be lightweight: you can import only what you need without the overhead of heavy mathematics libraries.
+- Along with graphs, `ds-architect` includes other fundamental data structures—like queues, heaps, and trees—to support algorithmic programming.
+- Designed to be lightweight: you can import only what you need without the overhead of heavy mathematics libraries.
 
 ## Installation
 
 Install via npm:
 
 ```bash
-npm install @euriklis/graphworld
+npm install @euriklis/ds-architect
 ```
 
 Or via bun:
 
 ```sh
-bun install @euriklis/graphworld
+bun install @euriklis/ds-architect
 ```
 
 # Usage:
+
+# Documentation
+
+- [DataNode](src/DataNode/DOCUMENTATION.md)
+- [DoublyLinkedList](src/DoublyLinkedList/DOCUMENTATION.md)
+- [Queue](src/Queue/DOCUMENTATION.md)
+- [Stack](src/Stack/DOCUMENTATION.md)
+- [BST](src/BST/DOCUMENTATION.md)
+- [AVLTree](src/AVL/DOCUMENTATION.md)
+- [Heap](src/Heap/DOCUMENTATION.md)
+- [Graph & Network](src/Graph/DOCUMENTATION.md)
