@@ -286,7 +286,7 @@ export class Network<V, T, S = unknown> extends BaseGraph<
     return { name: node.name, data: node.data, value: node.value };
   }
 
-  inDegree(name: string): number {
+  public inDegree(name: string): number {
     const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
     const g = this.__G__;
     const node = g.get(name);
@@ -295,7 +295,7 @@ export class Network<V, T, S = unknown> extends BaseGraph<
     return node.inDegree;
   }
 
-  outDegree(name: string): number {
+  public outDegree(name: string): number {
     const nodeNotExists = `Node with name ${name} does not exists in the graph.`;
     const g = this.__G__;
     const node = g.get(name);
