@@ -113,7 +113,7 @@ export class DoublyLinkedList<T> {
     return this._size;
   }
 
-  get mapType() {
+  get mapType(): SecureStoreType {
     return this._secureStore;
   }
 
