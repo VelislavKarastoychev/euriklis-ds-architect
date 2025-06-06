@@ -244,7 +244,7 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 }
 
-export class Network<V, T, S = unknown> extends BaseGraph<
+export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   Node<V>,
   Arc<T>,
   V,
