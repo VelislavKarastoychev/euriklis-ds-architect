@@ -10,7 +10,7 @@
   - Support for both directed and symmetric (undirected) graphs.
   - Generate adjacency matrices and perform common traversals (BFS, DFS).
 
-- **Network & Extended Functionality**
+- **BaseNetwork & Extended Functionality**
 
   - Integrate domain-specific attributes (e.g., `model`, `prompt`, `callback`, `modelOptions`) into graph nodes.
   - Extend basic graph behavior to support network operations such as centrality measures and neural network concepts.
@@ -43,7 +43,7 @@ bun install @euriklis/ds-architect
 - [BST](src/BST/DOCUMENTATION.md)
 - [AVLTree](src/AVL/DOCUMENTATION.md)
 - [Heap](src/Heap/DOCUMENTATION.md)
-- [Graph & Network](src/Graph/DOCUMENTATION.md)
+- [Graph & BaseNetwork](src/Graph/DOCUMENTATION.md)
 
 # Usage:
 
