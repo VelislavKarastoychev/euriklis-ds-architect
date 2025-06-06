@@ -1,6 +1,6 @@
 # Graph and Network
 
-`Graph` is a lightweight directed graph structure supporting named nodes and edges. `Network` extends `Graph` with weighted nodes and edges for modelling complex systems.
+`Graph` is a lightweight directed graph structure supporting named nodes and edges. `BaseNetwork` extends `Graph` with weighted nodes and edges for modelling complex systems.
 
 Current implementation focuses on CRUD operations. Traversal algorithms (BFS/DFS) and metrics (centralities, small-world index, etc.) are planned in future releases.
 
@@ -29,4 +29,4 @@ console.log(g.inDegree("B")); // 1
 | `getEdge({source,target})`             | Retrieve edge data.                      |
 | `inDegree(name)`/`outDegree(name)`     | Count incoming or outgoing edges.        |
 
-`Network` exposes the same API but expects additional `value` and `weight` fields on nodes and edges.
+`BaseNetwork` exposes the same API but expects additional `value` and `weight` fields on nodes and edges.
