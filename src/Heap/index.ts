@@ -18,7 +18,7 @@ export class PrimaryHeap<T extends any> {
     i?: Integer,
     j?: Integer,
     heap?: T[],
-  ) => 1 | -1 | 0 = (a, b) => a > b ? 1 : a < b ? -1 : 0;
+  ) => 1 | -1 | 0 = (a, b) => (a > b ? 1 : a < b ? -1 : 0);
 
   /**
    * Creates a PrimaryHeap from an array of items.
@@ -37,7 +37,7 @@ export class PrimaryHeap<T extends any> {
     heap.size = size;
     heap.type = type;
     heap._heap = items;
-    models.PrimaryShiftDownHeapify(items, heap.compare);
+    models.PrimaryShiftDownHeapify(items as any, type);
 
     return heap;
   }
@@ -54,7 +54,9 @@ export class PrimaryHeap<T extends any> {
     return this._compare;
   }
 
-  set compare(callback: (a: T, b: T, i?: Integer, j?: Integer, heap?: T[]) => 1 | -1 | 0) {
+  set compare(
+    callback: (a: T, b: T, i?: Integer, j?: Integer, heap?: T[]) => 1 | -1 | 0,
+  ) {
     this._compare = callback;
   }
 
@@ -108,12 +110,10 @@ export class PrimaryHeap<T extends any> {
    * @returns {PrimaryHeap<T>} - The heap instance.
    * @throws {Error} - If the heap size exceeds the maximum size.
    */
-  @ifLengthIsGreaterThanSizeThrow(() => {
-    errors.StackOverflow("PrimaryHeap.add");
-  })
+  @ifLengthIsGreaterThanSizeThrow(errors.StackOverflow("PrimaryHeap.add"))
   add(data: any): PrimaryHeap<T> {
-    if (!data) return this;
     const node = new HeapDataNode(data);
+    if (typeof data === "undefined" || data === null) return this;
     this._heap[this._heap.length] = node;
     models.PrimaryShiftUp(this._heap, this.length - 1, this.type);
 
