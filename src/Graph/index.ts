@@ -248,12 +248,16 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
 
   BFSNode({
     startingNode,
-    callback,
+    callback = () => {},
     errorCallback = (_, error) => console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
-    callback: (node: Vertex<D> | null, g?: Graph<D>) => void;
-    errorCallback: (node: Vertex<D> | null, error: Error, g?: Graph<D>) => void;
+    callback?: (node: Vertex<D> | null, g?: Graph<D>) => void;
+    errorCallback?: (
+      node: Vertex<D> | null,
+      error: Error,
+      g?: Graph<D>,
+    ) => void;
   }): this {
     const queue = new Queue<Vertex<D>>();
     const visited = new Set();
@@ -295,7 +299,7 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
 
   async BFSNodeAsync({
     startingNode,
-    callback,
+    callback = async () => {},
     errorCallback = async (_, error) => console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
@@ -381,16 +385,16 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 
   async BFSAsync({
-    callback,
+    callback = async () => {},
     errorCallback = async (_, error) => console.log(error.message),
   }: {
-    callback: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
-    errorCallback: (
+    callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
+    errorCallback?: (
       node: Vertex<D>,
       error: Error,
       g?: Graph<D>,
     ) => Promise<void>;
-  }): Promise<this> {
+  } = {}): Promise<this> {
     const queue = new Queue<Vertex<D>>();
     const visited = new Set<string>();
     for (const node of this) {
@@ -418,10 +422,10 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 
   DFS({
-    callback,
+    callback = () => {},
     errorCallback = (_, error) => console.log(error.message),
   }: {
-    callback: (node: Vertex<D>, g?: Graph<D>) => void;
+    callback?: (node: Vertex<D>, g?: Graph<D>) => void;
     errorCallback: (node: Vertex<D>, error: Error, g?: Graph<D>) => void;
   }): this {
     const stack = new DynamicStack<Vertex<D>>();
@@ -450,16 +454,16 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 
   async DFSAsync({
-    callback,
+    callback = async () => {},
     errorCallback = async (_, error) => console.log(error.message),
   }: {
-    callback: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
-    errorCallback: (
+    callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
+    errorCallback?: (
       node: Vertex<D>,
       error: Error,
       g?: Graph<D>,
     ) => Promise<void>;
-  }): Promise<this> {
+  } = {}): Promise<this> {
     const stack = new DynamicStack<Vertex<D>>();
     const visited = new Set<string>();
     for (const node of this) {
