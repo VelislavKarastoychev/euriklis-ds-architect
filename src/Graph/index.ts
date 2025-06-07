@@ -1,7 +1,10 @@
 "use strict";
 
+import type { Integer } from "../../Types";
 import { GraphDataNode, GraphDataEdge } from "../DataNode";
 import { Arc, Edge, Node, Vertex } from "../DataNode/Models";
+import { Queue } from "../Queue";
+import { DynamicStack } from "../Stack";
 
 export abstract class BaseGraph<
   N extends GraphDataNode<V, any>,
@@ -241,6 +244,250 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     if (!node) throw new Error(nodeNotExists);
 
     return node.outDegree;
+  }
+
+  BFSNode({
+    startingNode,
+    callback,
+    errorCallback = (_, error) => console.log(error.message),
+  }: {
+    startingNode: Vertex<D> | string;
+    callback: (node: Vertex<D> | null, g?: Graph<D>) => void;
+    errorCallback: (node: Vertex<D> | null, error: Error, g?: Graph<D>) => void;
+  }): this {
+    const queue = new Queue<Vertex<D>>();
+    const visited = new Set();
+    let s: Vertex<D> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Vertex<D>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Vertex<D>;
+      }
+    }
+
+    if (!s) return this;
+    queue.enqueue(s);
+    let node: Vertex<D> | null = queue.dequeue();
+    visited.add(node?.name);
+    while (!queue.isEmpty) {
+      // execute the callback:
+      try {
+        callback(node as Vertex<D>, this);
+      } catch (error) {
+        errorCallback(node, error as Error);
+      }
+      const outgoingEdges = node?.outgoing.values();
+      if (outgoingEdges) {
+        for (const edge of outgoingEdges) {
+          const target = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            visited.add(target.name);
+            queue.enqueue(target);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  async BFSNodeAsync({
+    startingNode,
+    callback,
+    errorCallback = async (_, error) => console.log(error.message),
+  }: {
+    startingNode: Vertex<D> | string;
+    callback: (node: Vertex<D> | null, g?: Graph<D>) => Promise<void>;
+    errorCallback: (
+      node: Vertex<D> | null,
+      error: Error,
+      g?: Graph<D>,
+    ) => Promise<void>;
+  }): Promise<this> {
+    const queue = new Queue<Vertex<D>>();
+    const visited = new Set();
+    let s: Vertex<D> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Vertex<D>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Vertex<D>;
+      }
+    }
+
+    if (!s) return this;
+    queue.enqueue(s);
+    let node: Vertex<D> | null = queue.dequeue();
+    visited.add(node?.name);
+    while (!queue.isEmpty) {
+      // execute the callback:
+      try {
+        callback(node as Vertex<D>, this);
+      } catch (error) {
+        errorCallback(node, error as Error, this);
+      }
+      const outgoingEdges = node?.outgoing.values();
+      if (outgoingEdges) {
+        for (const edge of outgoingEdges) {
+          const target = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            visited.add(target.name);
+            queue.enqueue(target);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  BFS({
+    callback = () => {},
+    errorCallback = (_, error) => console.log(error.message),
+  }: {
+    callback?: (node: Vertex<D> | null, g?: Graph<D>) => void;
+    errorCallback?: (
+      node: Vertex<D> | null,
+      error: Error,
+      g?: Graph<D>,
+    ) => void;
+  } = {}): this {
+    const queue = new Queue<Vertex<D>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      queue.enqueue(node);
+      visited.add(node.name);
+      while (!queue.isEmpty) {
+        const n: Vertex<D> = queue.dequeue() as Vertex<D>;
+        try {
+          callback(n, this);
+        } catch (error) {
+          errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            queue.enqueue(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  async BFSAsync({
+    callback,
+    errorCallback = async (_, error) => console.log(error.message),
+  }: {
+    callback: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
+    errorCallback: (
+      node: Vertex<D>,
+      error: Error,
+      g?: Graph<D>,
+    ) => Promise<void>;
+  }): Promise<this> {
+    const queue = new Queue<Vertex<D>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      queue.enqueue(node);
+      visited.add(node.name);
+      while (!queue.isEmpty) {
+        const n: Vertex<D> = queue.dequeue() as Vertex<D>;
+        try {
+          await callback(n, this);
+        } catch (error) {
+          await errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target: Vertex<D> = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            queue.enqueue(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  DFS({
+    callback,
+    errorCallback = (_, error) => console.log(error.message),
+  }: {
+    callback: (node: Vertex<D>, g?: Graph<D>) => void;
+    errorCallback: (node: Vertex<D>, error: Error, g?: Graph<D>) => void;
+  }): this {
+    const stack = new DynamicStack<Vertex<D>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (!visited.has(node.name)) continue;
+      stack.push(node);
+      visited.add(node.name);
+      while (!stack.isEmpty) {
+        const n: Vertex<D> = stack.pop() as Vertex<D>;
+        try {
+          callback(n, this);
+        } catch (error) {
+          errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target: Vertex<D> = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            stack.push(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  async DFSAsync({
+    callback,
+    errorCallback = async (_, error) => console.log(error.message),
+  }: {
+    callback: (node: Vertex<D>, g?: Graph<D>) => Promise<void>;
+    errorCallback: (
+      node: Vertex<D>,
+      error: Error,
+      g?: Graph<D>,
+    ) => Promise<void>;
+  }): Promise<this> {
+    const stack = new DynamicStack<Vertex<D>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      stack.push(node);
+      visited.add(node.name);
+      while (!stack.isEmpty) {
+        const n: Vertex<D> = stack.pop() as Vertex<D>;
+        try {
+          await callback(n, this);
+        } catch (error) {
+          await errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target = edge.target as Vertex<D>;
+          if (!visited.has(target.name)) {
+            stack.push(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  [Symbol.iterator](): Iterator<Vertex<D>> {
+    return this.__G__.values();
   }
 }
 
