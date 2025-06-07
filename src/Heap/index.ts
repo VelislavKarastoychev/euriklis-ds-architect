@@ -136,6 +136,34 @@ export class PrimaryHeap<T = unknown> {
   }
 
   /**
+   * Removes an element from the heap by id.
+   * Complexity: O(n) due to heapify after removal.
+   * @param {string} id - The id of the element to remove.
+   * @returns {T | null} - The removed element data or null if not found.
+   */
+  remove(id: string): T | null {
+    const index = this._heap.findIndex((n) => n.id === id);
+    if (index === -1) return null;
+    const [node] = this._heap.splice(index, 1);
+    models.PrimaryShiftDownHeapify(this._heap, this.type);
+    return node.data as T;
+  }
+
+  /**
+   * Merges another heap into this one.
+   * @param {PrimaryHeap<T>} heap - The heap to merge with.
+   * @returns {PrimaryHeap<T>} The merged heap.
+   */
+  merge(heap: PrimaryHeap<T>): PrimaryHeap<T> {
+    if (heap._heap.length) {
+      this._heap = this._heap.concat(heap._heap);
+      if (this._heap.length > this.size) this.size = this._heap.length;
+      models.PrimaryShiftDownHeapify(this._heap, this.type);
+    }
+    return this;
+  }
+
+  /**
    * Convert heap contents to an array of data values.
    * @returns {T[]} - The array of values in heap order.
    */
