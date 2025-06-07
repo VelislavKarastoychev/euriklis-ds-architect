@@ -3,8 +3,8 @@
 import type { Integer } from "../../../Types";
 import type { HeapDataNode } from "../../DataNode";
 
-const shiftDown = (
-  heap: HeapDataNode[],
+const shiftDown = <T = unknown>(
+  heap: HeapDataNode<T>[],
   index: Integer,
   size: Integer,
   type: "max" | "min",
@@ -35,11 +35,11 @@ const shiftDown = (
   }
 };
 
-export const PrimaryShiftDownHeapify = (
-  data: HeapDataNode[],
+export const PrimaryShiftDownHeapify = <T = unknown>(
+  data: HeapDataNode<T>[],
   type: "max" | "min",
 ): void => {
   for (let i = (data.length - 2) >> 1; i >= 0; i--) {
-    shiftDown(data, i, data.length, type);
+    shiftDown<T>(data, i, data.length, type);
   }
 };
