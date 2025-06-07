@@ -17,6 +17,8 @@ export type NodeType = {
   };
 };
 
+export type HeapType = "max" | "min";
+
 export type BSTNodeComparisonCallbackType = <T extends BSTDataNode>(
   x: T,
   y: T,
