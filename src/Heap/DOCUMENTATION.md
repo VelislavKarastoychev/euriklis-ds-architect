@@ -14,11 +14,13 @@ for (const v of h) console.log(v);
 
 ## API Highlights
 
-| Method                             | Description                                    |
-| ---------------------------------- | ---------------------------------------------- |
-| `static from(items, size?, type?)` | Build a heap from an array.                    |
-| `add(data)`                        | Push a new element, maintaining heap property. |
-| `search(id)`                       | Return nodes matching an id (O(n/2)).          |
-| `[Symbol.iterator]()`              | Iterate over heap elements.                    |
+| Method                             | Description                                      |
+| ---------------------------------- | ------------------------------------------------ |
+| `static from(items, size?, type?)` | Builds a heap from an array.                     |
+| `add(data)`                        | Pushes a new element, maintaining heap property. |
+| `search(id)`                       | Returns nodes matching an id (O(n/2)).           |
+| `remove(id)`                       | Deletes element by id and re-heapify.            |
+| `merge(other)`                     | Combines two heaps into one.                     |
+| `[Symbol.iterator]()`              | Iterates over heap elements.                     |
 
 Additional helpers for shift-up/down are available in the `Models` subfolder.
