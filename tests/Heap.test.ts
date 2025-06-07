@@ -22,4 +22,17 @@ describe("Heap", () => {
     const result = h.search(id);
     expect(result && result[0].id).toBe(id);
   });
+
+  it("maintains max-heap property and iteration works", () => {
+    const values = [3, 1, 4, 2, 5];
+    const h = Heap.from(values);
+    const arr = (h as any)._heap;
+    for (let i = 0; i < arr.length; i++) {
+      const left = (i << 1) + 1;
+      const right = left + 1;
+      if (left < arr.length) expect(arr[i].id >= arr[left].id).toBe(true);
+      if (right < arr.length) expect(arr[i].id >= arr[right].id).toBe(true);
+    }
+    expect([...h]).toEqual(h.toArray());
+  });
 });
