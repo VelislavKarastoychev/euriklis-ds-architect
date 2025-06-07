@@ -3,8 +3,8 @@
 import type { Integer } from "../../../Types";
 import type { HeapDataNode } from "../../DataNode";
 
-export const PrimaryShiftUp = (
-  heap: HeapDataNode[],
+export const PrimaryShiftUp = <T = unknown>(
+  heap: HeapDataNode<T>[],
   i: Integer,
   type: "max" | "min",
 ): void => {
