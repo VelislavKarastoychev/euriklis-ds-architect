@@ -3,12 +3,12 @@
 import type { HeapType, Integer } from "../../../Types";
 import type { HeapDataNode } from "../../DataNode";
 
-export const PrimaryHeapSearch = (
-  heap: HeapDataNode[],
+export const PrimaryHeapSearch = <T = unknown>(
+  heap: HeapDataNode<T>[],
   id: string,
   type: HeapType,
-): HeapDataNode[] | null => {
-  const found: HeapDataNode[] = [];
+): HeapDataNode<T>[] | null => {
+  const found: HeapDataNode<T>[] = [];
   const search = (index: Integer): void => {
     if (index >= heap.length) return;
     const node = heap[index];
