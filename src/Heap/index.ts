@@ -136,13 +136,23 @@ export class PrimaryHeap<T = unknown> {
   }
 
   /**
+   * Searches for the index of an element by its id.
+   * Complexity - O(n / 2) using heap ordering.
+   * @param {string} id - The id of the element to search for.
+   * @returns {Integer[] | null} Found indices or null.
+   */
+  searchIndex(id: string): Integer {
+    return models.PrimaryHeapSearchIndex(this._heap, id, this.type);
+  }
+
+  /**
    * Removes an element from the heap by id.
    * Complexity: O(n) due to heapify after removal.
    * @param {string} id - The id of the element to remove.
    * @returns {T | null} - The removed element data or null if not found.
    */
   remove(id: string): T | null {
-    const index = this._heap.findIndex((n) => n.id === id);
+    const index = this.searchIndex(id);
     if (index === -1) return null;
     const [node] = this._heap.splice(index, 1);
     models.PrimaryShiftDownHeapify(this._heap, this.type);
