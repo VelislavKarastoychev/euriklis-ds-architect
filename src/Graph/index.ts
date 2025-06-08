@@ -646,4 +646,352 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
 
     return node.outDegree;
   }
+  BFSNode({
+    startingNode,
+    callback = (): void => {},
+    errorCallback = (_: Node<V> | null, error: Error): void =>
+      console.log(error.message),
+  }: {
+    startingNode: Node<V> | string;
+    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
+    errorCallback?: (
+      node: Node<V> | null,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => unknown;
+  }): this {
+    const queue = new Queue<Node<V>>();
+    const visited = new Set<string>();
+    let s: Node<V> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Node<V>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Node<V>;
+      }
+    }
+
+    if (!s) return this;
+    queue.enqueue(s);
+    visited.add(s.name);
+    while (!queue.isEmpty) {
+      const node = queue.dequeue() as Node<V>;
+      try {
+        callback(node, this);
+      } catch (error) {
+        errorCallback(node, error as Error, this);
+      }
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          queue.enqueue(target);
+        }
+      }
+    }
+
+    return this;
+  }
+
+  async BFSNodeAsync({
+    startingNode,
+    callback = async (): Promise<void> => {},
+    errorCallback = async (_: Node<V> | null, error: Error): Promise<void> =>
+      console.log(error.message),
+  }: {
+    startingNode: Node<V> | string;
+    callback?: (
+      node: Node<V> | null,
+      g?: BaseNetwork<V, T>,
+    ) => Promise<unknown>;
+    errorCallback?: (
+      node: Node<V> | null,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => Promise<unknown>;
+  }): Promise<this> {
+    const queue = new Queue<Node<V>>();
+    const visited = new Set<string>();
+    let s: Node<V> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Node<V>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Node<V>;
+      }
+    }
+
+    if (!s) return this;
+    queue.enqueue(s);
+    visited.add(s.name);
+    while (!queue.isEmpty) {
+      const node = queue.dequeue() as Node<V>;
+      try {
+        await callback(node, this);
+      } catch (error) {
+        await errorCallback(node, error as Error, this);
+      }
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          queue.enqueue(target);
+        }
+      }
+    }
+
+    return this;
+  }
+
+  BFS({
+    callback = (): void => {},
+    errorCallback = (_: Node<V> | null, error: Error): void =>
+      console.log(error.message),
+  }: {
+    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
+    errorCallback?: (
+      node: Node<V> | null,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => unknown;
+  } = {}): this {
+    const queue = new Queue<Node<V>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      queue.enqueue(node);
+      visited.add(node.name);
+      while (!queue.isEmpty) {
+        const n: Node<V> = queue.dequeue() as Node<V>;
+        try {
+          callback(n, this);
+        } catch (error) {
+          errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target = edge.target as Node<V>;
+          if (!visited.has(target.name)) {
+            queue.enqueue(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  async BFSAsync({
+    callback = async (): Promise<void> => {},
+    errorCallback = async (_: Node<V>, error: Error): Promise<unknown> =>
+      console.log(error.message),
+  }: {
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    errorCallback?: (
+      node: Node<V>,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => Promise<unknown>;
+  } = {}): Promise<this> {
+    const queue = new Queue<Node<V>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      queue.enqueue(node);
+      visited.add(node.name);
+      while (!queue.isEmpty) {
+        const n: Node<V> = queue.dequeue() as Node<V>;
+        try {
+          await callback(n, this);
+        } catch (error) {
+          await errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target: Node<V> = edge.target as Node<V>;
+          if (!visited.has(target.name)) {
+            queue.enqueue(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  DFS({
+    callback = (): void => {},
+    errorCallback = (_: Node<V>, error: Error): void =>
+      console.log(error.message),
+  }: {
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
+    errorCallback?: (
+      node: Node<V>,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => unknown;
+  }): this {
+    const stack = new DynamicStack<Node<V>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      stack.push(node);
+      visited.add(node.name);
+      while (!stack.isEmpty) {
+        const n: Node<V> = stack.pop() as Node<V>;
+        try {
+          callback(n, this);
+        } catch (error) {
+          errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target: Node<V> = edge.target as Node<V>;
+          if (!visited.has(target.name)) {
+            stack.push(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+    return this;
+  }
+
+  async DFSAsync({
+    callback = async (): Promise<void> => {},
+    errorCallback = async (_: Node<V>, error: Error): Promise<void> =>
+      console.log(error.message),
+  }: {
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    errorCallback?: (
+      node: Node<V>,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => Promise<unknown>;
+  } = {}): Promise<this> {
+    const stack = new DynamicStack<Node<V>>();
+    const visited = new Set<string>();
+    for (const node of this) {
+      if (visited.has(node.name)) continue;
+      stack.push(node);
+      visited.add(node.name);
+      while (!stack.isEmpty) {
+        const n: Node<V> = stack.pop() as Node<V>;
+        try {
+          await callback(n, this);
+        } catch (error) {
+          await errorCallback(n, error as Error, this);
+        }
+        for (const edge of n.outgoing.values()) {
+          const target = edge.target as Node<V>;
+          if (!visited.has(target.name)) {
+            stack.push(target);
+            visited.add(target.name);
+          }
+        }
+      }
+    }
+
+    return this;
+  }
+
+  DFSNode({
+    startingNode,
+    callback = (): void => {},
+    errorCallback = (_: Node<V>, error: Error): void =>
+      console.log(error.message),
+  }: {
+    startingNode: Node<V> | string;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
+    errorCallback?: (
+      node: Node<V>,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => unknown;
+  }): this {
+    const stack = new DynamicStack<Node<V>>();
+    const visited = new Set<string>();
+    let s: Node<V> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Node<V>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Node<V>;
+      }
+    }
+
+    if (!s) return this;
+    stack.push(s);
+    visited.add(s.name);
+    while (!stack.isEmpty) {
+      const node = stack.pop() as Node<V>;
+      try {
+        callback(node, this);
+      } catch (error) {
+        errorCallback(node, error as Error, this);
+      }
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          stack.push(target);
+        }
+      }
+    }
+
+    return this;
+  }
+
+  async DFSNodeAsync({
+    startingNode,
+    callback = async (): Promise<void> => {},
+    errorCallback = async (_: Node<V>, error: Error): Promise<void> =>
+      console.log(error.message),
+  }: {
+    startingNode: Node<V> | string;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    errorCallback?: (
+      node: Node<V>,
+      error: Error,
+      g?: BaseNetwork<V, T>,
+    ) => Promise<unknown>;
+  }): Promise<this> {
+    const stack = new DynamicStack<Node<V>>();
+    const visited = new Set<string>();
+    let s: Node<V> | undefined;
+    if (startingNode) {
+      if (typeof startingNode === "string") {
+        if (this.__G__.has(startingNode))
+          s = this.__G__.get(startingNode) as Node<V>;
+      } else if (this.__G__.has(startingNode.name)) {
+        s = this.__G__.get(startingNode.name) as Node<V>;
+      }
+    }
+
+    if (!s) return this;
+    stack.push(s);
+    visited.add(s.name);
+    while (!stack.isEmpty) {
+      const node = stack.pop() as Node<V>;
+      try {
+        await callback(node, this);
+      } catch (error) {
+        await errorCallback(node, error as Error, this);
+      }
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          stack.push(target);
+        }
+      }
+    }
+
+    return this;
+  }
+
+  [Symbol.iterator](): Iterator<Node<V>> {
+    return this.__G__.values();
+  }
 }
