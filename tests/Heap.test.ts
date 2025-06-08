@@ -35,4 +35,22 @@ describe("Heap", () => {
     }
     expect([...h]).toEqual(h.toArray());
   });
+
+  it("searchIndex returns the correct index", () => {
+    const h = new Heap<number>();
+    h.add(10).add(20);
+    const id = (h as any)._heap[1].id;
+    const index = h.searchIndex(id);
+    expect(index).toBe(1);
+  });
+
+  it("remove deletes a node by id", () => {
+    const h = new Heap<number>();
+    h.add(1).add(2);
+    const id = (h as any)._heap[0].id;
+    const d = (h as any)._heap[0].data;
+    const removed = h.remove(id);
+    expect(removed).toBe(d);
+    expect(h.length).toBe(1);
+  });
 });
