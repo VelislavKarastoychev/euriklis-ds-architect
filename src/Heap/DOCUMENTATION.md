@@ -21,6 +21,7 @@ for (const v of h) console.log(v);
 | `search(id)`                       | Returns nodes matching an id (O(n/2)).           |
 | `remove(id)`                       | Deletes element by id and re-heapify.            |
 | `merge(other)`                     | Combines two heaps into one.                     |
+| searchIndex(id)`                   | Return index for an id (O(n/2)).                 |
 | `[Symbol.iterator]()`              | Iterates over heap elements.                     |
 
 Additional helpers for shift-up/down are available in the `Models` subfolder.
