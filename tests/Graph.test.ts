@@ -123,4 +123,49 @@ describe("Graph", () => {
     expect(n.weightedOrder).toBe(g.order);
     expect(n.weightedSize).toBe(g.size);
   });
+
+  it("subgraph filters nodes", () => {
+    const g = buildGraph();
+    const sg = g.subgraph({ callback: (n) => n.name !== "C" });
+    expect(sg.order).toBe(3);
+    expect(sg.getNode("C")).toBeNull();
+    expect(sg.size).toBe(2); // edges A->B and B->D remain
+  });
+
+  it("union merges two graphs", () => {
+    const g1 = buildGraph();
+    const g2 = new Graph<number>();
+    g2.addNode({ name: "E", data: 5 });
+    g2.addNode({ name: "F", data: 6 });
+    g2.addEdge({ source: "E", target: "F", data: null, params: {} });
+    const u = g1.union(g2);
+    expect(u.order).toBe(6);
+    expect(u.size).toBe(5);
+  });
+
+  it("difference subtracts nodes and edges", () => {
+    const g1 = buildGraph();
+    const g2 = new Graph<number>();
+    g2.addNode({ name: "B", data: 2 });
+    const d = g1.difference(g2);
+    expect(d.order).toBe(3);
+    expect(d.getNode("B")).toBeNull();
+    expect(d.size).toBe(1); // only C->D should remain
+  });
+
+  it("kronecker creates tensor product", () => {
+    const g1 = new Graph<number>();
+    g1.addNode({ name: "A", data: 1 });
+    g1.addNode({ name: "B", data: 2 });
+    g1.addEdge({ source: "A", target: "B", data: null, params: {} });
+    const g2 = new Graph<number>();
+    g2.addNode({ name: "X", data: 3 });
+    g2.addNode({ name: "Y", data: 4 });
+    g2.addEdge({ source: "X", target: "Y", data: null, params: {} });
+    const k = g1.kronecker(g2);
+    expect(k.order).toBe(4);
+    expect(k.size).toBe(1);
+    expect(k.getNode("A|X")).not.toBeNull();
+    expect(k.getEdge({ source: "A|X", target: "B|Y" })).not.toBeNull();
+  });
 });
