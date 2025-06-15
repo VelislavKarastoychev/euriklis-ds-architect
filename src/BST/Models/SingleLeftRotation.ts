@@ -5,7 +5,7 @@ import type { BSTDataNode } from "../../DataNode";
 
 export const SingleLeftRotation = <
   T extends any,
-  AbstractBSTDataNode extends BSTDataNode,
+  AbstractBSTDataNode extends BSTDataNode<T>,
 >(
   a: AbstractBSTDataNode,
   tree: BST<T>,
