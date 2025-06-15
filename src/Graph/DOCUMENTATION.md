@@ -55,3 +55,19 @@ g.addEdge({ source: "B", target: "A", data: null });
 | `addEdge({ source, target, data, weight })` | Add a weighted edge.                   |
 | `getNode(name)`                             | Return node data along with its value. |
 | _all other methods from `Graph`_            |                                        |
+
+#### StateGraph
+
+`StateGraph` is a minimal graph used to manage stateful workflows. It exposes the same node and edge API as `Graph` but skips traversal algorithms, making it ideal as a building block for agent-like systems (similar to `langGraph`).
+
+```ts
+import { StateGraph } from "@euriklis/ds-architect";
+
+const sg = new StateGraph<number, null, { count: number }>();
+
+sg.addNode({ name: "start", data: 0 });
+sg.addNode({ name: "end", data: 1 });
+sg.addEdge({ source: "start", target: "end", data: null });
+
+sg.state = { count: 0 };
+```
