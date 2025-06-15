@@ -1,7 +1,10 @@
 {
   "name": "@euriklis/ds-architect",
+  "version": "1.0.0",
   "module": "src/index.ts",
   "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "devDependencies": {
     "@types/bun": "latest"
   },
