@@ -272,6 +272,26 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return node.outDegree;
   }
 
+  get order(): Integer {
+    return this.__G__.size;
+  }
+
+  get size(): Integer {
+    let size = 0;
+    for (const node of this) {
+      size += node.outgoing.size;
+    }
+
+    return size;
+  }
+
+  get density(): number {
+    const n = this.order;
+    const s = this.size;
+
+    return s / (n * n);
+  }
+
   BFSNode({
     startingNode,
     callback = (): void => {},
@@ -672,6 +692,54 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
 
     return node.outDegree;
   }
+
+  get order(): Integer {
+    return this.__G__.size;
+  }
+
+  get weightedOrder(): number {
+    let order = 0;
+    for (const node of this) {
+      order += node.value;
+    }
+
+    return order;
+  }
+
+  get size(): Integer {
+    let size = 0;
+    for (const node of this) {
+      size += node.outgoing.size;
+    }
+
+    return size;
+  }
+
+  get weightedSize(): number {
+    let weightedSize = 0;
+    for (const node of this) {
+      for (const [_, e] of node.outgoing) {
+        weightedSize += e.weight;
+      }
+    }
+
+    return weightedSize;
+  }
+
+  get density(): number {
+    const n = this.order;
+    const s = this.size;
+
+    return s / (n * n);
+  }
+
+  get weightedDensity(): number {
+    const n = this.order;
+    const s = this.weightedSize;
+
+    return s / (n * n);
+  }
+
   BFSNode({
     startingNode,
     callback = (): void => {},
