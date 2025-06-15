@@ -400,8 +400,8 @@ export class DoublyLinkedList<T> {
     inversed: boolean = false,
   ): DoublyLinkedList<T> {
     const list = new DoublyLinkedList<T>(),
-      pointer: LinkedDataNode | null = inversed ? this._tail : this._head;
-    models.FilterDLL(pointer, callback, this, list, inversed);
+      pointer: LinkedDataNode<T> | null = inversed ? this._tail : this._head;
+    models.FilterDLL<T>(pointer, callback, this, list, inversed);
 
     return list;
   }
