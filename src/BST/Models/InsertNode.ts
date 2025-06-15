@@ -11,9 +11,8 @@ const searchForLeaf = <AbstractBSTDataNode extends BSTDataNode>(
 ): AbstractBSTDataNode | null => {
   if (n1) {
     prev = n1;
-    if (
-      orderCallback(n2 as AbstractBSTDataNode, n1 as AbstractBSTDataNode) < 0
-    ) n1 = n1.left as AbstractBSTDataNode | null;
+    if (orderCallback(n2 as AbstractBSTDataNode, n1 as AbstractBSTDataNode) < 0)
+      n1 = n1.left as AbstractBSTDataNode | null;
     else n1 = n1.right as AbstractBSTDataNode | null;
     return searchForLeaf(n1, n2, orderCallback, prev);
   } else return prev;
@@ -42,7 +41,7 @@ export const InsertNodeInBST = <
   if (id) node.id = id;
   y = searchForLeaf(root, node, orderCallback) as AbstractBSTDataNode | null;
   node.prev = y;
-  if (!y) tree.rootNode = node as AbstractBSTDataNode;
+  if (!y) (tree.rootNode as AbstractBSTDataNode) = node as AbstractBSTDataNode;
   else {
     const comparison = orderCallback(node, y);
     if (comparison < 0) y.left = node;
