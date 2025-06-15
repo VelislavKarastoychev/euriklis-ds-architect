@@ -5,7 +5,7 @@ import type { BSTDataNode } from "../../DataNode";
 
 export const DoubleLeftRightRotation = <
   T extends any,
-  AbstractBSTDataNode extends BSTDataNode,
+  AbstractBSTDataNode extends BSTDataNode<T>,
 >(
   a: BSTDataNode,
   tree: BST<T>,
@@ -17,14 +17,14 @@ export const DoubleLeftRightRotation = <
     else a.prev.right = c;
   } else (tree.rootNode as AbstractBSTDataNode) = c;
 
-  c.prev = a.prev || null;
+  (c.prev as any) = a.prev || null;
   a.prev = c;
   b.prev = c;
 
   b.right = c.left;
   if (c.left) c.left.prev = b;
   a.left = c.right;
-  if (c.right) c.right.prev = a;
+  if (c.right) (c.right.prev as any) = a;
   c.left = b;
-  c.right = a;
+  (c.right as any) = a;
 };
