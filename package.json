@@ -5,6 +5,11 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "scripts": {
+    "build": "bun build index.ts --outdir dist --target node --minify",
+    "types": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build && npm run types"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/VelislavKarastoychev/euriklis-ds-architect.git"
@@ -13,7 +18,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "@euriklis/validator-ts": "^1.0.0",
