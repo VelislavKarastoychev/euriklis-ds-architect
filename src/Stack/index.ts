@@ -1,7 +1,6 @@
 import type { Integer } from "../../Types";
 import { LinkedDataNode } from "../DataNode";
 import * as errors from "../Errors";
-import { ifIsNotArrayThrow } from "../Decorators";
 
 /**
  * This class implements the Stack data structure
@@ -105,7 +104,6 @@ export class DynamicStack<T extends unknown> {
    * @param {T[]} items - An array of items to be pushed onto the stack.
    * @returns {DynamicStack} The updated stack after pushing the items.
    */
-  // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
   pushMany(items: T[]): DynamicStack<T> {
     for (const item of items) this.push(item);
     return this;
@@ -432,7 +430,6 @@ export class StaticStack<T = unknown> {
    * @returns {StaticStack<T>} The updated stack after pushing the elements.
    * @throws {Error} Throws an error if the parameter is not an array.
    */
-  // @ifIsNotArrayThrow(errors.IncorrectParameterInPushMany)
   pushMany(data: T[]): this {
     const stack = this._top;
     for (const d of data) stack.push(d);
