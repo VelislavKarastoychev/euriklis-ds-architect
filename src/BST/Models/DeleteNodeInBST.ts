@@ -6,7 +6,7 @@ import { ShiftNodes } from "./ShiftNodes";
 
 export const DeleteNodeInBST = <
   T extends any,
-  AbstractBSTDataNode extends BSTDataNode,
+  AbstractBSTDataNode extends BSTDataNode<T>,
 >(
   node: AbstractBSTDataNode | null,
   tree: BST<T>,
