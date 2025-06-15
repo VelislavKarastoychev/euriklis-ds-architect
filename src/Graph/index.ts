@@ -888,7 +888,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     for (const edge of this.edges) {
-      this.addEdge({
+      g.addEdge({
         source: edge.source,
         target: edge.target,
         data: edge.data,
