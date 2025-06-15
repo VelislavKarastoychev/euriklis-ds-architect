@@ -10,6 +10,8 @@
   - Support for both directed and symmetric (undirected) graphs.
   - Generate adjacency matrices and perform common traversals (BFS, DFS).
 
+- Create subgraphs and compute unions, differences, or Kronecker products of graphs.
+
 - **BaseNetwork & Extended Functionality**
 
   - Integrate domain-specific attributes (e.g., `model`, `prompt`, `callback`, `modelOptions`) into graph nodes.
