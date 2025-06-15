@@ -9,7 +9,7 @@ export const FindNodeFromMap = <T>(
 ): LinkedDataNode<T> | null => {
   if (map instanceof Map) return map.get(id) || null;
   else if (map instanceof AVLTree)
-    return map.binarySearch(id) as LinkedDataNode<T>;
+    return map.binarySearch(id as any) as LinkedDataNode<T>;
   return null;
 };
 
