@@ -92,12 +92,20 @@ export abstract class BaseGraph<
     return { name: node.name, data: node.data };
   }
 
-  addNode({ name, data }: { name: string; data: V }): this {
+  addNode({
+    name,
+    data,
+    options = {},
+  }: {
+    name: string;
+    data: V;
+    options?: { [prop: string]: unknown };
+  }): this {
     const nodeAlreadyExists = (n: string): string =>
       `Node with name ${n} already exists.`;
     const g = this.__G__;
     if (g.has(name)) throw new Error(nodeAlreadyExists(name));
-    const n = this.createNode({ name, data, options: {} });
+    const n = this.createNode({ name, data, options });
     g.set(name, n);
 
     return this;
@@ -235,6 +243,70 @@ export class StateGraph<
   }): Vertex<D> {
     return new Vertex<D>({ name, data });
   }
+
+  clone(): StateGraph<D, T, S> {
+    const g = new StateGraph<D, T, S>();
+    for (const node of this) {
+      g.addNode({ name: node.name, data: node.data as D });
+    }
+
+    for (const edge of this.edges) {
+      g.addEdge({
+        source: edge.source,
+        target: edge.target,
+        data: edge.data as T,
+        params: {},
+      });
+    }
+    return g;
+  }
+
+  upgradeToGraph(): Graph<D, T, S> {
+    const g = new Graph<D, T, S>();
+    for (const node of this.nodes) {
+      g.addNode({
+        name: node.name,
+        data: node.data as D,
+      });
+    }
+
+    for (const edge of this.edges) {
+      g.addEdge({
+        source: edge.source,
+        target: edge.target,
+        data: edge.data as T,
+        params: {},
+      });
+    }
+
+    return g;
+  }
+
+  upgradeToBaseNetwork(): BaseNetwork<D, T, S> {
+    const g = new BaseNetwork<D, T, S>();
+    for (const node of this) {
+      g.addNode({
+        name: node.name,
+        data: node.data as D,
+        options: { value: 1 },
+      });
+    }
+
+    for (const edge of this.edges) {
+      g.addEdge({
+        source: edge.source,
+        target: edge.target,
+        data: edge.data as T,
+        params: { weight: 1 },
+      });
+    }
+
+    return g;
+  }
+
+  [Symbol.iterator](): Iterator<Vertex<D>> {
+    return this.__G__.values();
+  }
 }
 
 export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
@@ -247,11 +319,13 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   protected override createNode({
     name,
     data,
+    options,
   }: {
     name: string;
     data: D;
+    options: { [prop: string]: unknown };
   }): Vertex<D> {
-    return new Vertex<D>({ name, data });
+    return new Vertex<D>({ name, data, ...options });
   }
 
   inDegree(name: string): number {
@@ -628,6 +702,42 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return this;
   }
 
+  clone(): Graph<D, T, S> {
+    const g = new Graph<D, T, S>();
+    for (const node of this.nodes) {
+      g.addNode({ name: node.name, data: node.data as D });
+    }
+
+    for (const e of this.edges) {
+      g.addEdge({
+        source: e.source,
+        target: e.target,
+        data: e.data as T,
+        params: {},
+      });
+    }
+
+    return g;
+  }
+
+  upgradeToBaseNetwork(): BaseNetwork<D, T, S> {
+    const g = new BaseNetwork<D, T, S>();
+    for (const node of this.nodes) {
+      g.addNode({ name: node.name, data: node.data as D });
+    }
+
+    for (const e of this.edges) {
+      g.addEdge({
+        source: e.source,
+        target: e.target,
+        data: e.data as T,
+        params: { weight: 1 },
+      });
+    }
+
+    return g;
+  }
+
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
@@ -646,7 +756,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   }: {
     nodes?: { name: string; data: V; value: number }[];
     edges?: { source: string; target: string; data: T; weight: number }[];
-  }) {
+  } = {}) {
     super({ nodes, edges });
   }
   protected override createNode({
@@ -656,13 +766,12 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   }: {
     name: string;
     data: V;
-    options: { value: number };
+    options: { value: number; [prop: string]: unknown };
   }): Node<V> {
-    const { value } = options;
     return new Node<V>({
       name,
       data,
-      value,
+      ...options,
     });
   }
 
@@ -738,6 +847,56 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     const s = this.weightedSize;
 
     return s / (n * n);
+  }
+
+  get nodes(): { name: string; data: V | null; value: number }[] {
+    const nodes: { name: string; data: V | null; value: number }[] = [];
+    for (const node of this) {
+      nodes.push({
+        name: node.name,
+        data: node.data,
+        value: node.value,
+      });
+    }
+
+    return nodes;
+  }
+
+  get edges(): { source: string; target: string; data: T; weight: number }[] {
+    const E: { source: string; target: string; data: T; weight: number }[] = [];
+    for (const node of this) {
+      for (const [_, e] of node.outgoing)
+        E.push({
+          source: e.source.name,
+          target: e.target.name,
+          data: e.data,
+          weight: e.weight,
+        });
+    }
+
+    return E;
+  }
+
+  clone() {
+    const g = new BaseNetwork<V, T, S>();
+    for (const node of this.nodes) {
+      g.addNode({
+        name: node.name,
+        data: node.data as V,
+        options: { value: node.value },
+      });
+    }
+
+    for (const edge of this.edges) {
+      this.addEdge({
+        source: edge.source,
+        target: edge.target,
+        data: edge.data,
+        params: { weight: edge.weight },
+      });
+    }
+
+    return g;
   }
 
   BFSNode({
