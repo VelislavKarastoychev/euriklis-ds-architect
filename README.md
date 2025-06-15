@@ -81,3 +81,19 @@ console.log(node.id); // auto-generated UUID
 
 Create arrays, lists, or tree-like structures from these nodes to design
 tailored data structures for your application.
+
+## Testing (only for contributors which clone the repository).
+
+The included test suite relies on Bun's built-in test runner. Make sure you
+have [Bun](https://bun.sh) installed and then run:
+
+```bash
+bun test
+```
+
+If you prefer to use Node with a different testing framework, configure it in
+your `package.json` and run:
+
+```bash
+npm test
+```
