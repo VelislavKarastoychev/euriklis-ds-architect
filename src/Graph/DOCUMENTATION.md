@@ -27,23 +27,27 @@ g.addEdge({ source: "B", target: "A", data: null });
 
 #### Graph
 
-| Method                                      | Description                                   |
-| ------------------------------------------- | --------------------------------------------- |
-| `addNode({ name, data })`                   | Insert a node with the given name.            |
-| `removeNode(name)`                          | Delete a node and its connections.            |
-| `addEdge({ source, target, data, params })` | Connect two nodes.                            |
-| `removeEdge({ source, target })`            | Remove a connection.                          |
-| `getNode(name)`                             | Return node data.                             |
-| `getNodeInstance(name)`                     | Return the internal node object.              |
-| `getEdge({ source, target })`               | Return edge data.                             |
-| `getEdgeInstance({ source, target })`       | Return the internal edge object.              |
-| `inDegree(name)`                            | Number of incoming edges of a node.           |
-| `outDegree(name)`                           | Number of outgoing edges of a node.           |
-| `BFS(...)` / `BFSAsync(...)`                | Breadth-first traversal over all nodes.       |
-| `BFSNode(...)` / `BFSNodeAsync(...)`        | Breadth-first traversal starting from a node. |
-| `DFS(...)` / `DFSAsync(...)`                | Depth-first traversal over all nodes.         |
-| `DFSNode(...)` / `DFSNodeAsync(...)`        | Depth-first traversal starting from a node.   |
-| `[Symbol.iterator]()`                       | Iterate over graph nodes.                     |
+| Method                                      | Description                                              |
+| ------------------------------------------- | -------------------------------------------------------- |
+| `addNode({ name, data })`                   | Insert a node with the given name.                       |
+| `removeNode(name)`                          | Delete a node and its connections.                       |
+| `addEdge({ source, target, data, params })` | Connect two nodes.                                       |
+| `removeEdge({ source, target })`            | Remove a connection.                                     |
+| `getNode(name)`                             | Return node data.                                        |
+| `getNodeInstance(name)`                     | Return the internal node object.                         |
+| `getEdge({ source, target })`               | Return edge data.                                        |
+| `getEdgeInstance({ source, target })`       | Return the internal edge object.                         |
+| `inDegree(name)`                            | Number of incoming edges of a node.                      |
+| `outDegree(name)`                           | Number of outgoing edges of a node.                      |
+| `BFS(...)` / `BFSAsync(...)`                | Breadth-first traversal over all nodes.                  |
+| `BFSNode(...)` / `BFSNodeAsync(...)`        | Breadth-first traversal starting from a node.            |
+| `DFS(...)` / `DFSAsync(...)`                | Depth-first traversal over all nodes.                    |
+| `DFSNode(...)` / `DFSNodeAsync(...)`        | Depth-first traversal starting from a node.              |
+| `subgraph({ callback })`                    | Create a new graph with nodes that satisfy the callback. |
+| `union(graph)`                              | Union of two graphs.                                     |
+| `difference(graph)`                         | Difference of two graphs.                                |
+| `kronecker(graph)`                          | Kronecker (tensor) product of two graphs.                |
+| `[Symbol.iterator]()`                       | Iterate over graph nodes.                                |
 
 #### BaseNetwork
 
