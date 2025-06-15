@@ -211,6 +211,32 @@ export abstract class BaseGraph<
   }
 }
 
+/*
+ * This class implements a variant of computation graph
+ * which may be used for general purposes like transitions graphs,
+ * computational graphs, LLM agent graph structures etc.
+ * The main difference with the Graph instance is that this
+ * structure provides only the basic methods for creating, updating,
+ * reading and deletion of nodes/edges of the Graph, while in the Graph
+ * structuture we provide a set of algorithms which are related with the
+ * Graph structutures like BFS, DFS, PERT, CPM, Kruscal etc.
+ **/
+export class StateGraph<
+  D = unknown, // The data type of the nodes.
+  T = unknown, // The data type of the edges.
+  S = unknown, // The data type of the state of the graph.
+> extends BaseGraph<Vertex<D>, Edge<T>, D, T, S> {
+  protected override createNode({
+    name,
+    data,
+  }: {
+    name: string;
+    data: D;
+  }): Vertex<D> {
+    return new Vertex<D>({ name, data });
+  }
+}
+
 export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   Vertex<D>,
   Edge<T>,
