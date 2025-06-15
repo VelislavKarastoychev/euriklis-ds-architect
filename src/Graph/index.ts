@@ -738,6 +738,94 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return g;
   }
 
+  subgraph({
+    callback,
+  }: {
+    callback: (node: Vertex<D>, g: Graph<D, T, S>) => boolean;
+  }): Graph<D, T, S> {
+    const sg = new Graph<D, T, S>();
+    const keep = new Set<string>();
+    for (const node of this) {
+      if (callback(node, this)) {
+        sg.addNode({ name: node.name, data: node.data as D });
+        keep.add(node.name);
+      }
+    }
+
+    for (const edge of this.edges) {
+      if (keep.has(edge.source) && keep.has(edge.target)) {
+        sg.addEdge({
+          source: edge.source,
+          target: edge.target,
+          data: edge.data as T,
+          params: {},
+        });
+      }
+    }
+
+    return sg;
+  }
+
+  union(g2: Graph<D, T, S>): Graph<D, T, S> {
+    const u = this.clone();
+    for (const node of g2.nodes) {
+      if (!u.getNodeInstance(node.name))
+        u.addNode({ name: node.name, data: node.data as D });
+    }
+
+    for (const edge of g2.edges) {
+      if (!u.getEdgeInstance({ source: edge.source, target: edge.target })) {
+        u.addEdge({
+          source: edge.source,
+          target: edge.target,
+          data: edge.data as T,
+          params: {},
+        });
+      }
+    }
+
+    return u;
+  }
+
+  difference(g2: Graph<D, T, S>): Graph<D, T, S> {
+    const d = this.clone();
+    for (const node of g2.nodes) {
+      if (d.getNodeInstance(node.name)) d.removeNode(node.name);
+    }
+
+    for (const edge of g2.edges) {
+      d.removeEdge({ source: edge.source, target: edge.target });
+    }
+
+    return d;
+  }
+
+  kronecker<D2, T2>(g2: Graph<D2, T2>): Graph<[D, D2], [T, T2], S> {
+    const k = new Graph<[D, D2], [T, T2], S>();
+
+    for (const n1 of this) {
+      for (const n2 of g2) {
+        k.addNode({
+          name: `${n1.name}|${n2.name}`,
+          data: [n1.data as D, n2.data as D2],
+        });
+      }
+    }
+
+    for (const e1 of this.edges) {
+      for (const e2 of g2.edges) {
+        k.addEdge({
+          source: `${e1.source}|${e2.source}`,
+          target: `${e1.target}|${e2.target}`,
+          data: [e1.data as T, e2.data as T2],
+          params: {},
+        });
+      }
+    }
+
+    return k;
+  }
+
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
@@ -1242,6 +1330,103 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return this;
+  }
+
+  subgraph({
+    callback,
+  }: {
+    callback: (node: Node<V>, g: BaseNetwork<V, T, S>) => boolean;
+  }): BaseNetwork<V, T, S> {
+    const sg = new BaseNetwork<V, T, S>();
+    const keep = new Set<string>();
+    for (const node of this) {
+      if (callback(node, this)) {
+        sg.addNode({
+          name: node.name,
+          data: node.data as V,
+          options: { value: node.value },
+        });
+        keep.add(node.name);
+      }
+    }
+
+    for (const edge of this.edges) {
+      if (keep.has(edge.source) && keep.has(edge.target)) {
+        sg.addEdge({
+          source: edge.source,
+          target: edge.target,
+          data: edge.data,
+          params: { weight: edge.weight },
+        });
+      }
+    }
+
+    return sg;
+  }
+
+  union(n2: BaseNetwork<V, T, S>): BaseNetwork<V, T, S> {
+    const u = this.clone();
+    for (const node of n2.nodes) {
+      if (!u.getNodeInstance(node.name))
+        u.addNode({
+          name: node.name,
+          data: node.data as V,
+          options: { value: node.value },
+        });
+    }
+
+    for (const edge of n2.edges) {
+      if (!u.getEdgeInstance({ source: edge.source, target: edge.target })) {
+        u.addEdge({
+          source: edge.source,
+          target: edge.target,
+          data: edge.data,
+          params: { weight: edge.weight },
+        });
+      }
+    }
+
+    return u;
+  }
+
+  difference(n2: BaseNetwork<V, T, S>): BaseNetwork<V, T, S> {
+    const d = this.clone();
+    for (const node of n2.nodes) {
+      if (d.getNodeInstance(node.name)) d.removeNode(node.name);
+    }
+
+    for (const edge of n2.edges) {
+      d.removeEdge({ source: edge.source, target: edge.target });
+    }
+
+    return d;
+  }
+
+  kronecker<V2, T2>(n2: BaseNetwork<V2, T2>): BaseNetwork<[V, V2], [T, T2], S> {
+    const k = new BaseNetwork<[V, V2], [T, T2], S>();
+
+    for (const n1 of this) {
+      for (const nB of n2) {
+        k.addNode({
+          name: `${n1.name}|${nB.name}`,
+          data: [n1.data as V, nB.data as V2],
+          options: { value: n1.value * nB.value },
+        });
+      }
+    }
+
+    for (const e1 of this.edges) {
+      for (const e2 of n2.edges) {
+        k.addEdge({
+          source: `${e1.source}|${e2.source}`,
+          target: `${e1.target}|${e2.target}`,
+          data: [e1.data, e2.data] as [T, T2],
+          params: { weight: e1.weight * e2.weight },
+        });
+      }
+    }
+
+    return k;
   }
 
   [Symbol.iterator](): Iterator<Node<V>> {
