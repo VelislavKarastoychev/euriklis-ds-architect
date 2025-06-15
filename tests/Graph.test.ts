@@ -99,4 +99,28 @@ describe("Graph", () => {
     await g.DFSAsync({ callback: async (n) => visited.push(n.name) });
     expect(visited).toEqual(["A", "B", "D", "C"]);
   });
+
+  it("reports order and size correctly", () => {
+    const g = buildGraph();
+    expect(g.order).toBe(4);
+    expect(g.size).toBe(4);
+  });
+
+  it("clone creates an identical copy", () => {
+    const g = buildGraph();
+    const c = g.clone();
+    expect(c.order).toBe(g.order);
+    expect(c.size).toBe(g.size);
+    c.addNode({ name: "E", data: 5 });
+    expect(g.order).toBe(4);
+  });
+
+  it("upgradeToBaseNetwork copies nodes and edges", () => {
+    const g = buildGraph();
+    const n = g.upgradeToBaseNetwork();
+    expect(n.order).toBe(g.order);
+    expect(n.size).toBe(g.size);
+    expect(n.weightedOrder).toBe(g.order);
+    expect(n.weightedSize).toBe(g.size);
+  });
 });
