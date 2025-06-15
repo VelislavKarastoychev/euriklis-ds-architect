@@ -32,3 +32,10 @@ type K<T> = NonNullable<T>;
 
 export type ExtendedBSTDataNode<T> =
   K<T> extends BSTDataNode<T> ? K<T> : BSTDataNode<T>;
+
+export type EdgeType<D = unknown> = {
+  source: string;
+  target: string;
+  data?: D;
+  params?: { [param: string]: unknown };
+};
