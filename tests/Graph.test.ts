@@ -168,4 +168,58 @@ describe("Graph", () => {
     expect(k.getNode("A|X")).not.toBeNull();
     expect(k.getEdge({ source: "A|X", target: "B|Y" })).not.toBeNull();
   });
+
+  it("detects connectivity", () => {
+    const g = buildGraph();
+    expect(g.isConnected()).toBe(true);
+    const h = new Graph<number>();
+    h.addNode({ name: "A", data: 1 });
+    h.addNode({ name: "B", data: 2 });
+    expect(h.isConnected()).toBe(false);
+  });
+
+  it("checks bipartite graphs", () => {
+    const g = buildGraph();
+    expect(g.biGraph()).toBe(false);
+    const b = new Graph<number>();
+    b.addNode({ name: "A", data: 1 });
+    b.addNode({ name: "B", data: 2 });
+    b.addNode({ name: "C", data: 3 });
+    b.addNode({ name: "D", data: 4 });
+    b.addEdge({ source: "A", target: "C", data: null, params: {} });
+    b.addEdge({ source: "B", target: "D", data: null, params: {} });
+    expect(b.biGraph()).toBe(true);
+  });
+
+  it("finds cycles", () => {
+    const g = new Graph<number>();
+    g.addNode({ name: "A", data: 1 });
+    g.addNode({ name: "B", data: 2 });
+    g.addNode({ name: "C", data: 3 });
+    g.addEdge({ source: "A", target: "B", data: null, params: {} });
+    g.addEdge({ source: "B", target: "C", data: null, params: {} });
+    g.addEdge({ source: "C", target: "A", data: null, params: {} });
+    const cycles = g.cycles();
+    expect(cycles.length).toBeGreaterThan(0);
+  });
+
+  it("finds Hamiltonian cycle", () => {
+    const g = new Graph<number>();
+    g.addNode({ name: "A", data: 1 });
+    g.addNode({ name: "B", data: 2 });
+    g.addNode({ name: "C", data: 3 });
+    g.addNode({ name: "D", data: 4 });
+    g.addEdge({ source: "A", target: "B", data: null, params: {} });
+    g.addEdge({ source: "B", target: "C", data: null, params: {} });
+    g.addEdge({ source: "C", target: "D", data: null, params: {} });
+    g.addEdge({ source: "D", target: "A", data: null, params: {} });
+    const cycle = g.Hamiltonian();
+    expect(cycle).not.toBeNull();
+    expect(cycle!.length).toBe(5);
+  });
+
+  it("builds nCube graphs", () => {
+    const cube = Graph.nCube(2);
+    expect(cube.order).toBe(4);
+  });
 });
