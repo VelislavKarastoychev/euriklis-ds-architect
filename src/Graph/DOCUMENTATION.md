@@ -47,6 +47,11 @@ g.addEdge({ source: "B", target: "A", data: null });
 | `union(graph)`                              | Union of two graphs.                                     |
 | `difference(graph)`                         | Difference of two graphs.                                |
 | `kronecker(graph)`                          | Kronecker (tensor) product of two graphs.                |
+| `isConnected()`                             | Check if the graph is connected.                         |
+| `cycles()`                                  | Return simple cycles.                                    |
+| `Hamiltonian()`                             | Find a Hamiltonian cycle if one exists.                  |
+| `biGraph()`                                 | Test if the graph is bipartite.                          |
+| `nCube(n)`                                  | Generate an n-dimensional cube graph.                    |
 | `[Symbol.iterator]()`                       | Iterate over graph nodes.                                |
 
 #### BaseNetwork
