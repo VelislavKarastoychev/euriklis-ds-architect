@@ -12,6 +12,9 @@
 
 - Create subgraphs and compute unions, differences, or Kronecker products of graphs.
 
+- Check connectivity, find cycles, detect Hamiltonian cycles, and test bipartiteness.
+- Generate n-dimensional cube graphs.
+
 - **BaseNetwork & Extended Functionality**
 
   - Integrate domain-specific attributes (e.g., `model`, `prompt`, `callback`, `modelOptions`) into graph nodes.
