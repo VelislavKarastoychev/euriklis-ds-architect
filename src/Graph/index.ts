@@ -826,6 +826,167 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return k;
   }
 
+  /**
+   * Check if the graph is connected using an undirected traversal.
+   */
+  isConnected(): boolean {
+    if (this.order === 0) return true;
+    const start = this.__G__.values().next().value as Vertex<D>;
+    const visited = new Set<string>();
+    const stack = [start];
+    visited.add(start.name);
+    while (stack.length) {
+      const node = stack.pop() as Vertex<D>;
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Vertex<D>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          stack.push(target);
+        }
+      }
+      for (const edge of node.incomming.values()) {
+        const source = edge.source as Vertex<D>;
+        if (!visited.has(source.name)) {
+          visited.add(source.name);
+          stack.push(source);
+        }
+      }
+    }
+
+    return visited.size === this.order;
+  }
+
+  /**
+   * Return all simple cycles in the graph as arrays of node names.
+   */
+  cycles(): string[][] {
+    const cycles: string[][] = [];
+    const path: string[] = [];
+    const onStack = new Set<string>();
+    const visited = new Set<string>();
+    const found = new Set<string>();
+
+    const dfs = (node: Vertex<D>) => {
+      visited.add(node.name);
+      onStack.add(node.name);
+      path.push(node.name);
+
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Vertex<D>;
+        if (!onStack.has(target.name)) {
+          if (!visited.has(target.name)) dfs(target);
+        } else {
+          const idx = path.indexOf(target.name);
+          if (idx !== -1) {
+            const cycle = [...path.slice(idx), target.name];
+            const key = cycle.join("->");
+            if (!found.has(key)) {
+              cycles.push(cycle);
+              found.add(key);
+            }
+          }
+        }
+      }
+
+      path.pop();
+      onStack.delete(node.name);
+    };
+
+    for (const node of this) {
+      if (!visited.has(node.name)) dfs(node);
+    }
+
+    return cycles;
+  }
+
+  /**
+   * Try to find a Hamiltonian cycle. Returns the cycle or null.
+   */
+  Hamiltonian(): string[] | null {
+    const n = this.order;
+    if (n === 0) return [];
+    const nodes = [...this.__G__.keys()];
+    const start = nodes[0];
+    const path: string[] = [];
+    const visited = new Set<string>();
+
+    const dfs = (current: string): boolean => {
+      visited.add(current);
+      path.push(current);
+      if (path.length === n) {
+        const last = this.__G__.get(current)!;
+        if (last.outgoing.has(start)) {
+          path.push(start);
+          return true;
+        }
+      }
+      for (const [next] of this.__G__.get(current)!.outgoing) {
+        if (!visited.has(next) && dfs(next)) return true;
+      }
+      visited.delete(current);
+      path.pop();
+      return false;
+    };
+
+    if (dfs(start)) return path;
+    return null;
+  }
+
+  /**
+   * Determine if the graph is bipartite using BFS coloring.
+   */
+  biGraph(): boolean {
+    if (this.order === 0) return true;
+    const color = new Map<string, number>();
+    for (const node of this) {
+      if (color.has(node.name)) continue;
+      color.set(node.name, 0);
+      const queue: Vertex<D>[] = [node];
+      while (queue.length) {
+        const u = queue.shift() as Vertex<D>;
+        const uColor = color.get(u.name) as number;
+        const neighbors: Vertex<D>[] = [];
+        for (const e of u.outgoing.values())
+          neighbors.push(e.target as Vertex<D>);
+        for (const e of u.incomming.values())
+          neighbors.push(e.source as Vertex<D>);
+        for (const v of neighbors) {
+          if (!color.has(v.name)) {
+            color.set(v.name, 1 - uColor);
+            queue.push(v);
+          } else if (color.get(v.name) === uColor) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Generate an n-dimensional cube graph.
+   */
+  static nCube(n: number): Graph<number[], null> {
+    const g = new Graph<number[], null>();
+    const total = 1 << n;
+    for (let i = 0; i < total; i++) {
+      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
+      g.addNode({ name: i.toString(), data: bits });
+    }
+    for (let i = 0; i < total; i++) {
+      for (let j = 0; j < n; j++) {
+        const neighbor = i ^ (1 << j);
+        g.addEdge({
+          source: i.toString(),
+          target: neighbor.toString(),
+          data: null,
+          params: {},
+        });
+      }
+    }
+    return g;
+  }
+
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
@@ -1427,6 +1588,167 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return k;
+  }
+
+  /**
+   * Check if the network is connected using an undirected traversal.
+   */
+  isConnected(): boolean {
+    if (this.order === 0) return true;
+    const start = this.__G__.values().next().value as Node<V>;
+    const visited = new Set<string>();
+    const stack = [start];
+    visited.add(start.name);
+    while (stack.length) {
+      const node = stack.pop() as Node<V>;
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!visited.has(target.name)) {
+          visited.add(target.name);
+          stack.push(target);
+        }
+      }
+      for (const edge of node.incomming.values()) {
+        const source = edge.source as Node<V>;
+        if (!visited.has(source.name)) {
+          visited.add(source.name);
+          stack.push(source);
+        }
+      }
+    }
+
+    return visited.size === this.order;
+  }
+
+  /**
+   * Return all simple cycles in the network.
+   */
+  cycles(): string[][] {
+    const cycles: string[][] = [];
+    const path: string[] = [];
+    const onStack = new Set<string>();
+    const visited = new Set<string>();
+    const found = new Set<string>();
+
+    const dfs = (node: Node<V>) => {
+      visited.add(node.name);
+      onStack.add(node.name);
+      path.push(node.name);
+
+      for (const edge of node.outgoing.values()) {
+        const target = edge.target as Node<V>;
+        if (!onStack.has(target.name)) {
+          if (!visited.has(target.name)) dfs(target);
+        } else {
+          const idx = path.indexOf(target.name);
+          if (idx !== -1) {
+            const cycle = [...path.slice(idx), target.name];
+            const key = cycle.join("->");
+            if (!found.has(key)) {
+              cycles.push(cycle);
+              found.add(key);
+            }
+          }
+        }
+      }
+
+      path.pop();
+      onStack.delete(node.name);
+    };
+
+    for (const node of this) {
+      if (!visited.has(node.name)) dfs(node);
+    }
+
+    return cycles;
+  }
+
+  /**
+   * Try to find a Hamiltonian cycle in the network.
+   */
+  Hamiltonian(): string[] | null {
+    const n = this.order;
+    if (n === 0) return [];
+    const nodes = [...this.__G__.keys()];
+    const start = nodes[0];
+    const path: DynamicStack<string> = new DynamicStack<string>();
+    const visited = new Set<string>();
+
+    const dfs = (current: string): boolean => {
+      visited.add(current);
+      path.push(current);
+      if (path.size === n) {
+        const last = this.__G__.get(current)!;
+        if (last.outgoing.has(start)) {
+          path.push(start);
+          return true;
+        }
+      }
+      for (const [next] of this.__G__.get(current)!.outgoing) {
+        if (!visited.has(next) && dfs(next)) return true;
+      }
+      visited.delete(current);
+      path.pop();
+      return false;
+    };
+
+    if (dfs(start)) return [...path] as string[];
+    return null;
+  }
+
+  /**
+   * Determine if the network is bipartite.
+   */
+  biGraph(): boolean {
+    if (this.order === 0) return true;
+    const color = new Map<string, number>();
+    for (const node of this) {
+      if (color.has(node.name)) continue;
+      color.set(node.name, 0);
+      const queue = new Queue<Node<V>>(node);
+      while (queue.length) {
+        const u = queue.dequeue() as Node<V>;
+        const uColor = color.get(u.name) as number;
+        const neighbors: Node<V>[] = [];
+        for (const e of u.outgoing.values())
+          neighbors.push(e.target as Node<V>);
+        for (const e of u.incomming.values())
+          neighbors.push(e.source as Node<V>);
+        for (const v of neighbors) {
+          if (!color.has(v.name)) {
+            color.set(v.name, 1 - uColor);
+            queue.enqueue(v);
+          } else if (color.get(v.name) === uColor) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Generate an n-dimensional cube network.
+   */
+  static nCube(n: number): BaseNetwork<number[], null> {
+    const g = new BaseNetwork<number[], null>();
+    const total = 1 << n;
+    for (let i = 0; i < total; i++) {
+      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
+      g.addNode({ name: i.toString(), data: bits, options: { value: 1 } });
+    }
+    for (let i = 0; i < total; i++) {
+      for (let j = 0; j < n; j++) {
+        const neighbor = i ^ (1 << j);
+        g.addEdge({
+          source: i.toString(),
+          target: neighbor.toString(),
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+    return g;
   }
 
   [Symbol.iterator](): Iterator<Node<V>> {
