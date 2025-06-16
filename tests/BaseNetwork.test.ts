@@ -91,4 +91,59 @@ describe("BaseNetwork", () => {
     expect(k.weightedSize).toBe(1);
     expect(k.getEdge({ source: "A|X", target: "B|Y" })).not.toBeNull();
   });
+
+  it("detects connectivity", () => {
+    const n = buildNetwork();
+    expect(n.isConnected()).toBe(true);
+    const d = new BaseNetwork<number, null>();
+    d.addNode({ name: "A", data: 1 });
+    d.addNode({ name: "B", data: 2 });
+    expect(d.isConnected()).toBe(false);
+  });
+
+  it("checks bipartite property", () => {
+    const n = buildNetwork();
+    expect(n.biGraph()).toBe(false);
+    const b = new BaseNetwork<number, null>();
+    b.addNode({ name: "A", data: 1 });
+    b.addNode({ name: "B", data: 2 });
+    b.addNode({ name: "C", data: 3 });
+    b.addNode({ name: "D", data: 4 });
+    b.addEdge({ source: "A", target: "C", data: null, params: { weight: 1 } });
+    b.addEdge({ source: "B", target: "D", data: null, params: { weight: 1 } });
+    expect(b.biGraph()).toBe(true);
+  });
+
+  it("finds cycles", () => {
+    const n = new BaseNetwork<number, null>();
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addNode({ name: "C", data: 3 });
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "B", target: "C", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "C", target: "A", data: null, params: { weight: 1 } });
+    const cycles = n.cycles();
+    expect(cycles.length).toBeGreaterThan(0);
+  });
+
+  it("finds Hamiltonian cycle", () => {
+    const h = new BaseNetwork<number, null>();
+    h.addNode({ name: "A", data: 1 });
+    h.addNode({ name: "B", data: 2 });
+    h.addNode({ name: "C", data: 3 });
+    h.addNode({ name: "D", data: 4 });
+    h.addEdge({ source: "A", target: "B", data: null, params: { weight: 1 } });
+    h.addEdge({ source: "B", target: "C", data: null, params: { weight: 1 } });
+    h.addEdge({ source: "C", target: "D", data: null, params: { weight: 1 } });
+    h.addEdge({ source: "D", target: "A", data: null, params: { weight: 1 } });
+    const cycle = h.Hamiltonian();
+    expect(cycle).not.toBeNull();
+    expect(cycle!.length).toBe(5);
+  });
+
+  it("builds nCube networks", () => {
+    const cube = BaseNetwork.nCube(2);
+    expect(cube.order).toBe(4);
+    expect(cube.weightedSize).toBe(8);
+  });
 });
