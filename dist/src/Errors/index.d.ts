@@ -1,0 +1,15 @@
+export declare const IncorrectParameterInPushMany: () => never;
+export declare const StackUnderflow: (methodName: string) => () => never;
+export declare const StackOverflow: (methodName: string) => () => never;
+export declare const IncorrectEdgeDeclaration: (methodName: string) => () => never;
+export declare const IncorrectNodeName: () => never;
+export declare const IncorrectNodesDeclaration: () => never;
+export declare const NodeAlreadyExists: () => never;
+export declare const InappropriateWeightDeclarationInSymmetrize: () => never;
+export declare const InappropriateValuesTypeDefinition: () => never;
+export declare const InappropriateWeightsType: (name: string) => () => never;
+export declare const InappropriateNodeValuesType: (name: string) => () => never;
+export declare const InappropriateNodesDeclaration: (name: string) => () => never;
+export declare const IncorrectComputationGraphType: (name: string) => () => never;
+export declare const InappropriatelyDefinedComputationGraph: (name: string) => () => never;
+export declare const IncorrectNodeDeclarationInMethod: (name: string) => () => never;
