@@ -1,0 +1,15 @@
+export declare const IncorrectParameterInPushManyTxt = "Incorrect parameter in the pushMany method of the current Stack instance. Note that this parameter has to be an array of arbitrary elements.";
+export declare const StackOverflowTxt: (method: string) => string;
+export declare const StackUnderflowTxt: (method: string) => string;
+export declare const IncorrectEdgeDeclarationTxt: (methodName: string) => string;
+export declare const IncorrectNodeNameTxt = "Incorrect node name in the addNode method. Node with this name already exists. Use updateNode if you want to change the data of that node.";
+export declare const IncorrectNodesDeclarationTxt = "Incorrect nodes declaration in the generateGraphNodes static method.";
+export declare const NodeAlreadyExistsTxt = "The node inserted with the method addNode already exists. If you want to change some data of this node, please use the method updateNode.";
+export declare const InappropriateWeightDeclarationInSymmetrizeTxt = "Inappropriate type of the weights in the symmetric method. All the weight pairs have to be with the same type. The types which are allowed are number, number array, typed array, typed matrixand numeric matrix.";
+export declare const InappropriateValuesTypeDefinitionTxt = "Inappropriate values type of the graph in the assignNodeValuesToNumber method. The valuesType has to be set to 'Numeric'.";
+export declare const InappropriateWeightsTypeTxt: (name: string) => string;
+export declare const InappropriateNodeValuesTypeTxt: (name: string) => string;
+export declare const InappropriateNodesDeclarationTxt: (title: string) => string;
+export declare const IncorrectComputationGraphTypeTxt: (title: string) => string;
+export declare const InappropriatelyDefinedComputationGraphTxt: (title: string) => string;
+export declare const IncorrectNodeDeclarationInMethodTxt: (title: string) => string;
