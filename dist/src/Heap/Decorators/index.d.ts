@@ -1,0 +1,1 @@
+export { ifLengthIsGreaterThanSizeThrow } from "./IfLengthIsGreaterThanSizeThrow";
