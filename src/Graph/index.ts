@@ -316,6 +316,29 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   T,
   S
 > {
+  /**
+   * Generate an n-dimensional cube graph.
+   */
+  static nCube(n: number): Graph<number[], null> {
+    const g = new Graph<number[], null>();
+    const total = 1 << n;
+    for (let i = 0; i < total; i++) {
+      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
+      g.addNode({ name: i.toString(), data: bits });
+    }
+    for (let i = 0; i < total; i++) {
+      for (let j = 0; j < n; j++) {
+        const neighbor = i ^ (1 << j);
+        g.addEdge({
+          source: i.toString(),
+          target: neighbor.toString(),
+          data: null,
+          params: {},
+        });
+      }
+    }
+    return g;
+  }
   protected override createNode({
     name,
     data,
@@ -963,30 +986,6 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return true;
   }
 
-  /**
-   * Generate an n-dimensional cube graph.
-   */
-  static nCube(n: number): Graph<number[], null> {
-    const g = new Graph<number[], null>();
-    const total = 1 << n;
-    for (let i = 0; i < total; i++) {
-      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
-      g.addNode({ name: i.toString(), data: bits });
-    }
-    for (let i = 0; i < total; i++) {
-      for (let j = 0; j < n; j++) {
-        const neighbor = i ^ (1 << j);
-        g.addEdge({
-          source: i.toString(),
-          target: neighbor.toString(),
-          data: null,
-          params: {},
-        });
-      }
-    }
-    return g;
-  }
-
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
@@ -999,6 +998,29 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   T,
   S
 > {
+  /**
+   * Generate an n-dimensional cube network.
+   */
+  static nCube(n: number): BaseNetwork<number[], null> {
+    const g = new BaseNetwork<number[], null>();
+    const total = 1 << n;
+    for (let i = 0; i < total; i++) {
+      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
+      g.addNode({ name: i.toString(), data: bits, options: { value: 1 } });
+    }
+    for (let i = 0; i < total; i++) {
+      for (let j = 0; j < n; j++) {
+        const neighbor = i ^ (1 << j);
+        g.addEdge({
+          source: i.toString(),
+          target: neighbor.toString(),
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+    return g;
+  }
   constructor({
     nodes,
     edges,
@@ -1725,30 +1747,6 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       }
     }
     return true;
-  }
-
-  /**
-   * Generate an n-dimensional cube network.
-   */
-  static nCube(n: number): BaseNetwork<number[], null> {
-    const g = new BaseNetwork<number[], null>();
-    const total = 1 << n;
-    for (let i = 0; i < total; i++) {
-      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
-      g.addNode({ name: i.toString(), data: bits, options: { value: 1 } });
-    }
-    for (let i = 0; i < total; i++) {
-      for (let j = 0; j < n; j++) {
-        const neighbor = i ^ (1 << j);
-        g.addEdge({
-          source: i.toString(),
-          target: neighbor.toString(),
-          data: null,
-          params: { weight: 1 },
-        });
-      }
-    }
-    return g;
   }
 
   [Symbol.iterator](): Iterator<Node<V>> {
