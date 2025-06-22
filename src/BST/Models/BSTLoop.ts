@@ -12,9 +12,9 @@ export const BSTLoop = <T extends any, AbstractBSTDataNode extends BSTDataNode>(
   if (queue.isEmpty) return;
   const node: AbstractBSTDataNode | null = queue.dequeue();
   if (!callback(node as AbstractBSTDataNode, tree)) return;
-  if ((node as AbstractBSTDataNode).right)
-    queue.enqueue((node as AbstractBSTDataNode).right);
   if ((node as AbstractBSTDataNode).left)
     queue.enqueue((node as AbstractBSTDataNode).left);
+  if ((node as AbstractBSTDataNode).right)
+    queue.enqueue((node as AbstractBSTDataNode).right);
   return BSTLoop(callback, queue, tree);
 };
