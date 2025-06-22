@@ -1,6 +1,10 @@
 import type { Integer } from "../../Types";
 import { GraphDataNode, GraphDataEdge } from "../DataNode";
 import { Arc, Edge, Node, Vertex } from "../DataNode/Models";
+/**
+ * Generic graph container used by all higher level graph structures.
+ * Manages a map of nodes and their connecting edges.
+ */
 export declare abstract class BaseGraph<N extends GraphDataNode<V, any>, E extends GraphDataEdge<any, any, T>, V = unknown, T = unknown, S = unknown> {
     protected __G__: Map<string, N>;
     protected __S__: S | null;
@@ -90,6 +94,11 @@ export declare abstract class BaseGraph<N extends GraphDataNode<V, any>, E exten
         target: string;
     }): E | null;
 }
+/**
+ * Lightweight graph structure exposing only CRUD operations for nodes and
+ * edges. Useful for state machines or situations where advanced algorithms
+ * from the `Graph` class are unnecessary.
+ */
 export declare class StateGraph<D = unknown, // The data type of the nodes.
 T = unknown, // The data type of the edges.
 S = unknown> extends BaseGraph<Vertex<D>, Edge<T>, D, T, S> {
@@ -102,6 +111,11 @@ S = unknown> extends BaseGraph<Vertex<D>, Edge<T>, D, T, S> {
     upgradeToBaseNetwork(): BaseNetwork<D, T, S>;
     [Symbol.iterator](): Iterator<Vertex<D>>;
 }
+/**
+ * Feature-rich graph implementation providing common graph algorithms
+ * like BFS/DFS along with utility methods for unions, differences and
+ * other advanced operations.
+ */
 export declare class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<Vertex<D>, Edge<T>, D, T, S> {
     /**
      * Generate an n-dimensional cube graph.
@@ -181,6 +195,13 @@ export declare class Graph<D = unknown, T = unknown, S = unknown> extends BaseGr
     biGraph(): boolean;
     [Symbol.iterator](): Iterator<Vertex<D>>;
 }
+/**
+ * Extension of `Graph` where nodes carry numeric values and edges have
+ * weights, enabling common network metrics and algorithms.
+ * The BaseNetwork is a generic Graph structure which requires three
+ * types - the type of the data of the nodes, the type of the edge data and
+ * the type of the state of the network.
+ */
 export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, Arc<T>, V, T, S> {
     /**
      * Generate an n-dimensional cube network.
