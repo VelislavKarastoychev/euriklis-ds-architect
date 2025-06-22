@@ -12,7 +12,7 @@ export const BinarySearchNode = <
   callback: (node: AbstractBSTDataNode, tree?: BST<T>) => -1 | 0 | 1,
 ): AbstractBSTDataNode | null => {
   if (!node) return null;
-  const comparison = callback(node, this);
+  const comparison = callback(node, tree);
   if (comparison < 0) {
     return BinarySearchNode(
       tree,
@@ -41,13 +41,17 @@ export const BinarySearch = <
   if (node) {
     const comparison = callback(node, value);
     if (comparison < 0) {
-      return BinarySearch(node.left, value, callback) as
-        | AbstractBSTDataNode
-        | null;
+      return BinarySearch(
+        node.left,
+        value,
+        callback,
+      ) as AbstractBSTDataNode | null;
     } else if (comparison > 0) {
-      return BinarySearch(node.right, value, callback) as
-        | AbstractBSTDataNode
-        | null;
+      return BinarySearch(
+        node.right,
+        value,
+        callback,
+      ) as AbstractBSTDataNode | null;
     } else return node;
   } else return null;
 };
