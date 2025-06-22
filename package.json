@@ -1,7 +1,7 @@
 {
   "name": "@euriklis/ds-architect",
   "version": "0.1.0",
-  "module": "./dist/index.ts",
+  "module": "./dist/index.js",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,8 +21,8 @@
     "@types/bun": "latest"
   },
   "scripts": {
-    "build": "bun build index.ts --outdir dist --target node --minify",
-    "types": "tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && bun build index.ts --outdir dist --target node --minify",
+    "types": "tsc -p tsconfig.build.json && find dist -name '*.back.d.ts' -delete",
     "prepare": "npm run build && npm run types"
   },
   "repository": {
