@@ -110,6 +110,14 @@ export declare class BST<T> {
      */
     set unique(isUnique: boolean);
     /**
+     * Retrieves a node by its unique identifier.
+     *
+     * @param {string} id - The id of the node to search for.
+     * @returns {BSTDataNode<T> | null} The found node or null if no node
+     * with the provided id exists.
+     */
+    private getNodeById;
+    /**
      * Calculates the height of the tree from the given node.
      * The height is the number of edges on the longest path from the node to a leaf.
      *
@@ -193,7 +201,7 @@ export declare class BST<T> {
      * @returns {BST<T>} The updated Binary Search Tree
      * after all insertions.
      */
-    insertMany(data: T[]): BST<T>;
+    insertMany(data: T[], ids?: string[]): BST<T>;
     /**
      * Deletes a node with the specified value
      * from the Binary Search Tree.
@@ -204,7 +212,7 @@ export declare class BST<T> {
      * callback function used to compare node values. Defaults to the search callback of the tree.
      * @returns {any | null} The data of the deleted node if found and deleted; otherwise, null.
      */
-    delete(value: T, callback?: BSTNodeValueComparisonCallbackType): T | null;
+    delete(value: T | string, callback?: BSTNodeValueComparisonCallbackType): T | null;
     /**
      * Deletes a specific node from the Binary Search Tree
      * using a callback function to find the node.
