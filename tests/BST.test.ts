@@ -15,12 +15,19 @@ describe("BST", () => {
 
   it("deletes nodes by id", () => {
     const t = new BST<number>();
-    t.insertMany([2, 1, 3]);
+    t.insertMany([2, 1, 3], ["2", "1", "3"]);
     const ids: string[] = [];
-    t.BFS((n) => ids.push(n.id));
+    const d: number[] = [];
+    t.BFS((n) => {
+      ids.push(n.id);
+      d.push(n.data as number);
+    });
+    console.log([...t]);
+    console.log(d);
     t.delete(ids[2]);
     const arr: number[] = [];
     t.BFS((n) => arr.push(n.data as number));
+    console.log(arr);
     expect(arr.sort()).toEqual([1, 2]);
   });
 
