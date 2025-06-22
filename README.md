@@ -144,35 +144,3 @@ console.log(node.id); // auto-generated UUID
 
 Create arrays, lists, or tree-like structures from these nodes to design
 tailored data structures for your application.
-
-## Testing (only for contributors which clone the repository).
-
-The included test suite relies on Bun's built-in test runner. Make sure you
-have [Bun](https://bun.sh) installed and then run:
-
-```bash
-bun test
-```
-
-If you prefer to use Node with a different testing framework, configure it in
-your `package.json` and run:
-
-```bash
-npm test
-```
-
-## Publishing
-
-`bun publish` is Bun's faster alternative to `npm publish` and uses the same npm registry. Before publishing, make sure your package is built:
-
-```bash
-bun run build # or npm run prepare
-```
-
-Log in to npm so Bun can authenticate:
-
-```bash
-bun login # or npm login
-```
-
-Then run `bun publish` (or `npm publish` if you prefer).
