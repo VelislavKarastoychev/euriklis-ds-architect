@@ -152,6 +152,27 @@ export class BST<T> {
   }
 
   /**
+   * Retrieves a node by its unique identifier.
+   *
+   * @param {string} id - The id of the node to search for.
+   * @returns {BSTDataNode<T> | null} The found node or null if no node
+   * with the provided id exists.
+   */
+  private getNodeById(id: string): BSTDataNode<T> | null {
+    let found: BSTDataNode<T> | null = null;
+    this.loop((node) => {
+      if (node.id === id) {
+        found = node as BSTDataNode<T>;
+        return false;
+      }
+
+      return true;
+    });
+
+    return found;
+  }
+
+  /**
    * Calculates the height of the tree from the given node.
    * The height is the number of edges on the longest path from the node to a leaf.
    *
@@ -309,15 +330,21 @@ export class BST<T> {
    * @returns {BST<T>} The updated Binary Search Tree
    * after all insertions.
    */
-  insertMany(data: T[]): BST<T> {
+  insertMany(data: T[], ids: string[] = []): BST<T> {
     const n = data.length;
     let i: Integer;
+    if (ids.length) {
+      if (ids.length !== data.length)
+        throw new Error(
+          "The ids is declared but the length is not identical to the data length.",
+        );
+    }
     for (i = 0; i < n - 1; i++) {
-      this.insert(data[i++]);
-      this.insert(data[i]);
+      this.insert(data[i], ids[i++]);
+      this.insert(data[i], ids[i]);
     }
 
-    if (i === n - 1) this.insert(data[n - 1]);
+    if (i === n - 1) this.insert(data[n - 1], ids[n - 1]);
 
     return this;
   }
@@ -333,10 +360,16 @@ export class BST<T> {
    * @returns {any | null} The data of the deleted node if found and deleted; otherwise, null.
    */
   delete(
-    value: T,
+    value: T | string,
     callback: BSTNodeValueComparisonCallbackType = this.search,
   ): T | null {
-    const node = models.BinarySearch(this._root, value, callback);
+    let node: BSTDataNode<T> | null = null;
+
+    if (typeof value === "string") {
+      node = this.getNodeById(value);
+    }
+
+    if (!node) node = models.BinarySearch(this._root, value as T, callback);
     models.DeleteNodeInBST(node, this);
     // It is no needed to delete the node connection
     // because the garbadge collector will delete it.
@@ -675,8 +708,8 @@ export class BST<T> {
         if (!S.isEmpty) {
           const node = S.dequeue() as BSTDataNode;
           const value = node.data as T;
-          if (node.right) S.enqueue(node.right as BSTDataNode<T>);
           if (node.left) S.enqueue(node.left as BSTDataNode<T>);
+          if (node.right) S.enqueue(node.right as BSTDataNode<T>);
           return { value, done: false };
         }
         return { value: undefined, done: true };
