@@ -1,5 +1,10 @@
 import type { HeapType, Integer } from "../../Types";
 import { HeapDataNode } from "../DataNode";
+/**
+ * Basic heap implementation storing values in an array of `HeapDataNode`.
+ * Provides methods for inserting, removing and searching while supporting
+ * both max and min heap behaviour.
+ */
 export declare class PrimaryHeap<T = unknown> {
     private _heap;
     private _type;
