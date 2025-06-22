@@ -6,6 +6,11 @@ import { ifLengthIsGreaterThanSizeThrow } from "./Decorators";
 import * as errors from "../Errors";
 import * as models from "./Models";
 
+/**
+ * Basic heap implementation storing values in an array of `HeapDataNode`.
+ * Provides methods for inserting, removing and searching while supporting
+ * both max and min heap behaviour.
+ */
 export class PrimaryHeap<T = unknown> {
   private _heap: HeapDataNode<T>[] = [];
   private _type: HeapType = "max";

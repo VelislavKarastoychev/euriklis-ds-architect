@@ -6,6 +6,10 @@ import { Arc, Edge, Node, Vertex } from "../DataNode/Models";
 import { Queue } from "../Queue";
 import { DynamicStack } from "../Stack";
 
+/**
+ * Generic graph container used by all higher level graph structures.
+ * Manages a map of nodes and their connecting edges.
+ */
 export abstract class BaseGraph<
   N extends GraphDataNode<V, any>,
   E extends GraphDataEdge<any, any, T>,
@@ -219,16 +223,11 @@ export abstract class BaseGraph<
   }
 }
 
-/*
- * This class implements a variant of computation graph
- * which may be used for general purposes like transitions graphs,
- * computational graphs, LLM agent graph structures etc.
- * The main difference with the Graph instance is that this
- * structure provides only the basic methods for creating, updating,
- * reading and deletion of nodes/edges of the Graph, while in the Graph
- * structuture we provide a set of algorithms which are related with the
- * Graph structutures like BFS, DFS, PERT, CPM, Kruscal etc.
- **/
+/**
+ * Lightweight graph structure exposing only CRUD operations for nodes and
+ * edges. Useful for state machines or situations where advanced algorithms
+ * from the `Graph` class are unnecessary.
+ */
 export class StateGraph<
   D = unknown, // The data type of the nodes.
   T = unknown, // The data type of the edges.
@@ -309,6 +308,11 @@ export class StateGraph<
   }
 }
 
+/**
+ * Feature-rich graph implementation providing common graph algorithms
+ * like BFS/DFS along with utility methods for unions, differences and
+ * other advanced operations.
+ */
 export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   Vertex<D>,
   Edge<T>,
@@ -991,6 +995,13 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 }
 
+/**
+ * Extension of `Graph` where nodes carry numeric values and edges have
+ * weights, enabling common network metrics and algorithms.
+ * The BaseNetwork is a generic Graph structure which requires three
+ * types - the type of the data of the nodes, the type of the edge data and
+ * the type of the state of the network.
+ */
 export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   Node<V>,
   Arc<T>,

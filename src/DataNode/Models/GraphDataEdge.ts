@@ -2,6 +2,10 @@
 import { v4 as uuid } from "uuid";
 import { GraphDataNode, Node, Vertex } from "./GraphDataNode";
 
+/**
+ * Base class for edges between graph nodes. Stores source, target,
+ * optional data payload and generates a unique identifier for each edge.
+ */
 export abstract class GraphDataEdge<
   S extends GraphDataNode<any, any>,
   T extends GraphDataNode<any, any>,
@@ -57,6 +61,9 @@ export class Edge<D = unknown> extends GraphDataEdge<
   Vertex<unknown>,
   D
 > {
+  /**
+   * Create an edge between two vertices.
+   */
   constructor({
     source,
     target,
@@ -71,6 +78,9 @@ export class Edge<D = unknown> extends GraphDataEdge<
 }
 
 export class Arc<D = unknown> extends GraphDataEdge<Node<any>, Node<any>, D> {
+  /**
+   * Create a weighted directed edge (arc) between two nodes.
+   */
   protected __WEIGHT__: number = 1;
   constructor({
     source,

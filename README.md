@@ -41,14 +41,72 @@ bun install @euriklis/ds-architect
 
 # Documentation
 
-- [DataNode](src/DataNode/DOCUMENTATION.md)
-- [DoublyLinkedList](src/DoublyLinkedList/DOCUMENTATION.md)
-- [Queue](src/Queue/DOCUMENTATION.md)
-- [Stack](src/Stack/DOCUMENTATION.md)
-- [BST](src/BST/DOCUMENTATION.md)
-- [AVLTree](src/AVL/DOCUMENTATION.md)
-- [Heap](src/Heap/DOCUMENTATION.md)
-- [Graph & BaseNetwork](src/Graph/DOCUMENTATION.md)
+- [DataNode](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/DataNode/DOCUMENTATION.md)
+- [DoublyLinkedList](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/DoublyLinkedList/DOCUMENTATION.md)
+- [Queue](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/Queue/DOCUMENTATION.md)
+- [Stack](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/Stack/DOCUMENTATION.md)
+- [BST](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/BST/DOCUMENTATION.md)
+- [AVLTree](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/AVL/DOCUMENTATION.md)
+- [Heap](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/Heap/DOCUMENTATION.md)
+- [Graph & BaseNetwork](https://github.com/VelislavKarastoychev/euriklis-ds-architect/blob/main/src/Graph/DOCUMENTATION.md)
+
+## Sub-library overview
+
+Below is a brief summary of the main modules shipped with this package. Each
+class has additional examples and details in its corresponding documentation
+file linked above.
+
+### DataNode
+
+- `DataNode<T>` – Base class for all nodes. Provides `id` and `data` getters
+  and setters along with a constructor that accepts optional data and id.
+
+### DoublyLinkedList
+
+- `DoublyLinkedList<T>` – A bidirectional list with optional size limit.
+  Common methods include `addLast`, `removeFirst`, `removeLast`,
+  `insertBefore`, `insertAfter`, `filter`, `traverse`, `merge`, and the
+  iterable protocol.
+
+### Queue
+
+- `Queue<T>` – FIFO queue built on a linked list. Supports `enqueue`,
+  `enqueueMany`, `dequeue`, `dequeueMany`, `traverse`, `filter`, `merge`, and
+  `[Symbol.iterator]` for iteration.
+
+### Stack
+
+- `DynamicStack<T>` – Resizable LIFO stack with `push`, `pushMany`, `pop`,
+  `popMany`, `filter`, `traverse`, and `copy` helpers.
+- `StaticStack<T>` – Array-backed variant with similar API for fixed-size use
+  cases.
+
+### BST
+
+- `BST<T>` – Binary search tree providing `insert`, `insertMany`, `delete`,
+  `deleteNode`, `binarySearch`, `BFS`, `DFS`, and iteration support.
+
+### AVLTree
+
+- `AVLTree<T>` – Self-balancing tree that extends `BST` and rebalances on
+  `insert` or `delete`. Includes `copy` and `print` utilities.
+
+### Heap
+
+- `Heap<T>` and `PrimaryHeap<T>` – Binary heap implementations. Key methods
+  are `add`, `search`, `remove`, `merge`, `searchIndex`, and static `from` to
+  build a heap from an array.
+
+### Graph and networks
+
+- `Graph<T>` – Generic graph structure with `addNode`, `removeNode`,
+  `addEdge`, `removeEdge`, data lookups, degree helpers, BFS/DFS traversals
+  (sync or async), and utilities like `subgraph`, `union`, `difference`,
+  `kronecker`, `isConnected`, `cycles`, `Hamiltonian`, `biGraph`, and `nCube`.
+- `BaseNetwork` – Extends `Graph` so nodes hold numeric values and edges carry
+  weights.
+- `StateGraph` – Lightweight graph focused on node/edge management without
+  traversal algorithms.
 
 # Usage:
 

@@ -4,6 +4,10 @@ import * as errors from "../Errors";
 import { v4 as uuid } from "uuid";
 import { GraphDataEdge, Edge, Arc } from "./GraphDataEdge";
 
+/**
+ * Base class for all graph-related nodes. Holds incoming and outgoing
+ * edges as well as basic metadata like name and data payload.
+ */
 export abstract class GraphDataNode<
   O = unknown,
   E extends GraphDataEdge<
@@ -132,12 +136,18 @@ export abstract class GraphDataNode<
   }
 }
 
+/**
+ * Basic graph vertex implementation holding outgoing and incoming edges.
+ */
 export class Vertex<D = unknown> extends GraphDataNode<D, Edge<any>> {
   protected createEdge<T = unknown>(target: Vertex<any>, data: T): Edge<T> {
     return new Edge({ source: this, target, data });
   }
 }
 
+/**
+ * Vertex variant storing a numeric value used by weighted graphs.
+ */
 export class Node<D = unknown> extends GraphDataNode<D, Arc<any>> {
   protected __VALUE__: number = 1;
 
