@@ -52,7 +52,10 @@ export abstract class GraphDataNode<
     this.__DATA__ = d;
   }
 
-  get incomming(): Map<string, E> {
+  /**
+   * Incoming edges for this node
+   */
+  get incoming(): Map<string, E> {
     return this.__IN__;
   }
 
@@ -79,7 +82,7 @@ export abstract class GraphDataNode<
     if (this.outgoing.has(node.name)) errors.EdgeAlreadyExists(node.name);
     const e = this.createEdge(node, data, params);
     this.outgoing.set(node.name, e);
-    node.incomming.set(this.name, e);
+    node.incoming.set(this.name, e);
 
     return this;
   }
@@ -115,12 +118,12 @@ export abstract class GraphDataNode<
     if (node) {
       e = this.outgoing.get(node.name);
       this.outgoing.delete(node.name);
-      node.incomming.delete(this.name);
+      node.incoming.delete(this.name);
     } else {
       const e = this.outgoing.get(nodeName as string);
       if (e) {
         this.outgoing.delete(nodeName as string);
-        (e.target as GraphDataNode<any, E>).incomming.delete(this.name);
+        (e.target as GraphDataNode<any, E>).incoming.delete(this.name);
       }
     }
 
@@ -128,7 +131,7 @@ export abstract class GraphDataNode<
   }
 
   get inDegree(): number {
-    return this.incomming.size;
+    return this.incoming.size;
   }
 
   get outDegree(): number {
@@ -173,7 +176,7 @@ export class Node<D = unknown> extends GraphDataNode<D, Arc<any>> {
 
   weightedInDegree(): number {
     let inDegree: number = 0;
-    this.incomming.forEach((arc) => (inDegree += arc.weight));
+    this.incoming.forEach((arc: Arc<any>): number => (inDegree += arc.weight));
 
     return inDegree;
   }
