@@ -191,21 +191,21 @@ export abstract class BaseGraph<
     const g = this.__G__;
     const node = g.get(name);
     if (!node) return null;
-    // get the incomming and the outgoing connections.
-    const incomming = node.incomming;
+    // get the incoming and the outgoing connections.
+    const incoming = node.incoming;
     const outgoing = node.outgoing;
     // delete the node from the outgoing
-    // connection of the incomming connections
+    // connection of the incoming connections
     // of the node.
-    for (const [_, n] of incomming) {
+    for (const [_, n] of incoming) {
       n.source.outgoing.delete(name);
     }
 
-    // delete the node from the incomming
+    // delete the node from the incoming
     // connections of the outgoing connectins
     // of the node.
     for (const [_, n] of outgoing) {
-      n.target.incomming.delete(name);
+      n.target.incoming.delete(name);
     }
 
     g.delete(name);
@@ -871,7 +871,7 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
           stack.push(target);
         }
       }
-      for (const edge of node.incomming.values()) {
+      for (const edge of node.incoming.values()) {
         const source = edge.source as Vertex<D>;
         if (!visited.has(source.name)) {
           visited.add(source.name);
@@ -975,7 +975,7 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
         const neighbors: Vertex<D>[] = [];
         for (const e of u.outgoing.values())
           neighbors.push(e.target as Vertex<D>);
-        for (const e of u.incomming.values())
+        for (const e of u.incoming.values())
           neighbors.push(e.source as Vertex<D>);
         for (const v of neighbors) {
           if (!color.has(v.name)) {
@@ -1641,7 +1641,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
           stack.push(target);
         }
       }
-      for (const edge of node.incomming.values()) {
+      for (const edge of node.incoming.values()) {
         const source = edge.source as Node<V>;
         if (!visited.has(source.name)) {
           visited.add(source.name);
@@ -1745,7 +1745,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
         const neighbors: Node<V>[] = [];
         for (const e of u.outgoing.values())
           neighbors.push(e.target as Node<V>);
-        for (const e of u.incomming.values())
+        for (const e of u.incoming.values())
           neighbors.push(e.source as Node<V>);
         for (const v of neighbors) {
           if (!color.has(v.name)) {
