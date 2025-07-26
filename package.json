@@ -30,6 +30,20 @@
     "type": "git",
     "url": "https://github.com/VelislavKarastoychev/euriklis-ds-architect.git"
   },
+  "keywords": [
+    "data structures",
+    "queue",
+    "doubly linked list",
+    "heap",
+    "BST",
+    "AVL tree",
+    "stack",
+    "graph algorithms",
+    "network algorithms",
+    "typescript",
+    "graphs",
+    "library"
+  ],
   "publishConfig": {
     "access": "public"
   },
