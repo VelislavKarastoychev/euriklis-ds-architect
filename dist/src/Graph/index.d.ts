@@ -1,6 +1,7 @@
 import type { Integer } from "../../Types";
 import { GraphDataNode, GraphDataEdge } from "../DataNode";
 import { Arc, Edge, Node, Vertex } from "../DataNode/Models";
+import { DynamicStack } from "../Stack";
 /**
  * Generic graph container used by all higher level graph structures.
  * Manages a map of nodes and their connecting edges.
@@ -190,9 +191,30 @@ export declare class Graph<D = unknown, T = unknown, S = unknown> extends BaseGr
      */
     Hamiltonian(): string[] | null;
     /**
+     * Return a topological ordering of the nodes if the graph is acyclic.
+     * Returns null if a cycle is detected.
+     */
+    topologicalOrder(): string[] | null;
+    /**
      * Determine if the graph is bipartite using BFS coloring.
      */
     biGraph(): boolean;
+    /**
+     * Serialize graph structure to a plain object.
+     * @returns {{nodes: {name: string; data: D | null}[]; edges: { source: string; target: string; data: T | null }[]; state: S | null;}}
+     **/
+    toJSON(): {
+        nodes: {
+            name: string;
+            data: D | null;
+        }[];
+        edges: {
+            source: string;
+            target: string;
+            data: T | null;
+        }[];
+        state: S | null;
+    };
     [Symbol.iterator](): Iterator<Vertex<D>>;
 }
 /**
@@ -252,6 +274,11 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
         data: T;
         weight: number;
     }[];
+    /**
+     * Generate the adjacency matrix using edge weights. If no edge exists between
+     * two nodes the value is `0`.
+     */
+    adjacencyMatrix(): number[][];
     clone(): BaseNetwork<V, T, S>;
     BFSNode({ startingNode, callback, errorCallback, }: {
         startingNode: Node<V> | string;
@@ -308,8 +335,60 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      */
     Hamiltonian(): string[] | null;
     /**
+     * Return a topological ordering of the network nodes if acyclic.
+     * Returns null if a cycle is detected.
+     */
+    topologicalOrder(): string[] | null;
+    /**
+     * Find the shortest path between two nodes using
+     * Dijkstra's algorithm.
+     */
+    shortestPath({ start, end }: {
+        start: string;
+        end: string;
+    }): {
+        distance: number;
+        path: string[];
+        pathStack: DynamicStack<string>;
+    } | null;
+    /**
+     * Construct a minimum spanning tree using Kruskal's algorithm.
+     */
+    minimumSpanningTree(): BaseNetwork<V, T, S>;
+    /**
+     * Construct a minimum spanning tree using Prim's algorithm.
+     */
+    PRIM(start?: string): BaseNetwork<V, T, S>;
+    /**
+     * Compute earliest finish times for nodes using a forward pass (PERT).
+     */
+    PERT(): Map<string, number>;
+    /**
+     * Determine the critical path and its duration using CPM.
+     */
+    CPM(): {
+        duration: number;
+        path: string[];
+        pathStack: DynamicStack<string>;
+    };
+    /**
      * Determine if the network is bipartite.
      */
     biGraph(): boolean;
+    /** Serialize network to an object including weights. */
+    toJSON(): {
+        nodes: {
+            name: string;
+            data: V | null;
+            value: number;
+        }[];
+        edges: {
+            source: string;
+            target: string;
+            data: T;
+            weight: number;
+        }[];
+        state: S | null;
+    };
     [Symbol.iterator](): Iterator<Node<V>>;
 }
