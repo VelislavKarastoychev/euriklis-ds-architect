@@ -31,7 +31,7 @@ console.log(q.dequeueMany(2)); // [2, 3]
 
 // create a queue from random numbers:
 
-const randQueue = Quaue.random(20);
+const randQueue = Queue.random(20);
 // get the queue as an array:
 const rand = [...randQueue];
 ```
