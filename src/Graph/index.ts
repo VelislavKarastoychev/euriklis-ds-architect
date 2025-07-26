@@ -960,6 +960,33 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 
   /**
+   * Return a topological ordering of the nodes if the graph is acyclic.
+   * Returns null if a cycle is detected.
+   */
+  topologicalOrder(): string[] | null {
+    const inDeg = new Map<string, number>();
+    const q: Vertex<D>[] = [];
+    const order: string[] = [];
+    for (const node of this) {
+      const deg = node.incoming.size;
+      inDeg.set(node.name, deg);
+      if (deg === 0) q.push(node);
+    }
+    while (q.length) {
+      const n = q.shift() as Vertex<D>;
+      order.push(n.name);
+      for (const e of n.outgoing.values()) {
+        const t = e.target as Vertex<D>;
+        const d = (inDeg.get(t.name) || 0) - 1;
+        inDeg.set(t.name, d);
+        if (d === 0) q.push(t);
+      }
+    }
+
+    return order.length === this.order ? order : null;
+  }
+
+  /**
    * Determine if the graph is bipartite using BFS coloring.
    */
   biGraph(): boolean {
@@ -1765,6 +1792,33 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   }
 
   /**
+   * Return a topological ordering of the network nodes if acyclic.
+   * Returns null if a cycle is detected.
+   */
+  topologicalOrder(): string[] | null {
+    const inDeg = new Map<string, number>();
+    const q: Node<V>[] = [];
+    const order: string[] = [];
+    for (const node of this) {
+      const deg = node.incoming.size;
+      inDeg.set(node.name, deg);
+      if (deg === 0) q.push(node);
+    }
+    while (q.length) {
+      const n = q.shift() as Node<V>;
+      order.push(n.name);
+      for (const e of n.outgoing.values()) {
+        const t = e.target as Node<V>;
+        const d = (inDeg.get(t.name) || 0) - 1;
+        inDeg.set(t.name, d);
+        if (d === 0) q.push(t);
+      }
+    }
+
+    return order.length === this.order ? order : null;
+  }
+
+  /**
    * Find the shortest path between two nodes using
    * Dijkstra's algorithm.
    */
@@ -1885,6 +1939,129 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return tree;
+  }
+
+  /**
+   * Construct a minimum spanning tree using Prim's algorithm.
+   */
+  PRIM(start?: string): BaseNetwork<V, T, S> {
+    const tree = new BaseNetwork<V, T, S>();
+    for (const node of this) {
+      tree.addNode({
+        name: node.name,
+        data: node.data as V,
+        options: { value: node.value },
+      });
+    }
+
+    if (this.order === 0) return tree;
+    const startNode = start
+      ? this.getNodeInstance(start)
+      : this.__G__.values().next().value;
+    if (!startNode) return tree;
+
+    const visited = new Set<string>();
+    const edges: { source: string; target: string; weight: number; data: T }[] =
+      [];
+    const addEdges = (n: Node<V>) => {
+      for (const e of n.outgoing.values()) {
+        if (!visited.has(e.target.name)) {
+          edges.push({
+            source: n.name,
+            target: e.target.name,
+            weight: e.weight,
+            data: e.data,
+          });
+        }
+      }
+    };
+
+    visited.add(startNode.name);
+    addEdges(startNode);
+
+    while (visited.size < this.order && edges.length) {
+      edges.sort((a, b) => a.weight - b.weight);
+      let edge = edges.shift()!;
+      while (edge && visited.has(edge.target)) {
+        edge = edges.shift()!;
+      }
+      if (!edge) break;
+      tree.addEdge({
+        source: edge.source,
+        target: edge.target,
+        data: edge.data,
+        params: { weight: edge.weight },
+      });
+      visited.add(edge.target);
+      const targetNode = this.getNodeInstance(edge.target)!;
+      addEdges(targetNode);
+    }
+
+    return tree;
+  }
+
+  /**
+   * Compute earliest finish times for nodes using a forward pass (PERT).
+   */
+  PERT(): Map<string, number> {
+    const order = this.topologicalOrder();
+    const earliest = new Map<string, number>();
+    if (!order) return earliest;
+
+    for (const name of order) {
+      const node = this.getNodeInstance(name)!;
+      let max = 0;
+      for (const e of node.incoming.values()) {
+        const val = (earliest.get(e.source.name) || 0) + e.weight;
+        if (val > max) max = val;
+      }
+      earliest.set(name, max);
+    }
+
+    return earliest;
+  }
+
+  /**
+   * Determine the critical path and its duration using CPM.
+   */
+  CPM(): { duration: number; path: string[]; pathStack: DynamicStack<string> } {
+    const order = this.topologicalOrder();
+    const earliest = new Map<string, number>();
+    const prev = new Map<string, string | null>();
+    if (!order)
+      return { duration: 0, path: [], pathStack: new DynamicStack<string>() };
+
+    for (const name of order) {
+      let max = 0;
+      let p: string | null = null;
+      const node = this.getNodeInstance(name)!;
+      for (const e of node.incoming.values()) {
+        const val = (earliest.get(e.source.name) || 0) + e.weight;
+        if (val > max) {
+          max = val;
+          p = e.source.name;
+        }
+      }
+      earliest.set(name, max);
+      prev.set(name, p);
+    }
+
+    let end = order[0];
+    let duration = earliest.get(end) || 0;
+    for (const name of order) {
+      const d = earliest.get(name) as number;
+      if (d > duration) {
+        duration = d;
+        end = name;
+      }
+    }
+
+    const pathStack = new DynamicStack<string>();
+    for (let cur: string | null = end; cur; cur = prev.get(cur) || null) {
+      pathStack.push(cur);
+    }
+
+    return { duration, path: [...pathStack] as string[], pathStack };
   }
 
   /**
