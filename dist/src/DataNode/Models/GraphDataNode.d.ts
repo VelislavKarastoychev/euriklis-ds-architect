@@ -19,7 +19,10 @@ export declare abstract class GraphDataNode<O = unknown, E extends GraphDataEdge
     set name(name: string);
     get data(): O | null;
     set data(d: O);
-    get incomming(): Map<string, E>;
+    /**
+     * Incoming edges for this node
+     */
+    get incoming(): Map<string, E>;
     get outgoing(): Map<string, E>;
     /** Override this to construct your concrete edge subclass */
     protected abstract createEdge<D = unknown>(target: GraphDataNode<any, E>, data?: D, params?: {
