@@ -222,4 +222,12 @@ describe("Graph", () => {
     const cube = Graph.nCube(2);
     expect(cube.order).toBe(4);
   });
+
+  it("toJSON serializes nodes and edges", () => {
+    const g = buildGraph();
+    const json = g.toJSON();
+    expect(json.nodes.length).toBe(4);
+    expect(json.edges.length).toBe(4);
+    expect(json.state).toBeNull();
+  });
 });
