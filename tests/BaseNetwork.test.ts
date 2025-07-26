@@ -146,4 +146,47 @@ describe("BaseNetwork", () => {
     expect(cube.order).toBe(4);
     expect(cube.weightedSize).toBe(8);
   });
+
+  it("computes shortest paths", () => {
+    const n = buildNetwork();
+    const result = n.shortestPath({ start: "A", end: "D" });
+    expect(result).not.toBeNull();
+    expect(result!.distance).toBe(2);
+    expect(result!.path).toEqual(["A", "B", "D"]);
+  });
+
+  it("creates a minimum spanning tree", () => {
+    const n = new BaseNetwork<number, null>();
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addNode({ name: "C", data: 3 });
+    n.addNode({ name: "D", data: 4 });
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "A", target: "C", data: null, params: { weight: 4 } });
+    n.addEdge({ source: "B", target: "C", data: null, params: { weight: 2 } });
+    n.addEdge({ source: "B", target: "D", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "C", target: "D", data: null, params: { weight: 1 } });
+
+    const mst = n.minimumSpanningTree();
+    expect(mst.order).toBe(4);
+    expect(mst.size).toBe(3);
+    expect(mst.weightedSize).toBe(3);
+  });
+
+  it("adjacencyMatrix returns weight grid", () => {
+    const n = buildNetwork();
+    const m = n.adjacencyMatrix();
+    expect(m.length).toBe(n.order);
+    expect(m[0].length).toBe(n.order);
+    // B -> D has weight 1 at [1][3]
+    expect(m[1][3]).toBe(1);
+  });
+
+  it("toJSON serializes nodes and edges", () => {
+    const n = buildNetwork();
+    const json = n.toJSON();
+    expect(json.nodes.length).toBe(4);
+    expect(json.edges.length).toBe(4);
+    expect(json.state).toBeNull();
+  });
 });
