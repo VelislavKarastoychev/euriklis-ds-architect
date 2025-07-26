@@ -53,17 +53,22 @@ g.addEdge({ source: "B", target: "A", data: null });
 | `biGraph()`                                 | Test if the graph is bipartite.                          |
 | `nCube(n)`                                  | Generate an n-dimensional cube graph.                    |
 | `[Symbol.iterator]()`                       | Iterate over graph nodes.                                |
+| `toJSON()`                                  | Serialize nodes, edges and state.                        |
 
 #### BaseNetwork
 
 `BaseNetwork` behaves like `Graph` but each node has a numeric `value` and each edge a `weight`.
 
-| Method                                      | Description                            |
-| ------------------------------------------- | -------------------------------------- |
-| `addNode({ name, data, value })`            | Add a weighted node.                   |
-| `addEdge({ source, target, data, weight })` | Add a weighted edge.                   |
-| `getNode(name)`                             | Return node data along with its value. |
-| _all other methods from `Graph`_            |                                        |
+| Method                                      | Description                               |
+| ------------------------------------------- | ----------------------------------------- |
+| `addNode({ name, data, value })`            | Add a weighted node.                      |
+| `addEdge({ source, target, data, weight })` | Add a weighted edge.                      |
+| `getNode(name)`                             | Return node data along with its value.    |
+| `shortestPath({start, end})`                | Dijkstra shortest path between two nodes. |
+| `adjacencyMatrix()`                         | Matrix of edge weights.                   |
+| `toJSON()`                                  | Serialize weighted graph to JSON.         |
+| `minimumSpanningTree()`                     | Return a minimum spanning tree.           |
+| _all other methods from `Graph`_            |                                           |
 
 #### StateGraph
 
