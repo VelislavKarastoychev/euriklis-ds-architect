@@ -120,8 +120,7 @@ export class Queue<T = unknown> {
 
   /**
    * Adds multiple items to the queue.
-   * Time complexity: O(n), where the "n"  is the
-   * length of the length of the "items" parameter.
+   * Time complexity: O(n), where n is the length of the "items" parameter.
    * @param {T[]} items - The items to enqueue.
    * @returns {Queue<T>} The updated queue.
    */
