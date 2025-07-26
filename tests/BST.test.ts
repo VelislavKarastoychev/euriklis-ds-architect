@@ -35,7 +35,7 @@ describe("BST", () => {
     t.insert({ id: 1, extra: 2 });
     expect(t.size).toBe(1);
     const node = t.binarySearchNode((n) =>
-      n.id === 1 ? 0 : n.id > 1 ? -1 : 1,
+      n.data?.id === 1 ? 0 : (n?.data?.id as any) > 1 ? -1 : 1,
     );
     expect((node as any).data.extra).toBe(2);
   });
