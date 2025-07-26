@@ -990,6 +990,22 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     return true;
   }
 
+  /**
+   * Serialize graph structure to a plain object.
+   * @returns {{nodes: {name: string; data: D | null}[]; edges: { source: string; target: string; data: T | null }[]; state: S | null;}}
+   **/
+  toJSON(): {
+    nodes: { name: string; data: D | null }[];
+    edges: { source: string; target: string; data: T | null }[];
+    state: S | null;
+  } {
+    return {
+      nodes: this.nodes,
+      edges: this.edges,
+      state: this.state,
+    };
+  }
+
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
@@ -1157,6 +1173,25 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return E;
+  }
+
+  /**
+   * Generate the adjacency matrix using edge weights. If no edge exists between
+   * two nodes the value is `0`.
+   */
+  adjacencyMatrix(): number[][] {
+    const names = [...this.__G__.keys()];
+    const index = new Map<string, number>();
+    names.forEach((n, i) => index.set(n, i));
+    const matrix = names.map(() => Array(names.length).fill(0));
+    for (const node of this) {
+      const i = index.get(node.name)!;
+      for (const edge of node.outgoing.values()) {
+        const j = index.get(edge.target.name)!;
+        matrix[i][j] = (edge as Arc<T>).weight;
+      }
+    }
+    return matrix;
   }
 
   clone() {
@@ -1730,6 +1765,129 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   }
 
   /**
+   * Find the shortest path between two nodes using
+   * Dijkstra's algorithm.
+   */
+  shortestPath({ start, end }: { start: string; end: string }): {
+    distance: number;
+    path: string[];
+    pathStack: DynamicStack<string>;
+  } | null {
+    const startNode = this.getNodeInstance(start);
+    const endNode = this.getNodeInstance(end);
+    if (!startNode || !endNode) return null;
+
+    const dist = new Map<string, number>();
+    const prev = new Map<string, string | null>();
+    const visited = new Set<string>();
+
+    for (const node of this) {
+      dist.set(node.name, Infinity);
+      prev.set(node.name, null);
+    }
+    dist.set(start, 0);
+
+    while (visited.size < this.order) {
+      let u: string | null = null;
+      let min = Infinity;
+      for (const [name, d] of dist) {
+        if (!visited.has(name) && d < min) {
+          min = d;
+          u = name;
+        }
+      }
+      if (u === null) break;
+      if (u === end) break;
+      visited.add(u);
+      const node = this.getNodeInstance(u)!;
+      for (const edge of node.outgoing.values()) {
+        const v = edge.target.name;
+        const alt = (dist.get(u) as number) + edge.weight;
+        if (alt < (dist.get(v) as number)) {
+          dist.set(v, alt);
+          prev.set(v, u);
+        }
+      }
+    }
+
+    if ((dist.get(end) as number) === Infinity) return null;
+    const path: DynamicStack<string> = new DynamicStack();
+    for (let cur: string | null = end; cur; cur = prev.get(cur) || null) {
+      path.push(cur);
+    }
+
+    return {
+      distance: dist.get(end) as number,
+      path: [...path] as string[],
+      pathStack: path,
+    };
+  }
+
+  /**
+   * Construct a minimum spanning tree using Kruskal's algorithm.
+   */
+  minimumSpanningTree(): BaseNetwork<V, T, S> {
+    const tree = new BaseNetwork<V, T, S>();
+    for (const node of this) {
+      tree.addNode({
+        name: node.name,
+        data: node.data as V,
+        options: { value: node.value },
+      });
+    }
+
+    const edges: {
+      source: string;
+      target: string;
+      weight: number;
+      data: T;
+    }[] = [];
+    const seen = new Set<string>();
+    for (const n of this) {
+      for (const e of n.outgoing.values()) {
+        const u = n.name;
+        const v = e.target.name;
+        const key = u < v ? `${u}|${v}` : `${v}|${u}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          edges.push({ source: u, target: v, weight: e.weight, data: e.data });
+        }
+      }
+    }
+
+    edges.sort((a, b) => a.weight - b.weight);
+
+    const parent = new Map<string, string>();
+    const find = (x: string): string => {
+      let p = parent.get(x) as string;
+      while (p !== parent.get(p)) {
+        parent.set(p, parent.get(parent.get(p) as string) as string);
+        p = parent.get(p) as string;
+      }
+      return p;
+    };
+    const union = (a: string, b: string) => {
+      parent.set(find(a), find(b));
+    };
+
+    for (const n of this) parent.set(n.name, n.name);
+
+    for (const e of edges) {
+      if (find(e.source) !== find(e.target)) {
+        tree.addEdge({
+          source: e.source,
+          target: e.target,
+          data: e.data,
+          params: { weight: e.weight },
+        });
+        union(e.source, e.target);
+      }
+    }
+
+    return tree;
+  }
+
+  /**
    * Determine if the network is bipartite.
    */
   biGraph(): boolean {
@@ -1758,6 +1916,19 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       }
     }
     return true;
+  }
+
+  /** Serialize network to an object including weights. */
+  toJSON(): {
+    nodes: { name: string; data: V | null; value: number }[];
+    edges: { source: string; target: string; data: T; weight: number }[];
+    state: S | null;
+  } {
+    return {
+      nodes: this.nodes,
+      edges: this.edges,
+      state: this.state,
+    };
   }
 
   [Symbol.iterator](): Iterator<Node<V>> {
