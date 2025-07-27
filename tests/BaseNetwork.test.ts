@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { BaseNetwork } from "../src";
+import { BaseNetwork } from "../dist";
 
 const buildNetwork = () => {
   const n = new BaseNetwork<number, null>({});
