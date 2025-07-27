@@ -260,4 +260,51 @@ describe("BaseNetwork", () => {
       { s: "D", t: "C", w: 1 },
     ]);
   });
+  it("identifies bridges", () => {
+    const n = new BaseNetwork<number, null>();
+    ["A", "B", "C", "D", "E"].forEach((name, i) =>
+      n.addNode({ name, data: i }),
+    );
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "B", target: "C", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "C", target: "A", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "C", target: "D", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "D", target: "E", data: null, params: { weight: 1 } });
+    const bridges = n.bridges();
+    expect(bridges.length).toBe(2);
+    expect(bridges).toContainEqual({
+      source: "C",
+      target: "D",
+      data: null,
+      weight: 1,
+    });
+    expect(bridges).toContainEqual({
+      source: "D",
+      target: "E",
+      data: null,
+      weight: 1,
+    });
+  });
+
+  it("identifies directed bridges", () => {
+    const n = new BaseNetwork<number, null>();
+    ["A", "B", "C"].forEach((name, i) => n.addNode({ name, data: i }));
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "B", target: "C", data: null, params: { weight: 1 } });
+    n.addEdge({ source: "A", target: "C", data: null, params: { weight: 1 } });
+    const bridges = n.directedBridges();
+    expect(bridges.length).toBe(2);
+    expect(bridges).toContainEqual({
+      source: "A",
+      target: "B",
+      data: null,
+      weight: 1,
+    });
+    expect(bridges).toContainEqual({
+      source: "B",
+      target: "C",
+      data: null,
+      weight: 1,
+    });
+  });
 });
