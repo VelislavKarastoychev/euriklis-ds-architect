@@ -99,11 +99,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
-    callback?: (node: Vertex<D> | null, g?: Graph<D>) => unknown;
+    callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => unknown;
     errorCallback?: (
       node: Vertex<D> | null,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => unknown;
   }): this {
     const queue = new Queue<Vertex<D>>();
@@ -148,11 +148,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
-    callback?: (node: Vertex<D> | null, g?: Graph<D>) => Promise<unknown>;
+    callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Vertex<D> | null,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => Promise<unknown>;
   }): Promise<this> {
     const queue = new Queue<Vertex<D>>();
@@ -195,11 +195,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     errorCallback = (_: Vertex<D> | null, error: Error): void =>
       console.log(error.message),
   }: {
-    callback?: (node: Vertex<D> | null, g?: Graph<D>) => unknown;
+    callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => unknown;
     errorCallback?: (
       node: Vertex<D> | null,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => unknown;
   } = {}): this {
     const queue = new Queue<Vertex<D>>();
@@ -232,11 +232,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     errorCallback = async (_: Vertex<D>, error: Error): Promise<unknown> =>
       console.log(error.message),
   }: {
-    callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
+    callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Vertex<D>,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => Promise<unknown>;
   } = {}): Promise<this> {
     const queue = new Queue<Vertex<D>>();
@@ -270,8 +270,12 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     errorCallback = (_: Vertex<D>, error: Error): void =>
       console.log(error.message),
   }: {
-    callback?: (node: Vertex<D>, g?: Graph<D>) => unknown;
-    errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => unknown;
+    callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => unknown;
+    errorCallback?: (
+      node: Vertex<D>,
+      error: Error,
+      g?: Graph<D, T, S>,
+    ) => unknown;
   }): this {
     const stack = new DynamicStack<Vertex<D>>();
     const visited = new Set<string>();
@@ -303,11 +307,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
     errorCallback = async (_: Vertex<D>, error: Error): Promise<void> =>
       console.log(error.message),
   }: {
-    callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
+    callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Vertex<D>,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => Promise<unknown>;
   } = {}): Promise<this> {
     const stack = new DynamicStack<Vertex<D>>();
@@ -343,8 +347,12 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
-    callback?: (node: Vertex<D>, g?: Graph<D>) => unknown;
-    errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => unknown;
+    callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => unknown;
+    errorCallback?: (
+      node: Vertex<D>,
+      error: Error,
+      g?: Graph<D, T, S>,
+    ) => unknown;
   }): this {
     const stack = new DynamicStack<Vertex<D>>();
     const visited = new Set<string>();
@@ -387,11 +395,11 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Vertex<D> | string;
-    callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
+    callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Vertex<D>,
       error: Error,
-      g?: Graph<D>,
+      g?: Graph<D, T, S>,
     ) => Promise<unknown>;
   }): Promise<this> {
     const stack = new DynamicStack<Vertex<D>>();
