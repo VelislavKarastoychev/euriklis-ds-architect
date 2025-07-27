@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { DoublyLinkedList } from "../src";
+import { DoublyLinkedList } from "../dist";
 
 describe("DoublyLinkedList", () => {
   it("supports basic add and remove operations", () => {
