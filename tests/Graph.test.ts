@@ -230,4 +230,32 @@ describe("Graph", () => {
     expect(json.edges.length).toBe(4);
     expect(json.state).toBeNull();
   });
+
+  it("identifies bridges", () => {
+    const g = new Graph<number>();
+    ["A", "B", "C", "D", "E"].forEach((name, i) =>
+      g.addNode({ name, data: i }),
+    );
+    g.addEdge({ source: "A", target: "B", data: null, params: {} });
+    g.addEdge({ source: "B", target: "C", data: null, params: {} });
+    g.addEdge({ source: "C", target: "A", data: null, params: {} });
+    g.addEdge({ source: "C", target: "D", data: null, params: {} });
+    g.addEdge({ source: "D", target: "E", data: null, params: {} });
+    const bridges = g.bridges();
+    expect(bridges.length).toBe(2);
+    expect(bridges).toContainEqual({ source: "C", target: "D", data: null });
+    expect(bridges).toContainEqual({ source: "D", target: "E", data: null });
+  });
+
+  it("identifies directed bridges", () => {
+    const g = new Graph<number>();
+    ["A", "B", "C"].forEach((name, i) => g.addNode({ name, data: i }));
+    g.addEdge({ source: "A", target: "B", data: null, params: {} });
+    g.addEdge({ source: "B", target: "C", data: null, params: {} });
+    g.addEdge({ source: "A", target: "C", data: null, params: {} });
+    const bridges = g.directedBridges();
+    expect(bridges.length).toBe(2);
+    expect(bridges).toContainEqual({ source: "A", target: "B", data: null });
+    expect(bridges).toContainEqual({ source: "B", target: "C", data: null });
+  });
 });
