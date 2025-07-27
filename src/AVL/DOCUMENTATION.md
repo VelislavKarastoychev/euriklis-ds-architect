@@ -23,6 +23,10 @@ avl.delete(3);
 | `deleteNode(cb)`                     | Delete a node determined by a callback returning -1/0/1.      |
 | `copy()`                             | Return a structural clone of the tree.                        |
 | `print(node?, level?, prefix?, cb?)` | Pretty print the subtree starting from `node`.                |
+| `singleLeftRotation(node)`           | Rotate left around `node`.                                    |
+| `singleRightRotation(node)`          | Rotate right around `node`.                                   |
+| `doubleLeftRightRotation(node)`      | Left-right rotation around `node`.                            |
+| `doubleRightLeftRotation(node)`      | Right-left rotation around `node`.                            |
 
 ---
 
