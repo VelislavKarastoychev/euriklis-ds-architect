@@ -54,6 +54,11 @@ g.addEdge({ source: "B", target: "A", data: null });
 | `nCube(n)`                                  | Generate an n-dimensional cube graph.                    |
 | `[Symbol.iterator]()`                       | Iterate over graph nodes.                                |
 | `toJSON()`                                  | Serialize nodes, edges and state.                        |
+| `topologicalOrder()`                        | Return nodes in topological order if acyclic.            |
+| `bridges()`                                 | Find undirected bridge edges.                            |
+| `directedBridges()`                         | Find directed bridge edges.                              |
+| `clone()`                                   | Create a deep copy of the graph.                         |
+| `upgradeToBaseNetwork()`                    | Convert to a `BaseNetwork` with weights.                 |
 
 #### BaseNetwork
 
@@ -85,3 +90,5 @@ sg.addEdge({ source: "start", target: "end", data: null });
 
 sg.state = { count: 0 };
 ```
+
+StateGraph methods: `clone`, `upgradeToGraph`, and `upgradeToBaseNetwork` mirror the behaviour of the Graph equivalents.
