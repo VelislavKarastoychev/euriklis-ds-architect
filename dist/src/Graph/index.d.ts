@@ -110,6 +110,19 @@ S = unknown> extends BaseGraph<Vertex<D>, Edge<T>, D, T, S> {
     clone(): StateGraph<D, T, S>;
     upgradeToGraph(): Graph<D, T, S>;
     upgradeToBaseNetwork(): BaseNetwork<D, T, S>;
+    /** Serialize graph to an object with nodes, edges and state. */
+    toJSON(): {
+        nodes: {
+            name: string;
+            data: D | null;
+        }[];
+        edges: {
+            source: string;
+            target: string;
+            data: T | null;
+        }[];
+        state: S | null;
+    };
     [Symbol.iterator](): Iterator<Vertex<D>>;
 }
 /**
