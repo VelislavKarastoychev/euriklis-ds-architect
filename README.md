@@ -65,37 +65,48 @@ file linked above.
 
 - `DoublyLinkedList<T>` – A bidirectional list with optional size limit.
   Common methods include `addLast`, `removeFirst`, `removeLast`,
-  `insertBefore`, `insertAfter`, `filter`, `traverse`, `merge`, and the
-  iterable protocol.
+  `insertBefore`, `insertAfter`, `filter`, `traverse`, `merge`, and
+  iteration with `[Symbol.iterator]`. Additional helpers provide
+  `remove`, `values`, `loop`, `every`, `any`, `copy`, `clean`,
+  `isSame`, and `isExactlySame`.
 
 ### Queue
 
 - `Queue<T>` – FIFO queue built on a linked list. Supports `enqueue`,
-  `enqueueMany`, `dequeue`, `dequeueMany`, `traverse`, `filter`, `merge`, and
-  `[Symbol.iterator]` for iteration.
+  `enqueueMany`, `dequeue`, `dequeueMany`, `traverse`, `filter`, `merge`,
+  `[Symbol.iterator]`, and helpers like `contains`, `reverse`, `clean`,
+  `copy`, and `toArray`.
 
 ### Stack
 
 - `DynamicStack<T>` – Resizable LIFO stack with `push`, `pushMany`, `pop`,
-  `popMany`, `filter`, `traverse`, and `copy` helpers.
+  `popMany`, `filter`, `traverse`, `loop`, `append`, `popAndTraverse`,
+  `clear`, `copy`, and iteration.
 - `StaticStack<T>` – Array-backed variant with similar API for fixed-size use
-  cases.
+  cases and identical helper methods.
 
 ### BST
 
 - `BST<T>` – Binary search tree providing `insert`, `insertMany`, `delete`,
   `deleteNode`, `binarySearch`, `BFS`, `DFS`, and iteration support.
+  Additional helpers cover `min`/`max` lookups, predecessor/successor
+  queries, height calculation, `filter`, `clean`, `copy`, `toArray`,
+  `print`, `isSame`, `isExactlySame`, and id-based `has`.
 
 ### AVLTree
 
 - `AVLTree<T>` – Self-balancing tree that extends `BST` and rebalances on
-  `insert` or `delete`. Includes `copy` and `print` utilities.
+  `insert` or `delete`. Includes `copy` and `print` utilities, and exposes
+  rotation helpers like `singleLeftRotation`, `singleRightRotation`,
+  `doubleLeftRightRotation`, and `doubleRightLeftRotation`.
 
 ### Heap
 
 - `Heap<T>` and `PrimaryHeap<T>` – Binary heap implementations. Key methods
   are `add`, `search`, `remove`, `merge`, `searchIndex`, and static `from` to
-  build a heap from an array.
+  build a heap from an array. Further utilities include `toArray`, iteration
+  via `[Symbol.iterator]`, and configurable `size`, `type` and `compare`
+  properties.
 
 ### Graph and networks
 
@@ -103,6 +114,9 @@ file linked above.
   `addEdge`, `removeEdge`, data lookups, degree helpers, BFS/DFS traversals
   (sync or async), and utilities like `subgraph`, `union`, `difference`,
   `kronecker`, `isConnected`, `cycles`, `Hamiltonian`, `biGraph`, and `nCube`.
+  Additional algorithms include `topologicalOrder`, `bridges`,
+  `directedBridges`, and helpers like `clone`, `upgradeToBaseNetwork` and
+  `upgradeToGraph`.
 - `BaseNetwork` – Extends `Graph` so nodes hold numeric values and edges carry
   weights.
 - `StateGraph` – Lightweight graph focused on node/edge management without
