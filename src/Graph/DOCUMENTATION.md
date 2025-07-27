@@ -62,18 +62,18 @@ g.addEdge({ source: "B", target: "A", data: null });
 
 #### BaseNetwork
 
-`BaseNetwork` behaves like `Graph` but each node has a numeric `value` and each edge a `weight`.
+`BaseNetwork` behaves like `Graph` but each node has a numeric `value` and each edge a `weight`. Algorithms use a configurable `weightFn` property to derive numeric weights from edges.
 
-| Method                                      | Description                               |
-| ------------------------------------------- | ----------------------------------------- |
-| `addNode({ name, data, value })`            | Add a weighted node.                      |
-| `addEdge({ source, target, data, weight })` | Add a weighted edge.                      |
-| `getNode(name)`                             | Return node data along with its value.    |
-| `shortestPath({start, end})`                | Dijkstra shortest path between two nodes. |
-| `adjacencyMatrix()`                         | Matrix of edge weights.                   |
-| `toJSON()`                                  | Serialize weighted graph to JSON.         |
-| `minimumSpanningTree()`                     | Return a minimum spanning tree.           |
-| _all other methods from `Graph`_            |                                           |
+| Method                                      | Description                                        |
+| ------------------------------------------- | -------------------------------------------------- |
+| `addNode({ name, data, value })`            | Add a weighted node.                               |
+| `addEdge({ source, target, data, weight })` | Add a weighted edge.                               |
+| `getNode(name)`                             | Return node data along with its value.             |
+| `shortestPath({start, end})`                | Dijkstra shortest path between two nodes.          |
+| `adjacencyMatrix(weightFn?)`                | Matrix of edge weights (uses `weightFn` callback). |
+| `toJSON()`                                  | Serialize weighted graph to JSON.                  |
+| `minimumSpanningTree()`                     | Return a minimum spanning tree.                    |
+| _all other methods from `Graph`_            |                                                    |
 
 #### StateGraph
 
