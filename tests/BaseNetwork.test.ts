@@ -189,4 +189,75 @@ describe("BaseNetwork", () => {
     expect(json.edges.length).toBe(4);
     expect(json.state).toBeNull();
   });
+  it("topologicalOrder returns a valid order", () => {
+    const n = buildNetwork();
+    const order = n.topologicalOrder();
+    expect(order).toEqual(["A", "B", "C", "D"]);
+  });
+
+  it("PERT computes earliest finish times", () => {
+    const n = new BaseNetwork<number, null>();
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addNode({ name: "C", data: 3 });
+    n.addNode({ name: "D", data: 4 });
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 2 } });
+    n.addEdge({ source: "A", target: "C", data: null, params: { weight: 4 } });
+    n.addEdge({ source: "B", target: "D", data: null, params: { weight: 3 } });
+    n.addEdge({ source: "C", target: "D", data: null, params: { weight: 1 } });
+    const m = n.PERT();
+    expect(m.get("A")).toBe(0);
+    expect(m.get("B")).toBe(2);
+    expect(m.get("C")).toBe(4);
+    expect(m.get("D")).toBe(5);
+  });
+
+  it("CPM finds the critical path", () => {
+    const n = new BaseNetwork<number, null>();
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addNode({ name: "C", data: 3 });
+    n.addNode({ name: "D", data: 4 });
+    n.addEdge({ source: "A", target: "B", data: null, params: { weight: 2 } });
+    n.addEdge({ source: "A", target: "C", data: null, params: { weight: 4 } });
+    n.addEdge({ source: "B", target: "D", data: null, params: { weight: 3 } });
+    n.addEdge({ source: "C", target: "D", data: null, params: { weight: 1 } });
+    const res = n.CPM();
+    expect(res.duration).toBe(5);
+    expect(res.path).toEqual(["A", "B", "D"]);
+  });
+
+  it("PRIM creates a minimum spanning tree", () => {
+    const n = new BaseNetwork<number, null>();
+    ["A", "B", "C", "D"].forEach((name, i) => n.addNode({ name, data: i }));
+    const edges: [string, string, number][] = [
+      ["A", "B", 1],
+      ["B", "A", 1],
+      ["A", "C", 4],
+      ["C", "A", 4],
+      ["B", "C", 2],
+      ["C", "B", 2],
+      ["B", "D", 1],
+      ["D", "B", 1],
+      ["C", "D", 1],
+      ["D", "C", 1],
+    ];
+    for (const [s, t, w] of edges) {
+      n.addEdge({ source: s, target: t, data: null, params: { weight: w } });
+    }
+    const tree = n.PRIM("A");
+    expect(tree.order).toBe(4);
+    expect(tree.size).toBe(3);
+    expect(tree.weightedSize).toBe(3);
+    const tEdges = tree.edges.map((e) => ({
+      s: e.source,
+      t: e.target,
+      w: e.weight,
+    }));
+    expect(tEdges).toEqual([
+      { s: "A", t: "B", w: 1 },
+      { s: "B", t: "D", w: 1 },
+      { s: "D", t: "C", w: 1 },
+    ]);
+  });
 });
