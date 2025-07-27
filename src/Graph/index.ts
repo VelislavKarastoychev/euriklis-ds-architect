@@ -303,6 +303,19 @@ export class StateGraph<
     return g;
   }
 
+  /** Serialize graph to an object with nodes, edges and state. */
+  toJSON(): {
+    nodes: { name: string; data: D | null }[];
+    edges: { source: string; target: string; data: T | null }[];
+    state: S | null;
+  } {
+    return {
+      nodes: this.nodes,
+      edges: this.edges,
+      state: this.state,
+    };
+  }
+
   [Symbol.iterator](): Iterator<Vertex<D>> {
     return this.__G__.values();
   }
