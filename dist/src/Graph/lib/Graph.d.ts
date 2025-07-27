@@ -26,39 +26,39 @@ export declare class Graph<D = unknown, T = unknown, S = unknown> extends BaseGr
     get density(): number;
     BFSNode({ startingNode, callback, errorCallback, }: {
         startingNode: Vertex<D> | string;
-        callback?: (node: Vertex<D> | null, g?: Graph<D>) => unknown;
-        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D>) => unknown;
+        callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => unknown;
+        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D, T, S>) => unknown;
     }): this;
     BFSNodeAsync({ startingNode, callback, errorCallback, }: {
         startingNode: Vertex<D> | string;
-        callback?: (node: Vertex<D> | null, g?: Graph<D>) => Promise<unknown>;
-        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D>) => Promise<unknown>;
+        callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D, T, S>) => Promise<unknown>;
     }): Promise<this>;
     BFS({ callback, errorCallback, }?: {
-        callback?: (node: Vertex<D> | null, g?: Graph<D>) => unknown;
-        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D>) => unknown;
+        callback?: (node: Vertex<D> | null, g?: Graph<D, T, S>) => unknown;
+        errorCallback?: (node: Vertex<D> | null, error: Error, g?: Graph<D, T, S>) => unknown;
     }): this;
     BFSAsync({ callback, errorCallback, }?: {
-        callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
-        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => Promise<unknown>;
+        callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D, T, S>) => Promise<unknown>;
     }): Promise<this>;
     DFS({ callback, errorCallback, }: {
-        callback?: (node: Vertex<D>, g?: Graph<D>) => unknown;
-        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => unknown;
+        callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => unknown;
+        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D, T, S>) => unknown;
     }): this;
     DFSAsync({ callback, errorCallback, }?: {
-        callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
-        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => Promise<unknown>;
+        callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D, T, S>) => Promise<unknown>;
     }): Promise<this>;
     DFSNode({ startingNode, callback, errorCallback, }: {
         startingNode: Vertex<D> | string;
-        callback?: (node: Vertex<D>, g?: Graph<D>) => unknown;
-        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => unknown;
+        callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => unknown;
+        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D, T, S>) => unknown;
     }): this;
     DFSNodeAsync({ startingNode, callback, errorCallback, }: {
         startingNode: Vertex<D> | string;
-        callback?: (node: Vertex<D>, g?: Graph<D>) => Promise<unknown>;
-        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D>) => Promise<unknown>;
+        callback?: (node: Vertex<D>, g?: Graph<D, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Vertex<D>, error: Error, g?: Graph<D, T, S>) => Promise<unknown>;
     }): Promise<this>;
     clone(): Graph<D, T, S>;
     upgradeToBaseNetwork(): BaseNetwork<D, T, S>;
