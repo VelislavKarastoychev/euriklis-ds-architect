@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { Graph } from "../src";
+import { Graph } from "../dist";
 
 const buildGraph = () => {
   const g = new Graph<number>();
