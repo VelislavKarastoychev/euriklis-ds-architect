@@ -11,10 +11,16 @@ import { BaseGraph } from "./BaseGraph";
  */
 export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, Arc<T>, V, T, S> {
     /**
+     * Function used to derive a numeric weight from an edge's stored weight and
+     * data. Users can override this to globally change how algorithms interpret
+     * edge weights.
+     */
+    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
+    /**
      * Generate an n-dimensional cube network.
      */
     static nCube(n: number): BaseNetwork<number[], null>;
-    constructor({ nodes, edges, }?: {
+    constructor({ nodes, edges, weightFn, }?: {
         nodes?: {
             name: string;
             data: V;
@@ -26,6 +32,7 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
             data: T;
             weight: number;
         }[];
+        weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
     });
     protected createNode({ name, data, options, }: {
         name: string;
@@ -63,43 +70,43 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      * Generate the adjacency matrix using edge weights. If no edge exists between
      * two nodes the value is `0`.
      */
-    adjacencyMatrix(): number[][];
+    adjacencyMatrix(weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number): number[][];
     clone(): BaseNetwork<V, T, S>;
     BFSNode({ startingNode, callback, errorCallback, }: {
         startingNode: Node<V> | string;
-        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
-        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T>) => unknown;
+        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T, S>) => unknown;
+        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T, S>) => unknown;
     }): this;
     BFSNodeAsync({ startingNode, callback, errorCallback, }: {
         startingNode: Node<V> | string;
-        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => Promise<unknown>;
-        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T>) => Promise<unknown>;
+        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     }): Promise<this>;
     BFS({ callback, errorCallback, }?: {
-        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
-        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T>) => unknown;
+        callback?: (node: Node<V> | null, g?: BaseNetwork<V, T, S>) => unknown;
+        errorCallback?: (node: Node<V> | null, error: Error, g?: BaseNetwork<V, T, S>) => unknown;
     }): this;
     BFSAsync({ callback, errorCallback, }?: {
-        callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
-        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T>) => Promise<unknown>;
+        callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     }): Promise<this>;
     DFS({ callback, errorCallback, }: {
-        callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
-        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T>) => unknown;
+        callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => unknown;
+        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T, S>) => unknown;
     }): this;
     DFSAsync({ callback, errorCallback, }?: {
-        callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
-        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T>) => Promise<unknown>;
+        callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     }): Promise<this>;
     DFSNode({ startingNode, callback, errorCallback, }: {
         startingNode: Node<V> | string;
-        callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
-        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T>) => unknown;
+        callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => unknown;
+        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T, S>) => unknown;
     }): this;
     DFSNodeAsync({ startingNode, callback, errorCallback, }: {
         startingNode: Node<V> | string;
-        callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
-        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T>) => Promise<unknown>;
+        callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
+        errorCallback?: (node: Node<V>, error: Error, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     }): Promise<this>;
     subgraph({ callback, }: {
         callback: (node: Node<V>, g: BaseNetwork<V, T, S>) => boolean;
