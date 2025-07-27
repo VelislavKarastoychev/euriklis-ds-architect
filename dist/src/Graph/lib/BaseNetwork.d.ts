@@ -114,7 +114,7 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
     /**
      * Find all bridges in the network treating edges as undirected.
      */
-    bridges(): {
+    bridges(weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number): {
         source: string;
         target: string;
         data: T;
@@ -125,7 +125,7 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      * directed bridge if there is no alternative directed path from
      * u to v when this edge is ignored.
      */
-    directedBridges(): {
+    directedBridges(weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number): {
         source: string;
         target: string;
         data: T;
@@ -163,15 +163,18 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
     /**
      * Construct a minimum spanning tree using Prim's algorithm.
      */
-    PRIM(start?: string): BaseNetwork<V, T, S>;
+    PRIM({ start, weightFn, }?: {
+        start?: string;
+        weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
+    }): BaseNetwork<V, T, S>;
     /**
      * Compute earliest finish times for nodes using a forward pass (PERT).
      */
-    PERT(): Map<string, number>;
+    PERT(weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number): Map<string, number>;
     /**
      * Determine the critical path and its duration using CPM.
      */
-    CPM(): {
+    CPM(weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number): {
         duration: number;
         path: string[];
         pathStack: DynamicStack<string>;
