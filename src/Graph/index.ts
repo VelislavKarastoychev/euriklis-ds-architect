@@ -884,6 +884,98 @@ export class Graph<D = unknown, T = unknown, S = unknown> extends BaseGraph<
   }
 
   /**
+   * Find all bridges in the graph treating edges as undirected.
+   */
+  bridges(): { source: string; target: string; data: T | null }[] {
+    const neighbors = new Map<string, Set<string>>();
+    for (const node of this) neighbors.set(node.name, new Set());
+    for (const node of this) {
+      for (const e of node.outgoing.values()) {
+        neighbors.get(node.name)!.add(e.target.name);
+        if (!neighbors.has(e.target.name))
+          neighbors.set(e.target.name, new Set());
+        neighbors.get(e.target.name)!.add(node.name);
+      }
+    }
+
+    const visited = new Set<string>();
+    const disc = new Map<string, number>();
+    const low = new Map<string, number>();
+    const parent = new Map<string, string | null>();
+    const result: { source: string; target: string; data: T | null }[] = [];
+    let time = 0;
+
+    const dfs = (u: string) => {
+      visited.add(u);
+      disc.set(u, ++time);
+      low.set(u, disc.get(u)!);
+      for (const v of neighbors.get(u) || []) {
+        if (!visited.has(v)) {
+          parent.set(v, u);
+          dfs(v);
+          low.set(u, Math.min(low.get(u)!, low.get(v)!));
+          if (low.get(v)! > disc.get(u)!) {
+            const edge =
+              this.getEdge({ source: u, target: v }) ||
+              this.getEdge({ source: v, target: u });
+            result.push(edge || { source: u, target: v, data: null });
+          }
+        } else if (v !== parent.get(u)) {
+          low.set(u, Math.min(low.get(u)!, disc.get(v)!));
+        }
+      }
+    };
+
+    for (const node of this) {
+      if (!visited.has(node.name)) {
+        parent.set(node.name, null);
+        dfs(node.name);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Find all bridges considering edge directions. An edge (u,v)
+   * is a directed bridge if there is no alternative directed
+   * path from u to v when the edge is ignored.
+   */
+  directedBridges(): { source: string; target: string; data: T | null }[] {
+    const result: { source: string; target: string; data: T | null }[] = [];
+    for (const node of this) {
+      for (const edge of node.outgoing.values()) {
+        const u = node.name;
+        const v = edge.target.name;
+        const stack = [u];
+        const visited = new Set<string>([u]);
+        let reached = false;
+
+        while (stack.length && !reached) {
+          const current = stack.pop() as string;
+          const curNode = this.__G__.get(current)! as Vertex<D>;
+          for (const e of curNode.outgoing.values()) {
+            if (current === u && e.target.name === v) continue;
+            const t = e.target.name;
+            if (t === v) {
+              reached = true;
+              break;
+            }
+            if (!visited.has(t)) {
+              visited.add(t);
+              stack.push(t);
+            }
+          }
+        }
+
+        if (!reached) result.push({ source: u, target: v, data: edge.data });
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Return all simple cycles in the graph as arrays of node names.
    */
   cycles(): string[][] {
@@ -1713,6 +1805,129 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return visited.size === this.order;
+  }
+
+  /**
+   * Find all bridges in the network treating edges as undirected.
+   */
+  bridges(): { source: string; target: string; data: T; weight: number }[] {
+    const neighbors = new Map<string, Set<string>>();
+    for (const node of this) neighbors.set(node.name, new Set());
+    for (const node of this) {
+      for (const e of node.outgoing.values()) {
+        neighbors.get(node.name)!.add(e.target.name);
+        if (!neighbors.has(e.target.name))
+          neighbors.set(e.target.name, new Set());
+        neighbors.get(e.target.name)!.add(node.name);
+      }
+    }
+
+    const visited = new Set<string>();
+    const disc = new Map<string, number>();
+    const low = new Map<string, number>();
+    const parent = new Map<string, string | null>();
+    const result: {
+      source: string;
+      target: string;
+      data: T;
+      weight: number;
+    }[] = [];
+    let time = 0;
+
+    const dfs = (u: string) => {
+      visited.add(u);
+      disc.set(u, ++time);
+      low.set(u, disc.get(u)!);
+      for (const v of neighbors.get(u) || []) {
+        if (!visited.has(v)) {
+          parent.set(v, u);
+          dfs(v);
+          low.set(u, Math.min(low.get(u)!, low.get(v)!));
+          if (low.get(v)! > disc.get(u)!) {
+            const edgeInst =
+              (this.getEdgeInstance({
+                source: u,
+                target: v,
+              }) as Arc<T> | null) ||
+              (this.getEdgeInstance({ source: v, target: u }) as Arc<T> | null);
+            if (edgeInst)
+              result.push({
+                source: edgeInst.source.name,
+                target: edgeInst.target.name,
+                data: edgeInst.data as T,
+                weight: edgeInst.weight,
+              });
+          }
+        } else if (v !== parent.get(u)) {
+          low.set(u, Math.min(low.get(u)!, disc.get(v)!));
+        }
+      }
+    };
+
+    for (const node of this) {
+      if (!visited.has(node.name)) {
+        parent.set(node.name, null);
+        dfs(node.name);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Find all directed bridges in the network. An edge (u,v) is a
+   * directed bridge if there is no alternative directed path from
+   * u to v when this edge is ignored.
+   */
+  directedBridges(): {
+    source: string;
+    target: string;
+    data: T;
+    weight: number;
+  }[] {
+    const result: {
+      source: string;
+      target: string;
+      data: T;
+      weight: number;
+    }[] = [];
+
+    for (const node of this) {
+      for (const edge of node.outgoing.values()) {
+        const u = node.name;
+        const v = edge.target.name;
+        const stack = [u];
+        const visited = new Set<string>([u]);
+        let reached = false;
+
+        while (stack.length && !reached) {
+          const current = stack.pop() as string;
+          const curNode = this.__G__.get(current)! as Node<V>;
+          for (const e of curNode.outgoing.values()) {
+            if (current === u && e.target.name === v) continue;
+            const t = e.target.name;
+            if (t === v) {
+              reached = true;
+              break;
+            }
+            if (!visited.has(t)) {
+              visited.add(t);
+              stack.push(t);
+            }
+          }
+        }
+
+        if (!reached)
+          result.push({
+            source: u,
+            target: v,
+            data: edge.data as T,
+            weight: (edge as Arc<T>).weight,
+          });
+      }
+    }
+
+    return result;
   }
 
   /**
