@@ -1902,7 +1902,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
 
         while (stack.length && !reached) {
           const current = stack.pop() as string;
-          const curNode = this.__G__.get(current)! as Node<V>;
+          const curNode = this.getNodeInstance(current) as Node<V>;
           for (const e of curNode.outgoing.values()) {
             if (current === u && e.target.name === v) continue;
             const t = e.target.name;
