@@ -183,6 +183,24 @@ export declare class Graph<D = unknown, T = unknown, S = unknown> extends BaseGr
      */
     isConnected(): boolean;
     /**
+     * Find all bridges in the graph treating edges as undirected.
+     */
+    bridges(): {
+        source: string;
+        target: string;
+        data: T | null;
+    }[];
+    /**
+     * Find all bridges considering edge directions. An edge (u,v)
+     * is a directed bridge if there is no alternative directed
+     * path from u to v when the edge is ignored.
+     */
+    directedBridges(): {
+        source: string;
+        target: string;
+        data: T | null;
+    }[];
+    /**
      * Return all simple cycles in the graph as arrays of node names.
      */
     cycles(): string[][];
@@ -326,6 +344,26 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      * Check if the network is connected using an undirected traversal.
      */
     isConnected(): boolean;
+    /**
+     * Find all bridges in the network treating edges as undirected.
+     */
+    bridges(): {
+        source: string;
+        target: string;
+        data: T;
+        weight: number;
+    }[];
+    /**
+     * Find all directed bridges in the network. An edge (u,v) is a
+     * directed bridge if there is no alternative directed path from
+     * u to v when this edge is ignored.
+     */
+    directedBridges(): {
+        source: string;
+        target: string;
+        data: T;
+        weight: number;
+    }[];
     /**
      * Return all simple cycles in the network.
      */
