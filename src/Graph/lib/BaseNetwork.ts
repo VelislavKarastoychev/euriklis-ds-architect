@@ -21,6 +21,14 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   S
 > {
   /**
+   * Function used to derive a numeric weight from an edge's stored weight and
+   * data. Users can override this to globally change how algorithms interpret
+   * edge weights.
+   */
+  weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
+    w,
+  ) => w;
+  /**
    * Generate an n-dimensional cube network.
    */
   static nCube(n: number): BaseNetwork<number[], null> {
@@ -46,11 +54,14 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   constructor({
     nodes,
     edges,
+    weightFn,
   }: {
     nodes?: { name: string; data: V; value: number }[];
     edges?: { source: string; target: string; data: T; weight: number }[];
+    weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
   } = {}) {
     super({ nodes, edges });
+    if (weightFn) this.weightFn = weightFn;
   }
   protected override createNode({
     name,
@@ -174,7 +185,13 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * Generate the adjacency matrix using edge weights. If no edge exists between
    * two nodes the value is `0`.
    */
-  adjacencyMatrix(): number[][] {
+  adjacencyMatrix(
+    weightFn: (
+      weight: number,
+      data: T,
+      g?: BaseNetwork<V, T, S>,
+    ) => number = this.weightFn,
+  ): number[][] {
     const names = [...this.__G__.keys()];
     const index = new Map<string, number>();
     names.forEach((n, i) => index.set(n, i));
@@ -183,7 +200,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       const i = index.get(node.name)!;
       for (const edge of node.outgoing.values()) {
         const j = index.get(edge.target.name)!;
-        matrix[i][j] = (edge as Arc<T>).weight;
+        matrix[i][j] = weightFn(edge.weight, edge.data as T, this);
       }
     }
     return matrix;
@@ -218,11 +235,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Node<V> | string;
-    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
+    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T, S>) => unknown;
     errorCallback?: (
       node: Node<V> | null,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => unknown;
   }): this {
     const queue = new Queue<Node<V>>();
@@ -268,12 +285,12 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     startingNode: Node<V> | string;
     callback?: (
       node: Node<V> | null,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => Promise<unknown>;
     errorCallback?: (
       node: Node<V> | null,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => Promise<unknown>;
   }): Promise<this> {
     const queue = new Queue<Node<V>>();
@@ -315,11 +332,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     errorCallback = (_: Node<V> | null, error: Error): void =>
       console.log(error.message),
   }: {
-    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T>) => unknown;
+    callback?: (node: Node<V> | null, g?: BaseNetwork<V, T, S>) => unknown;
     errorCallback?: (
       node: Node<V> | null,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => unknown;
   } = {}): this {
     const queue = new Queue<Node<V>>();
@@ -352,11 +369,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     errorCallback = async (_: Node<V>, error: Error): Promise<unknown> =>
       console.log(error.message),
   }: {
-    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Node<V>,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => Promise<unknown>;
   } = {}): Promise<this> {
     const queue = new Queue<Node<V>>();
@@ -390,11 +407,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     errorCallback = (_: Node<V>, error: Error): void =>
       console.log(error.message),
   }: {
-    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => unknown;
     errorCallback?: (
       node: Node<V>,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => unknown;
   }): this {
     const stack = new DynamicStack<Node<V>>();
@@ -427,11 +444,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     errorCallback = async (_: Node<V>, error: Error): Promise<void> =>
       console.log(error.message),
   }: {
-    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Node<V>,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => Promise<unknown>;
   } = {}): Promise<this> {
     const stack = new DynamicStack<Node<V>>();
@@ -467,11 +484,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Node<V> | string;
-    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => unknown;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => unknown;
     errorCallback?: (
       node: Node<V>,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => unknown;
   }): this {
     const stack = new DynamicStack<Node<V>>();
@@ -515,11 +532,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       console.log(error.message),
   }: {
     startingNode: Node<V> | string;
-    callback?: (node: Node<V>, g?: BaseNetwork<V, T>) => Promise<unknown>;
+    callback?: (node: Node<V>, g?: BaseNetwork<V, T, S>) => Promise<unknown>;
     errorCallback?: (
       node: Node<V>,
       error: Error,
-      g?: BaseNetwork<V, T>,
+      g?: BaseNetwork<V, T, S>,
     ) => Promise<unknown>;
   }): Promise<this> {
     const stack = new DynamicStack<Node<V>>();
@@ -687,9 +704,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * Find all bridges in the network treating edges as undirected.
    */
   bridges(
-    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
-      w,
-    ) => w,
+    weightFn: (
+      weight: number,
+      data: T,
+      g?: BaseNetwork<V, T, S>,
+    ) => number = this.weightFn,
   ): { source: string; target: string; data: T; weight: number }[] {
     const neighbors = new Map<string, Set<string>>();
     for (const node of this) neighbors.set(node.name, new Set());
@@ -765,9 +784,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * u to v when this edge is ignored.
    */
   directedBridges(
-    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
-      w,
-    ) => w,
+    weightFn: (
+      weight: number,
+      data: T,
+      g?: BaseNetwork<V, T, S>,
+    ) => number = this.weightFn,
   ): {
     source: string;
     target: string;
@@ -1054,7 +1075,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    */
   PRIM({
     start,
-    weightFn = (w: number): number => w,
+    weightFn = this.weightFn,
   }: {
     start?: string;
     weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
@@ -1119,9 +1140,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * Compute earliest finish times for nodes using a forward pass (PERT).
    */
   PERT(
-    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
-      w,
-    ) => w,
+    weightFn: (
+      weight: number,
+      data: T,
+      g?: BaseNetwork<V, T, S>,
+    ) => number = this.weightFn,
   ): Map<string, number> {
     const order = this.topologicalOrder();
     const earliest = new Map<string, number>();
@@ -1146,9 +1169,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * Determine the critical path and its duration using CPM.
    */
   CPM(
-    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
-      w,
-    ) => w,
+    weightFn: (
+      weight: number,
+      data: T,
+      g?: BaseNetwork<V, T, S>,
+    ) => number = this.weightFn,
   ): { duration: number; path: string[]; pathStack: DynamicStack<string> } {
     const order = this.topologicalOrder();
     const earliest = new Map<string, number>();
