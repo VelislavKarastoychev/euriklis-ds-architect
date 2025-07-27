@@ -686,11 +686,17 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   /**
    * Find all bridges in the network treating edges as undirected.
    */
-  bridges(): { source: string; target: string; data: T; weight: number }[] {
+  bridges(
+    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
+      w,
+    ) => w,
+  ): { source: string; target: string; data: T; weight: number }[] {
     const neighbors = new Map<string, Set<string>>();
     for (const node of this) neighbors.set(node.name, new Set());
     for (const node of this) {
       for (const e of node.outgoing.values()) {
+        const w = weightFn(e.weight, e.data as T, this);
+        if (w <= 0) continue;
         neighbors.get(node.name)!.add(e.target.name);
         if (!neighbors.has(e.target.name))
           neighbors.set(e.target.name, new Set());
@@ -726,13 +732,16 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
                 target: v,
               }) as Arc<T> | null) ||
               (this.getEdgeInstance({ source: v, target: u }) as Arc<T> | null);
-            if (edgeInst)
-              result.push({
-                source: edgeInst.source.name,
-                target: edgeInst.target.name,
-                data: edgeInst.data as T,
-                weight: edgeInst.weight,
-              });
+            if (edgeInst) {
+              const w = weightFn(edgeInst.weight, edgeInst.data as T, this);
+              if (w > 0)
+                result.push({
+                  source: edgeInst.source.name,
+                  target: edgeInst.target.name,
+                  data: edgeInst.data as T,
+                  weight: w,
+                });
+            }
           }
         } else if (v !== parent.get(u)) {
           low.set(u, Math.min(low.get(u)!, disc.get(v)!));
@@ -755,7 +764,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
    * directed bridge if there is no alternative directed path from
    * u to v when this edge is ignored.
    */
-  directedBridges(): {
+  directedBridges(
+    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
+      w,
+    ) => w,
+  ): {
     source: string;
     target: string;
     data: T;
@@ -770,6 +783,8 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
 
     for (const node of this) {
       for (const edge of node.outgoing.values()) {
+        const w = weightFn(edge.weight, edge.data as T, this);
+        if (w <= 0) continue;
         const u = node.name;
         const v = edge.target.name;
         const stack = [u];
@@ -780,6 +795,8 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
           const current = stack.pop() as string;
           const curNode = this.getNodeInstance(current) as Node<V>;
           for (const e of curNode.outgoing.values()) {
+            const w2 = weightFn(e.weight, e.data as T, this);
+            if (w2 <= 0) continue;
             if (current === u && e.target.name === v) continue;
             const t = e.target.name;
             if (t === v) {
@@ -798,7 +815,7 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
             source: u,
             target: v,
             data: edge.data as T,
-            weight: (edge as Arc<T>).weight,
+            weight: w,
           });
       }
     }
@@ -1035,7 +1052,13 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   /**
    * Construct a minimum spanning tree using Prim's algorithm.
    */
-  PRIM(start?: string): BaseNetwork<V, T, S> {
+  PRIM({
+    start,
+    weightFn = (w: number): number => w,
+  }: {
+    start?: string;
+    weightFn?: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
+  } = {}): BaseNetwork<V, T, S> {
     const tree = new BaseNetwork<V, T, S>();
     for (const node of this) {
       tree.addNode({
@@ -1057,10 +1080,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     const addEdges = (n: Node<V>) => {
       for (const e of n.outgoing.values()) {
         if (!visited.has(e.target.name)) {
+          const w = weightFn(e.weight, e.data as T, this);
           edges.push({
             source: n.name,
             target: e.target.name,
-            weight: e.weight,
+            weight: w,
             data: e.data,
           });
         }
@@ -1094,7 +1118,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   /**
    * Compute earliest finish times for nodes using a forward pass (PERT).
    */
-  PERT(): Map<string, number> {
+  PERT(
+    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
+      w,
+    ) => w,
+  ): Map<string, number> {
     const order = this.topologicalOrder();
     const earliest = new Map<string, number>();
     if (!order) return earliest;
@@ -1103,7 +1131,9 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       const node = this.getNodeInstance(name)!;
       let max = 0;
       for (const e of node.incoming.values()) {
-        const val = (earliest.get(e.source.name) || 0) + e.weight;
+        const w = weightFn(e.weight, e.data as T, this);
+        if (w <= 0) continue;
+        const val = (earliest.get(e.source.name) || 0) + w;
         if (val > max) max = val;
       }
       earliest.set(name, max);
@@ -1115,7 +1145,11 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   /**
    * Determine the critical path and its duration using CPM.
    */
-  CPM(): { duration: number; path: string[]; pathStack: DynamicStack<string> } {
+  CPM(
+    weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
+      w,
+    ) => w,
+  ): { duration: number; path: string[]; pathStack: DynamicStack<string> } {
     const order = this.topologicalOrder();
     const earliest = new Map<string, number>();
     const prev = new Map<string, string | null>();
@@ -1127,7 +1161,9 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       let p: string | null = null;
       const node = this.getNodeInstance(name)!;
       for (const e of node.incoming.values()) {
-        const val = (earliest.get(e.source.name) || 0) + e.weight;
+        const w = weightFn(e.weight, e.data as T, this);
+        if (w <= 0) continue;
+        const val = (earliest.get(e.source.name) || 0) + w;
         if (val > max) {
           max = val;
           p = e.source.name;
