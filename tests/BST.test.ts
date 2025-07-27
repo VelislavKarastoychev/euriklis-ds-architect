@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { BST } from "../src";
+import { BST } from "../dist";
 
 describe("BST", () => {
   it("supports insert and traversal", () => {
