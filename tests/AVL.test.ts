@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { AVLTree } from "../src";
+import { AVLTree } from "../dist";
 
 describe("AVLTree", () => {
   it("stores and retrieves elements", () => {
