@@ -91,4 +91,9 @@ sg.addEdge({ source: "start", target: "end", data: null });
 sg.state = { count: 0 };
 ```
 
-StateGraph methods: `clone`, `upgradeToGraph`, and `upgradeToBaseNetwork` mirror the behaviour of the Graph equivalents.
+```ts
+const snapshot = sg.toJSON();
+console.log(snapshot.nodes.length); // 2
+```
+
+StateGraph methods: `clone`, `upgradeToGraph`, `upgradeToBaseNetwork`, and `toJSON` mirror the behaviour of the Graph equivalents.
