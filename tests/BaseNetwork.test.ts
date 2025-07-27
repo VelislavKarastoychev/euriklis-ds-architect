@@ -245,7 +245,7 @@ describe("BaseNetwork", () => {
     for (const [s, t, w] of edges) {
       n.addEdge({ source: s, target: t, data: null, params: { weight: w } });
     }
-    const tree = n.PRIM("A");
+    const tree = n.PRIM({ start: "A" });
     expect(tree.order).toBe(4);
     expect(tree.size).toBe(3);
     expect(tree.weightedSize).toBe(3);
@@ -306,5 +306,25 @@ describe("BaseNetwork", () => {
       data: null,
       weight: 1,
     });
+  });
+
+  it("adjacencyMatrix accepts a custom callback", () => {
+    const n = new BaseNetwork<number, number>();
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addEdge({ source: "A", target: "B", data: 5, params: { weight: 1 } });
+    const m = n.adjacencyMatrix((_, data) => data);
+    expect(m[0][1]).toBe(5);
+  });
+
+  it("uses weightFn property when provided", () => {
+    const n = new BaseNetwork<number, number>({
+      weightFn: (_, d) => d,
+    });
+    n.addNode({ name: "A", data: 1 });
+    n.addNode({ name: "B", data: 2 });
+    n.addEdge({ source: "A", target: "B", data: 7, params: { weight: 1 } });
+    const m = n.adjacencyMatrix();
+    expect(m[0][1]).toBe(7);
   });
 });
