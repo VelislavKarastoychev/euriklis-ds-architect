@@ -30,6 +30,30 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   ) => w;
 
   /**
+   * Generate an n-dimensional cube network.
+   */
+  static nCube(n: number): BaseNetwork<number[], null> {
+    const g = new BaseNetwork<number[], null>();
+    const total = 1 << n;
+    for (let i = 0; i < total; i++) {
+      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
+      g.addNode({ name: i.toString(), data: bits, options: { value: 1 } });
+    }
+    for (let i = 0; i < total; i++) {
+      for (let j = 0; j < n; j++) {
+        const neighbor = i ^ (1 << j);
+        g.addEdge({
+          source: i.toString(),
+          target: neighbor.toString(),
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+    return g;
+  }
+
+  /**
    * Generate an Erdos-Renyi random network with
    * `n` nodes and connection probability `p`.
    */
@@ -61,6 +85,43 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   }
 
   /**
+   * Generate a weighted Erdos-Renyi random network. Each created edge will
+   * receive a weight produced by the optional `weightGenerator` function which
+   * by default draws from `Math.random()`.
+   */
+  static erdosRenyiWeighted(
+    n: number,
+    p: number,
+    weightGenerator: () => number = Math.random,
+  ): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    for (let i = 0; i < n; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+    }
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (Math.random() < p) {
+          const w = weightGenerator();
+          g.addEdge({
+            source: `v${i}`,
+            target: `v${j}`,
+            data: null,
+            params: { weight: w },
+          });
+          g.addEdge({
+            source: `v${j}`,
+            target: `v${i}`,
+            data: null,
+            params: { weight: w },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
    * Generate a regular ring lattice where each node connects to `k` neighbours on each side.
    */
   static ringLattice(n: number, k: number): BaseNetwork<number, null> {
@@ -82,6 +143,41 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
           target: `v${i}`,
           data: null,
           params: { weight: 1 },
+        });
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Weighted variant of `ringLattice` where each edge weight is determined by
+   * `weightGenerator` (defaults to `Math.random`).
+   */
+  static ringLatticeWeighted(
+    n: number,
+    k: number,
+    weightGenerator: () => number = Math.random,
+  ): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    for (let i = 0; i < n; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+    }
+    for (let i = 0; i < n; i++) {
+      for (let j = 1; j <= k; j++) {
+        const t = (i + j) % n;
+        const w = weightGenerator();
+        g.addEdge({
+          source: `v${i}`,
+          target: `v${t}`,
+          data: null,
+          params: { weight: w },
+        });
+        g.addEdge({
+          source: `v${t}`,
+          target: `v${i}`,
+          data: null,
+          params: { weight: w },
         });
       }
     }
@@ -128,6 +224,60 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     }
 
     return g;
+  }
+
+  /**
+   * Weighted Watts–Strogatz small-world network generator. It behaves like
+   * `wattsStrogatz` but assigns a random weight (via `weightGenerator`) to each
+   * created edge.
+   */
+  static wattsStrogatzWeighted(
+    n: number,
+    k: number,
+    beta: number,
+    weightGenerator: () => number = Math.random,
+  ): BaseNetwork<number, null> {
+    const g = BaseNetwork.ringLatticeWeighted(n, k, weightGenerator);
+    const nodes = [...g.__G__.keys()];
+    for (let i = 0; i < n; i++) {
+      for (let j = 1; j <= k; j++) {
+        const src = `v${i}`;
+        const tgt = `v${(i + j) % n}`;
+        if (Math.random() < beta) {
+          g.removeEdge({ source: src, target: tgt });
+          g.removeEdge({ source: tgt, target: src });
+          let r = src;
+          while (r === src || g.getEdgeInstance({ source: src, target: r })) {
+            r = nodes[Math.floor(Math.random() * n)];
+          }
+          const w = weightGenerator();
+          g.addEdge({
+            source: src,
+            target: r,
+            data: null,
+            params: { weight: w },
+          });
+          g.addEdge({
+            source: r,
+            target: src,
+            data: null,
+            params: { weight: w },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /** Alias for `wattsStrogatzWeighted` using a more concise name. */
+  static smallWorldWeighted(
+    n: number,
+    k: number,
+    beta: number,
+    weightGenerator: () => number = Math.random,
+  ): BaseNetwork<number, null> {
+    return this.wattsStrogatzWeighted(n, k, beta, weightGenerator);
   }
 
   /**
@@ -405,181 +555,6 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
     return g;
   }
 
-  /**
-   * Heuristic check if the network resembles an Erdos-Renyi random network.
-   */
-  isErdosRenyi(tolerance = 0.05): boolean {
-    const n = this.order;
-    if (n < 2) return true;
-    const pObserved = this.size / (n * (n - 1));
-    const meanDegree = (2 * this.size) / n;
-    let variance = 0;
-    for (const node of this) {
-      const deg = node.outDegree + node.inDegree;
-      variance += Math.pow(deg - meanDegree, 2);
-    }
-    variance /= n;
-    const pExpected = meanDegree / (n - 1);
-    return Math.abs(pObserved - pExpected) < tolerance && variance < meanDegree;
-  }
-
-  /** Check if each node has degree approximately `2*k` as in a ring lattice. */
-  isRingLattice(k: number): boolean {
-    for (const node of this) {
-      if (node.inDegree + node.outDegree !== 4 * k) return false;
-    }
-
-    return true;
-  }
-
-  /** Rough test for a Barabasi–Albert style degree distribution. */
-  isBarabasiAlbert(): boolean {
-    let max = 0;
-    let sum = 0;
-    for (const node of this) {
-      const deg = node.inDegree + node.outDegree;
-      if (deg > max) max = deg;
-      sum += deg;
-    }
-    const avg = sum / this.order;
-    return max > avg * 3;
-  }
-
-  /** Check for rich‑club organisation using a simple coefficient. */
-  hasRichClub(threshold = 0.1): boolean {
-    if (this.order < 5) return false;
-    const degrees = [...this].map((n) => ({
-      name: n.name,
-      deg: n.outDegree + n.inDegree,
-    }));
-    degrees.sort((a, b) => b.deg - a.deg);
-    const topCount = Math.max(2, Math.floor(this.order * 0.1));
-    const club = degrees.slice(0, topCount).map((d) => d.name);
-    let edges = 0;
-    for (const u of club) {
-      for (const v of club) {
-        if (u === v) continue;
-        if (this.getEdgeInstance({ source: u, target: v })) edges++;
-      }
-    }
-    const possible = topCount * (topCount - 1);
-    return edges / possible > this.density + threshold;
-  }
-
-  /** Estimate if the network originated from a Watts–Strogatz process. */
-  isWattsStrogatz(k: number, betaTolerance = 0.1): boolean {
-    const avgDegree =
-      [...this].reduce((s, n) => s + n.inDegree + n.outDegree, 0) / this.order;
-    if (Math.abs(avgDegree - 2 * k) > 1) return false;
-    if (this.isRingLattice(k)) return false;
-    const clustering = this.averageClusteringCoefficient();
-    return clustering > this.density + betaTolerance;
-  }
-
-  /** Basic check for a deterministic hierarchical structure. */
-  isHierarchical(): boolean {
-    const degClust: [number, number][] = [];
-    for (const n of this) {
-      const deg = n.inDegree + n.outDegree;
-      const c = this.nodeClusteringCoefficient(n.name);
-      degClust.push([deg, c]);
-    }
-    degClust.sort((a, b) => a[0] - b[0]);
-    let prev = Infinity;
-    for (const [deg, c] of degClust) {
-      if (deg > prev && c > degClust.find((d) => d[0] === prev)![1])
-        return false;
-      prev = deg;
-    }
-    return true;
-  }
-
-  /** Quick planar check for an Apollonian network. */
-  isApollonian(): boolean {
-    const n = this.order;
-    const m = this.size / 2; // undirected edge count
-    return m === 3 * n - 6;
-  }
-
-  /** Rough heuristic detecting block community structure. */
-  isStochasticBlockModel(): boolean {
-    const clustering = this.averageClusteringCoefficient();
-    return clustering > this.density * 1.5;
-  }
-
-  /** Determine if node vectors likely generated edges via dot-product similarity. */
-  isLatentSpace(): boolean {
-    const sample = [...this].slice(0, 5);
-    if (!sample.every((n) => Array.isArray(n.data))) return false;
-    let correlate = 0;
-    let total = 0;
-    for (const e of this.edges) {
-      const u = this.getNodeInstance(e.source)!;
-      const v = this.getNodeInstance(e.target)!;
-      if (Array.isArray(u.data) && Array.isArray(v.data)) {
-        const dot = (u.data as number[]).reduce(
-          (s, val, i) => s + val * (v.data as number[])[i],
-          0,
-        );
-        correlate += dot;
-        total++;
-      }
-    }
-    return total > 0 && correlate / total > 0;
-  }
-
-  private nodeClusteringCoefficient(name: string): number {
-    const n = this.getNodeInstance(name);
-    if (!n) return 0;
-    const neighbors = new Set<string>();
-    for (const e of n.outgoing.values()) neighbors.add(e.target.name);
-    for (const e of n.incoming.values()) neighbors.add(e.source.name);
-    const arr = [...neighbors];
-    const deg = arr.length;
-    if (deg < 2) return 0;
-    let links = 0;
-    for (let i = 0; i < deg; i++) {
-      for (let j = i + 1; j < deg; j++) {
-        if (
-          this.getEdgeInstance({ source: arr[i], target: arr[j] }) ||
-          this.getEdgeInstance({ source: arr[j], target: arr[i] })
-        ) {
-          links++;
-        }
-      }
-    }
-    return (2 * links) / (deg * (deg - 1));
-  }
-
-  private averageClusteringCoefficient(): number {
-    let sum = 0;
-    for (const node of this) sum += this.nodeClusteringCoefficient(node.name);
-    return sum / this.order;
-  }
-
-  /**
-   * Generate an n-dimensional cube network.
-   */
-  static nCube(n: number): BaseNetwork<number[], null> {
-    const g = new BaseNetwork<number[], null>();
-    const total = 1 << n;
-    for (let i = 0; i < total; i++) {
-      const bits = i.toString(2).padStart(n, "0").split("").map(Number);
-      g.addNode({ name: i.toString(), data: bits, options: { value: 1 } });
-    }
-    for (let i = 0; i < total; i++) {
-      for (let j = 0; j < n; j++) {
-        const neighbor = i ^ (1 << j);
-        g.addEdge({
-          source: i.toString(),
-          target: neighbor.toString(),
-          data: null,
-          params: { weight: 1 },
-        });
-      }
-    }
-    return g;
-  }
   constructor({
     nodes,
     edges,
@@ -1774,6 +1749,326 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
       }
     }
     return true;
+  }
+
+  /** Weighted variant of `isErdosRenyi` using edge weights. */
+  isWeightedErdosRenyi(tolerance = 0.05): boolean {
+    const n = this.order;
+    if (n < 2) return true;
+    const pObserved = this.weightedSize / (n * (n - 1));
+    const meanDegree = (2 * this.weightedSize) / n;
+    let variance = 0;
+    for (const node of this) {
+      const deg = this.weightedDegree(node);
+      variance += Math.pow(deg - meanDegree, 2);
+    }
+    variance /= n;
+    const pExpected = meanDegree / (n - 1);
+    return Math.abs(pObserved - pExpected) < tolerance && variance < meanDegree;
+  }
+
+  /** Weighted check if each node has degree roughly `2*k` as in a ring lattice. */
+  isWeightedRingLattice(k: number, tolerance = 0.1): boolean {
+    if (this.size === 0) return false;
+    const avgWeight = this.weightedSize / this.size;
+    const expected = 4 * k * avgWeight;
+    for (const node of this) {
+      const deg = this.weightedDegree(node);
+      if (Math.abs(deg - expected) > expected * tolerance) return false;
+    }
+    return true;
+  }
+
+  /** Weighted heuristic for Barabasi-Albert style degree distribution. */
+  isWeightedBarabasiAlbert(): boolean {
+    let max = 0;
+    let sum = 0;
+    for (const node of this) {
+      const deg = this.weightedDegree(node);
+      if (deg > max) max = deg;
+      sum += deg;
+    }
+    const avg = sum / this.order;
+    return max > avg * 3;
+  }
+
+  /** Weighted variant of rich-club detection. */
+  hasWeightedRichClub(threshold = 0.1): boolean {
+    if (this.order < 5) return false;
+    const degrees = [...this].map((n) => ({
+      name: n.name,
+      deg: this.weightedDegree(n),
+    }));
+    degrees.sort((a, b) => b.deg - a.deg);
+    const topCount = Math.max(2, Math.floor(this.order * 0.1));
+    const club = degrees.slice(0, topCount).map((d) => d.name);
+    let weightSum = 0;
+    for (const u of club) {
+      for (const v of club) {
+        if (u === v) continue;
+        const e = this.getEdgeInstance({ source: u, target: v });
+        if (e) weightSum += e.weight;
+      }
+    }
+    const possible = topCount * (topCount - 1);
+    return weightSum / possible > this.weightedDensity + threshold;
+  }
+
+  /** Weighted Watts–Strogatz detection using weighted clustering. */
+  isWeightedWattsStrogatz(k: number, betaTolerance = 0.1): boolean {
+    const avgWeight = this.weightedSize / this.size || 0;
+    const avgDegree =
+      [...this].reduce((s, n) => s + this.weightedDegree(n), 0) / this.order;
+    if (Math.abs(avgDegree - 4 * k * avgWeight) > avgWeight) return false;
+    if (this.isWeightedRingLattice(k)) return false;
+    const clustering = this.weightedAverageClusteringCoefficient();
+    return clustering > this.weightedDensity + betaTolerance;
+  }
+
+  /** Weighted hierarchical structure check. */
+  isWeightedHierarchical(): boolean {
+    const degClust: [number, number][] = [];
+    for (const n of this) {
+      const deg = this.weightedDegree(n);
+      const c = this.weightedNodeClusteringCoefficient(n.name);
+      degClust.push([deg, c]);
+    }
+    degClust.sort((a, b) => a[0] - b[0]);
+    let prev = Infinity;
+    for (const [deg, c] of degClust) {
+      const prevEntry = degClust.find((d) => d[0] === prev);
+      if (prevEntry && deg > prev && c > prevEntry[1]) return false;
+      prev = deg;
+    }
+    return true;
+  }
+
+  /** Weighted planar approximation for an Apollonian network. */
+  isWeightedApollonian(): boolean {
+    const n = this.order;
+    const m = this.weightedSize / 2;
+    return Math.round(m) === Math.round(3 * n - 6);
+  }
+
+  /** Weighted community structure heuristic. */
+  isWeightedStochasticBlockModel(): boolean {
+    const clustering = this.weightedAverageClusteringCoefficient();
+    return clustering > this.weightedDensity * 1.5;
+  }
+
+  /** Weighted latent space detection using edge weights. */
+  isWeightedLatentSpace(): boolean {
+    const sample = [...this].slice(0, 5);
+    if (!sample.every((n) => Array.isArray(n.data))) return false;
+    let correlate = 0;
+    let total = 0;
+    for (const e of this.edges) {
+      const u = this.getNodeInstance(e.source)!;
+      const v = this.getNodeInstance(e.target)!;
+      if (Array.isArray(u.data) && Array.isArray(v.data)) {
+        const dot = (u.data as number[]).reduce(
+          (s, val, i) => s + val * (v.data as number[])[i],
+          0,
+        );
+        correlate += dot * e.weight;
+        total += e.weight;
+      }
+    }
+    return total > 0 && correlate / total > 0;
+  }
+
+  private weightedDegree(node: Node<V>): number {
+    let sum = 0;
+    for (const e of node.incoming.values()) sum += e.weight;
+    for (const e of node.outgoing.values()) sum += e.weight;
+    return sum;
+  }
+
+  private weightedNodeClusteringCoefficient(name: string): number {
+    const n = this.getNodeInstance(name);
+    if (!n) return 0;
+    const neighbors = new Set<string>();
+    for (const e of n.outgoing.values()) neighbors.add(e.target.name);
+    for (const e of n.incoming.values()) neighbors.add(e.source.name);
+    const arr = [...neighbors];
+    const deg = arr.length;
+    if (deg < 2) return 0;
+    let links = 0;
+    let weightSum = 0;
+    for (let i = 0; i < deg; i++) {
+      for (let j = i + 1; j < deg; j++) {
+        const e1 = this.getEdgeInstance({ source: name, target: arr[i] });
+        const e2 = this.getEdgeInstance({ source: name, target: arr[j] });
+        const e3 =
+          this.getEdgeInstance({ source: arr[i], target: arr[j] }) ||
+          this.getEdgeInstance({ source: arr[j], target: arr[i] });
+        if (e1 && e2 && e3) {
+          links++;
+          weightSum += Math.cbrt(e1.weight * e2.weight * e3.weight);
+        }
+      }
+    }
+    const strength = this.weightedDegree(n);
+    return (2 * weightSum) / (strength * (deg - 1));
+  }
+
+  private weightedAverageClusteringCoefficient(): number {
+    let sum = 0;
+    for (const node of this)
+      sum += this.weightedNodeClusteringCoefficient(node.name);
+    return sum / this.order;
+  }
+
+  /**
+   * Heuristic check if the network resembles an Erdos-Renyi random network.
+   */
+  isErdosRenyi(tolerance = 0.05): boolean {
+    const n = this.order;
+    if (n < 2) return true;
+    const pObserved = this.size / (n * (n - 1));
+    const meanDegree = (2 * this.size) / n;
+    let variance = 0;
+    for (const node of this) {
+      const deg = node.outDegree + node.inDegree;
+      variance += Math.pow(deg - meanDegree, 2);
+    }
+    variance /= n;
+    const pExpected = meanDegree / (n - 1);
+    return Math.abs(pObserved - pExpected) < tolerance && variance < meanDegree;
+  }
+
+  /** Check if each node has degree approximately `2*k` as in a ring lattice. */
+  isRingLattice(k: number): boolean {
+    for (const node of this) {
+      if (node.inDegree + node.outDegree !== 4 * k) return false;
+    }
+
+    return true;
+  }
+
+  /** Rough test for a Barabasi–Albert style degree distribution. */
+  isBarabasiAlbert(): boolean {
+    let max = 0;
+    let sum = 0;
+    for (const node of this) {
+      const deg = node.inDegree + node.outDegree;
+      if (deg > max) max = deg;
+      sum += deg;
+    }
+    const avg = sum / this.order;
+    return max > avg * 3;
+  }
+
+  /** Check for rich‑club organisation using a simple coefficient. */
+  hasRichClub(threshold = 0.1): boolean {
+    if (this.order < 5) return false;
+    const degrees = [...this].map((n) => ({
+      name: n.name,
+      deg: n.outDegree + n.inDegree,
+    }));
+    degrees.sort((a, b) => b.deg - a.deg);
+    const topCount = Math.max(2, Math.floor(this.order * 0.1));
+    const club = degrees.slice(0, topCount).map((d) => d.name);
+    let edges = 0;
+    for (const u of club) {
+      for (const v of club) {
+        if (u === v) continue;
+        if (this.getEdgeInstance({ source: u, target: v })) edges++;
+      }
+    }
+    const possible = topCount * (topCount - 1);
+    return edges / possible > this.density + threshold;
+  }
+
+  /** Estimate if the network originated from a Watts–Strogatz process. */
+  isWattsStrogatz(k: number, betaTolerance = 0.1): boolean {
+    const avgDegree =
+      [...this].reduce((s, n) => s + n.inDegree + n.outDegree, 0) / this.order;
+    if (Math.abs(avgDegree - 2 * k) > 1) return false;
+    if (this.isRingLattice(k)) return false;
+    const clustering = this.averageClusteringCoefficient();
+    return clustering > this.density + betaTolerance;
+  }
+
+  /** Basic check for a deterministic hierarchical structure. */
+  isHierarchical(): boolean {
+    const degClust: [number, number][] = [];
+    for (const n of this) {
+      const deg = n.inDegree + n.outDegree;
+      const c = this.nodeClusteringCoefficient(n.name);
+      degClust.push([deg, c]);
+    }
+    degClust.sort((a, b) => a[0] - b[0]);
+    let prev = Infinity;
+    for (const [deg, c] of degClust) {
+      if (deg > prev && c > degClust.find((d) => d[0] === prev)![1])
+        return false;
+      prev = deg;
+    }
+    return true;
+  }
+
+  /** Quick planar check for an Apollonian network. */
+  isApollonian(): boolean {
+    const n = this.order;
+    const m = this.size / 2; // undirected edge count
+    return m === 3 * n - 6;
+  }
+
+  /** Rough heuristic detecting block community structure. */
+  isStochasticBlockModel(): boolean {
+    const clustering = this.averageClusteringCoefficient();
+    return clustering > this.density * 1.5;
+  }
+
+  /** Determine if node vectors likely generated edges via dot-product similarity. */
+  isLatentSpace(): boolean {
+    const sample = [...this].slice(0, 5);
+    if (!sample.every((n) => Array.isArray(n.data))) return false;
+    let correlate = 0;
+    let total = 0;
+    for (const e of this.edges) {
+      const u = this.getNodeInstance(e.source)!;
+      const v = this.getNodeInstance(e.target)!;
+      if (Array.isArray(u.data) && Array.isArray(v.data)) {
+        const dot = (u.data as number[]).reduce(
+          (s, val, i) => s + val * (v.data as number[])[i],
+          0,
+        );
+        correlate += dot;
+        total++;
+      }
+    }
+    return total > 0 && correlate / total > 0;
+  }
+
+  private nodeClusteringCoefficient(name: string): number {
+    const n = this.getNodeInstance(name);
+    if (!n) return 0;
+    const neighbors = new Set<string>();
+    for (const e of n.outgoing.values()) neighbors.add(e.target.name);
+    for (const e of n.incoming.values()) neighbors.add(e.source.name);
+    const arr = [...neighbors];
+    const deg = arr.length;
+    if (deg < 2) return 0;
+    let links = 0;
+    for (let i = 0; i < deg; i++) {
+      for (let j = i + 1; j < deg; j++) {
+        if (
+          this.getEdgeInstance({ source: arr[i], target: arr[j] }) ||
+          this.getEdgeInstance({ source: arr[j], target: arr[i] })
+        ) {
+          links++;
+        }
+      }
+    }
+    return (2 * links) / (deg * (deg - 1));
+  }
+
+  private averageClusteringCoefficient(): number {
+    let sum = 0;
+    for (const node of this) sum += this.nodeClusteringCoefficient(node.name);
+    return sum / this.order;
   }
 
   /** Serialize network to an object including weights. */
