@@ -17,6 +17,66 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      */
     weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
     /**
+     * Generate an Erdos-Renyi random network with
+     * `n` nodes and connection probability `p`.
+     */
+    static erdosRenyi(n: number, p: number): BaseNetwork<number, null>;
+    /**
+     * Generate a regular ring lattice where each node connects to `k` neighbours on each side.
+     */
+    static ringLattice(n: number, k: number): BaseNetwork<number, null>;
+    /**
+     * Generate a Watts–Strogatz small-world network.
+     */
+    static wattsStrogatz(n: number, k: number, beta: number): BaseNetwork<number, null>;
+    /**
+     * Generate a Barabasi–Albert preferential attachment network.
+     * `n` is the number of nodes and `m` the number of edges added for each new node.
+     */
+    static barabasiAlbert(n: number, m: number): BaseNetwork<number, null>;
+    /**
+     * Build a deterministic hierarchical scale-free network using the pseudofractal model.
+     */
+    static hierarchical(iterations: number): BaseNetwork<number, null>;
+    /**
+     * Generate a network exhibiting the rich‑club phenomenon.
+     */
+    static richClub(n: number, clubSize: number, p: number): BaseNetwork<number, null>;
+    /**
+     * Build an Apollonian network by recursively subdividing triangles.
+     */
+    static apollonian(iterations: number): BaseNetwork<number, null>;
+    /**
+     * Generate a simple stochastic block model with equal intra and inter community probabilities.
+     */
+    static stochasticBlockModel(blockSizes: number[], pIn: number, pOut: number): BaseNetwork<number, null>;
+    /**
+     * Generate a latent space/random dot-product network.
+     */
+    static latentSpace(n: number, d: number, threshold: number): BaseNetwork<number[], null>;
+    /**
+     * Heuristic check if the network resembles an Erdos-Renyi random network.
+     */
+    isErdosRenyi(tolerance?: number): boolean;
+    /** Check if each node has degree approximately `2*k` as in a ring lattice. */
+    isRingLattice(k: number): boolean;
+    /** Rough test for a Barabasi–Albert style degree distribution. */
+    isBarabasiAlbert(): boolean;
+    /** Check for rich‑club organisation using a simple coefficient. */
+    hasRichClub(threshold?: number): boolean;
+    /** Estimate if the network originated from a Watts–Strogatz process. */
+    isWattsStrogatz(k: number, betaTolerance?: number): boolean;
+    /** Basic check for a deterministic hierarchical structure. */
+    isHierarchical(): boolean;
+    /** Quick planar check for an Apollonian network. */
+    isApollonian(): boolean;
+    /** Rough heuristic detecting block community structure. */
+    isStochasticBlockModel(): boolean;
+    /** Determine if node vectors likely generated edges via dot-product similarity. */
+    isLatentSpace(): boolean;
+    private nodeClusteringCoefficient;
+    private averageClusteringCoefficient;
+    /**
      * Generate an n-dimensional cube network.
      */
     static nCube(n: number): BaseNetwork<number[], null>;
