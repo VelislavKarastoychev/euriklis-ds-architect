@@ -327,4 +327,23 @@ describe("BaseNetwork", () => {
     const m = n.adjacencyMatrix();
     expect(m[0][1]).toBe(7);
   });
+
+  it("builds ring lattice networks", () => {
+    const g = BaseNetwork.ringLattice(5, 1);
+    expect(g.order).toBe(5);
+    for (const node of g.nodes) {
+      expect(g.inDegree(node.name) + g.outDegree(node.name)).toBe(4);
+    }
+    expect(g.isRingLattice(1)).toBe(true);
+  });
+
+  it("builds ER random networks", () => {
+    const g = BaseNetwork.erdosRenyi(5, 0.5);
+    expect(g.order).toBe(5);
+  });
+
+  it("builds Barabasi-Albert networks", () => {
+    const g = BaseNetwork.barabasiAlbert(6, 2);
+    expect(g.order).toBe(6);
+  });
 });
