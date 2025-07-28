@@ -28,6 +28,535 @@ export class BaseNetwork<V, T, S = unknown> extends BaseGraph<
   weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number = (
     w,
   ) => w;
+
+  /**
+   * Generate an Erdos-Renyi random network with
+   * `n` nodes and connection probability `p`.
+   */
+  static erdosRenyi(n: number, p: number): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    for (let i = 0; i < n; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+    }
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (Math.random() < p) {
+          g.addEdge({
+            source: `v${i}`,
+            target: `v${j}`,
+            data: null,
+            params: { weight: 1 },
+          });
+          g.addEdge({
+            source: `v${j}`,
+            target: `v${i}`,
+            data: null,
+            params: { weight: 1 },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Generate a regular ring lattice where each node connects to `k` neighbours on each side.
+   */
+  static ringLattice(n: number, k: number): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    for (let i = 0; i < n; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+    }
+    for (let i = 0; i < n; i++) {
+      for (let j = 1; j <= k; j++) {
+        const t = (i + j) % n;
+        g.addEdge({
+          source: `v${i}`,
+          target: `v${t}`,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: `v${t}`,
+          target: `v${i}`,
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Generate a Watts–Strogatz small-world network.
+   */
+  static wattsStrogatz(
+    n: number,
+    k: number,
+    beta: number,
+  ): BaseNetwork<number, null> {
+    const g = BaseNetwork.ringLattice(n, k);
+    const nodes = [...g.__G__.keys()];
+    for (let i = 0; i < n; i++) {
+      for (let j = 1; j <= k; j++) {
+        const src = `v${i}`;
+        const tgt = `v${(i + j) % n}`;
+        if (Math.random() < beta) {
+          // rewire
+          g.removeEdge({ source: src, target: tgt });
+          g.removeEdge({ source: tgt, target: src });
+          let r = src;
+          while (r === src || g.getEdgeInstance({ source: src, target: r })) {
+            r = nodes[Math.floor(Math.random() * n)];
+          }
+          g.addEdge({
+            source: src,
+            target: r,
+            data: null,
+            params: { weight: 1 },
+          });
+          g.addEdge({
+            source: r,
+            target: src,
+            data: null,
+            params: { weight: 1 },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Generate a Barabasi–Albert preferential attachment network.
+   * `n` is the number of nodes and `m` the number of edges added for each new node.
+   */
+  static barabasiAlbert(n: number, m: number): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    const init = Math.max(2, m);
+    for (let i = 0; i < init; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+    }
+    // fully connect initial clique
+    for (let i = 0; i < init; i++) {
+      for (let j = i + 1; j < init; j++) {
+        g.addEdge({
+          source: `v${i}`,
+          target: `v${j}`,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: `v${j}`,
+          target: `v${i}`,
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+    const degrees: number[] = new Array(init).fill(init - 1);
+    for (let i = init; i < n; i++) {
+      g.addNode({ name: `v${i}`, data: i, options: { value: 1 } });
+      const targets: Set<number> = new Set();
+      const totalDegree = degrees.reduce((a, b) => a + b, 0);
+      while (targets.size < m && targets.size < g.order - 1) {
+        const r = Math.random() * totalDegree;
+        let acc = 0;
+        for (let t = 0; t < i; t++) {
+          acc += degrees[t];
+          if (r <= acc) {
+            targets.add(t);
+            break;
+          }
+        }
+      }
+      for (const t of targets) {
+        g.addEdge({
+          source: `v${i}`,
+          target: `v${t}`,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: `v${t}`,
+          target: `v${i}`,
+          data: null,
+          params: { weight: 1 },
+        });
+        degrees[t]++;
+      }
+      degrees[i] = targets.size;
+    }
+    return g;
+  }
+
+  /**
+   * Build a deterministic hierarchical scale-free network using the pseudofractal model.
+   */
+  static hierarchical(iterations: number): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    g.addNode({ name: "0", data: 0, options: { value: 1 } });
+    g.addNode({ name: "1", data: 1, options: { value: 1 } });
+    g.addNode({ name: "2", data: 2, options: { value: 1 } });
+    g.addEdge({ source: "0", target: "1", data: null, params: { weight: 1 } });
+    g.addEdge({ source: "1", target: "0", data: null, params: { weight: 1 } });
+    g.addEdge({ source: "0", target: "2", data: null, params: { weight: 1 } });
+    g.addEdge({ source: "2", target: "0", data: null, params: { weight: 1 } });
+    g.addEdge({ source: "1", target: "2", data: null, params: { weight: 1 } });
+    g.addEdge({ source: "2", target: "1", data: null, params: { weight: 1 } });
+    let nodeId = 3;
+    for (let it = 0; it < iterations; it++) {
+      const edges = [...g.edges];
+      for (const e of edges) {
+        const name = (nodeId++).toString();
+        g.addNode({ name, data: nodeId, options: { value: 1 } });
+        g.addEdge({
+          source: name,
+          target: e.source,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: e.source,
+          target: name,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: name,
+          target: e.target,
+          data: null,
+          params: { weight: 1 },
+        });
+        g.addEdge({
+          source: e.target,
+          target: name,
+          data: null,
+          params: { weight: 1 },
+        });
+      }
+    }
+    return g;
+  }
+
+  /**
+   * Generate a network exhibiting the rich‑club phenomenon.
+   */
+  static richClub(
+    n: number,
+    clubSize: number,
+    p: number,
+  ): BaseNetwork<number, null> {
+    const g = BaseNetwork.erdosRenyi(n, p);
+    const rich = Array.from(
+      { length: clubSize },
+      (_: unknown, i: number): number => i,
+    );
+    for (let i = 0; i < rich.length; i++) {
+      for (let j = i + 1; j < rich.length; j++) {
+        const u = `v${rich[i]}`;
+        const v = `v${rich[j]}`;
+        if (!g.getEdgeInstance({ source: u, target: v })) {
+          g.addEdge({
+            source: u,
+            target: v,
+            data: null,
+            params: { weight: 1 },
+          });
+          g.addEdge({
+            source: v,
+            target: u,
+            data: null,
+            params: { weight: 1 },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Build an Apollonian network by recursively subdividing triangles.
+   */
+  static apollonian(iterations: number): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    g.addNode({ name: "0", data: 0, options: { value: 1 } });
+    g.addNode({ name: "1", data: 1, options: { value: 1 } });
+    g.addNode({ name: "2", data: 2, options: { value: 1 } });
+    const addTriangle = (a: string, b: string, c: string) => {
+      g.addEdge({ source: a, target: b, data: null, params: { weight: 1 } });
+      g.addEdge({ source: b, target: a, data: null, params: { weight: 1 } });
+      g.addEdge({ source: a, target: c, data: null, params: { weight: 1 } });
+      g.addEdge({ source: c, target: a, data: null, params: { weight: 1 } });
+      g.addEdge({ source: b, target: c, data: null, params: { weight: 1 } });
+      g.addEdge({ source: c, target: b, data: null, params: { weight: 1 } });
+    };
+    addTriangle("0", "1", "2");
+    let triangles: [string, string, string][] = [["0", "1", "2"]];
+    let nodeId = 3;
+    for (let it = 0; it < iterations; it++) {
+      const newTriangles: [string, string, string][] = [];
+      for (const [a, b, c] of triangles) {
+        const n = (nodeId++).toString();
+        g.addNode({ name: n, data: nodeId, options: { value: 1 } });
+        addTriangle(a, b, n);
+        addTriangle(a, c, n);
+        addTriangle(b, c, n);
+        newTriangles.push([a, b, n], [a, c, n], [b, c, n]);
+      }
+      triangles = newTriangles;
+    }
+    return g;
+  }
+
+  /**
+   * Generate a simple stochastic block model with equal intra and inter community probabilities.
+   */
+  static stochasticBlockModel(
+    blockSizes: number[],
+    pIn: number,
+    pOut: number,
+  ): BaseNetwork<number, null> {
+    const g = new BaseNetwork<number, null>();
+    const blocks: number[][] = [];
+    let nodeId = 0;
+    for (const size of blockSizes) {
+      const block: number[] = [];
+      for (let i = 0; i < size; i++) {
+        g.addNode({
+          name: nodeId.toString(),
+          data: nodeId,
+          options: { value: 1 },
+        });
+        block.push(nodeId);
+        nodeId++;
+      }
+      blocks.push(block);
+    }
+    const all = blocks.flat();
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const sameBlock = blocks.some(
+          (b) => b.includes(all[i]) && b.includes(all[j]),
+        );
+        const p = sameBlock ? pIn : pOut;
+        if (Math.random() < p) {
+          const u = all[i].toString();
+          const v = all[j].toString();
+          g.addEdge({
+            source: u,
+            target: v,
+            data: null,
+            params: { weight: 1 },
+          });
+          g.addEdge({
+            source: v,
+            target: u,
+            data: null,
+            params: { weight: 1 },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Generate a latent space/random dot-product network.
+   */
+  static latentSpace(
+    n: number,
+    d: number,
+    threshold: number,
+  ): BaseNetwork<number[], null> {
+    const g = new BaseNetwork<number[], null>();
+    const vectors: number[][] = [];
+    for (let i = 0; i < n; i++) {
+      const vec = Array.from({ length: d }, () => Math.random());
+      vectors.push(vec);
+      g.addNode({ name: i.toString(), data: vec, options: { value: 1 } });
+    }
+    const dot = (a: number[], b: number[]) =>
+      a.reduce((s, v, idx) => s + v * b[idx], 0);
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        if (dot(vectors[i], vectors[j]) > threshold) {
+          g.addEdge({
+            source: i.toString(),
+            target: j.toString(),
+            data: null,
+            params: { weight: 1 },
+          });
+          g.addEdge({
+            source: j.toString(),
+            target: i.toString(),
+            data: null,
+            params: { weight: 1 },
+          });
+        }
+      }
+    }
+
+    return g;
+  }
+
+  /**
+   * Heuristic check if the network resembles an Erdos-Renyi random network.
+   */
+  isErdosRenyi(tolerance = 0.05): boolean {
+    const n = this.order;
+    if (n < 2) return true;
+    const pObserved = this.size / (n * (n - 1));
+    const meanDegree = (2 * this.size) / n;
+    let variance = 0;
+    for (const node of this) {
+      const deg = node.outDegree + node.inDegree;
+      variance += Math.pow(deg - meanDegree, 2);
+    }
+    variance /= n;
+    const pExpected = meanDegree / (n - 1);
+    return Math.abs(pObserved - pExpected) < tolerance && variance < meanDegree;
+  }
+
+  /** Check if each node has degree approximately `2*k` as in a ring lattice. */
+  isRingLattice(k: number): boolean {
+    for (const node of this) {
+      if (node.inDegree + node.outDegree !== 4 * k) return false;
+    }
+
+    return true;
+  }
+
+  /** Rough test for a Barabasi–Albert style degree distribution. */
+  isBarabasiAlbert(): boolean {
+    let max = 0;
+    let sum = 0;
+    for (const node of this) {
+      const deg = node.inDegree + node.outDegree;
+      if (deg > max) max = deg;
+      sum += deg;
+    }
+    const avg = sum / this.order;
+    return max > avg * 3;
+  }
+
+  /** Check for rich‑club organisation using a simple coefficient. */
+  hasRichClub(threshold = 0.1): boolean {
+    if (this.order < 5) return false;
+    const degrees = [...this].map((n) => ({
+      name: n.name,
+      deg: n.outDegree + n.inDegree,
+    }));
+    degrees.sort((a, b) => b.deg - a.deg);
+    const topCount = Math.max(2, Math.floor(this.order * 0.1));
+    const club = degrees.slice(0, topCount).map((d) => d.name);
+    let edges = 0;
+    for (const u of club) {
+      for (const v of club) {
+        if (u === v) continue;
+        if (this.getEdgeInstance({ source: u, target: v })) edges++;
+      }
+    }
+    const possible = topCount * (topCount - 1);
+    return edges / possible > this.density + threshold;
+  }
+
+  /** Estimate if the network originated from a Watts–Strogatz process. */
+  isWattsStrogatz(k: number, betaTolerance = 0.1): boolean {
+    const avgDegree =
+      [...this].reduce((s, n) => s + n.inDegree + n.outDegree, 0) / this.order;
+    if (Math.abs(avgDegree - 2 * k) > 1) return false;
+    if (this.isRingLattice(k)) return false;
+    const clustering = this.averageClusteringCoefficient();
+    return clustering > this.density + betaTolerance;
+  }
+
+  /** Basic check for a deterministic hierarchical structure. */
+  isHierarchical(): boolean {
+    const degClust: [number, number][] = [];
+    for (const n of this) {
+      const deg = n.inDegree + n.outDegree;
+      const c = this.nodeClusteringCoefficient(n.name);
+      degClust.push([deg, c]);
+    }
+    degClust.sort((a, b) => a[0] - b[0]);
+    let prev = Infinity;
+    for (const [deg, c] of degClust) {
+      if (deg > prev && c > degClust.find((d) => d[0] === prev)![1])
+        return false;
+      prev = deg;
+    }
+    return true;
+  }
+
+  /** Quick planar check for an Apollonian network. */
+  isApollonian(): boolean {
+    const n = this.order;
+    const m = this.size / 2; // undirected edge count
+    return m === 3 * n - 6;
+  }
+
+  /** Rough heuristic detecting block community structure. */
+  isStochasticBlockModel(): boolean {
+    const clustering = this.averageClusteringCoefficient();
+    return clustering > this.density * 1.5;
+  }
+
+  /** Determine if node vectors likely generated edges via dot-product similarity. */
+  isLatentSpace(): boolean {
+    const sample = [...this].slice(0, 5);
+    if (!sample.every((n) => Array.isArray(n.data))) return false;
+    let correlate = 0;
+    let total = 0;
+    for (const e of this.edges) {
+      const u = this.getNodeInstance(e.source)!;
+      const v = this.getNodeInstance(e.target)!;
+      if (Array.isArray(u.data) && Array.isArray(v.data)) {
+        const dot = (u.data as number[]).reduce(
+          (s, val, i) => s + val * (v.data as number[])[i],
+          0,
+        );
+        correlate += dot;
+        total++;
+      }
+    }
+    return total > 0 && correlate / total > 0;
+  }
+
+  private nodeClusteringCoefficient(name: string): number {
+    const n = this.getNodeInstance(name);
+    if (!n) return 0;
+    const neighbors = new Set<string>();
+    for (const e of n.outgoing.values()) neighbors.add(e.target.name);
+    for (const e of n.incoming.values()) neighbors.add(e.source.name);
+    const arr = [...neighbors];
+    const deg = arr.length;
+    if (deg < 2) return 0;
+    let links = 0;
+    for (let i = 0; i < deg; i++) {
+      for (let j = i + 1; j < deg; j++) {
+        if (
+          this.getEdgeInstance({ source: arr[i], target: arr[j] }) ||
+          this.getEdgeInstance({ source: arr[j], target: arr[i] })
+        ) {
+          links++;
+        }
+      }
+    }
+    return (2 * links) / (deg * (deg - 1));
+  }
+
+  private averageClusteringCoefficient(): number {
+    let sum = 0;
+    for (const node of this) sum += this.nodeClusteringCoefficient(node.name);
+    return sum / this.order;
+  }
+
   /**
    * Generate an n-dimensional cube network.
    */
