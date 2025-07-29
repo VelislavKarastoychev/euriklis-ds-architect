@@ -372,7 +372,7 @@ export class BST<T> {
     if (!node) node = models.BinarySearch(this._root, value as T, callback);
     models.DeleteNodeInBST(node, this);
     // It is no needed to delete the node connection
-    // because the garbadge collector will delete it.
+    // because the garbage collector will delete it.
     return node?.data || null;
   }
 
