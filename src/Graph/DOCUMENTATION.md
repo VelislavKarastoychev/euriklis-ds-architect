@@ -4,7 +4,7 @@ The Graph library provides a generic `Graph` class with fundamental methods for 
 
 ## Structure of the Graph library
 
-Graph` is generic, so you can define the shape of its nodes, edges, and optional state. You may treat the graph as directed or undirected depending on how you add edges.
+`Graph` is generic, so you can define the shape of its nodes, edges, and optional state. You may treat the graph as directed or undirected depending on how you add edges.
 
 ### Basic usage
 
