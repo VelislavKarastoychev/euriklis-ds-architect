@@ -1,6 +1,6 @@
 # Queue
 
-A **Queue<T>** is a First-In, First-Out (FIFO) collection implemented via a doubly-linked list of `LinkedDataNode<T>`. Each `enqueue` adds to the tail in O(1) time, and each `dequeue` removes from the head in O(1) time :contentReference[oaicite:0]{index=0} :contentReference[oaicite:1]{index=1}. This linked-list approach avoids the shifting cost of array-based queues and supports an optional fixed capacity to detect overflow :contentReference[oaicite:2]{index=2}.
+A **Queue<T>** is a First-In, First-Out (FIFO) collection implemented via a doubly-linked list of `LinkedDataNode<T>`. Each `enqueue` adds to the tail in O(1) time, and each `dequeue` removes from the head in O(1) time.
 
 ---
 
