@@ -17,18 +17,41 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      */
     weightFn: (weight: number, data: T, g?: BaseNetwork<V, T, S>) => number;
     /**
+     * Generate an n-dimensional cube network.
+     */
+    static nCube(n: number): BaseNetwork<number[], null>;
+    /**
      * Generate an Erdos-Renyi random network with
      * `n` nodes and connection probability `p`.
      */
     static erdosRenyi(n: number, p: number): BaseNetwork<number, null>;
     /**
+     * Generate a weighted Erdos-Renyi random network. Each created edge will
+     * receive a weight produced by the optional `weightGenerator` function which
+     * by default draws from `Math.random()`.
+     */
+    static erdosRenyiWeighted(n: number, p: number, weightGenerator?: () => number): BaseNetwork<number, null>;
+    /**
      * Generate a regular ring lattice where each node connects to `k` neighbours on each side.
      */
     static ringLattice(n: number, k: number): BaseNetwork<number, null>;
     /**
+     * Weighted variant of `ringLattice` where each edge weight is determined by
+     * `weightGenerator` (defaults to `Math.random`).
+     */
+    static ringLatticeWeighted(n: number, k: number, weightGenerator?: () => number): BaseNetwork<number, null>;
+    /**
      * Generate a Watts–Strogatz small-world network.
      */
     static wattsStrogatz(n: number, k: number, beta: number): BaseNetwork<number, null>;
+    /**
+     * Weighted Watts–Strogatz small-world network generator. It behaves like
+     * `wattsStrogatz` but assigns a random weight (via `weightGenerator`) to each
+     * created edge.
+     */
+    static wattsStrogatzWeighted(n: number, k: number, beta: number, weightGenerator?: () => number): BaseNetwork<number, null>;
+    /** Alias for `wattsStrogatzWeighted` using a more concise name. */
+    static smallWorldWeighted(n: number, k: number, beta: number, weightGenerator?: () => number): BaseNetwork<number, null>;
     /**
      * Generate a Barabasi–Albert preferential attachment network.
      * `n` is the number of nodes and `m` the number of edges added for each new node.
@@ -54,32 +77,6 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      * Generate a latent space/random dot-product network.
      */
     static latentSpace(n: number, d: number, threshold: number): BaseNetwork<number[], null>;
-    /**
-     * Heuristic check if the network resembles an Erdos-Renyi random network.
-     */
-    isErdosRenyi(tolerance?: number): boolean;
-    /** Check if each node has degree approximately `2*k` as in a ring lattice. */
-    isRingLattice(k: number): boolean;
-    /** Rough test for a Barabasi–Albert style degree distribution. */
-    isBarabasiAlbert(): boolean;
-    /** Check for rich‑club organisation using a simple coefficient. */
-    hasRichClub(threshold?: number): boolean;
-    /** Estimate if the network originated from a Watts–Strogatz process. */
-    isWattsStrogatz(k: number, betaTolerance?: number): boolean;
-    /** Basic check for a deterministic hierarchical structure. */
-    isHierarchical(): boolean;
-    /** Quick planar check for an Apollonian network. */
-    isApollonian(): boolean;
-    /** Rough heuristic detecting block community structure. */
-    isStochasticBlockModel(): boolean;
-    /** Determine if node vectors likely generated edges via dot-product similarity. */
-    isLatentSpace(): boolean;
-    private nodeClusteringCoefficient;
-    private averageClusteringCoefficient;
-    /**
-     * Generate an n-dimensional cube network.
-     */
-    static nCube(n: number): BaseNetwork<number[], null>;
     constructor({ nodes, edges, weightFn, }?: {
         nodes?: {
             name: string;
@@ -250,6 +247,49 @@ export declare class BaseNetwork<V, T, S = unknown> extends BaseGraph<Node<V>, A
      * Determine if the network is bipartite.
      */
     biGraph(): boolean;
+    /** Weighted variant of `isErdosRenyi` using edge weights. */
+    isWeightedErdosRenyi(tolerance?: number): boolean;
+    /** Weighted check if each node has degree roughly `2*k` as in a ring lattice. */
+    isWeightedRingLattice(k: number, tolerance?: number): boolean;
+    /** Weighted heuristic for Barabasi-Albert style degree distribution. */
+    isWeightedBarabasiAlbert(): boolean;
+    /** Weighted variant of rich-club detection. */
+    hasWeightedRichClub(threshold?: number): boolean;
+    /** Weighted Watts–Strogatz detection using weighted clustering. */
+    isWeightedWattsStrogatz(k: number, betaTolerance?: number): boolean;
+    /** Weighted hierarchical structure check. */
+    isWeightedHierarchical(): boolean;
+    /** Weighted planar approximation for an Apollonian network. */
+    isWeightedApollonian(): boolean;
+    /** Weighted community structure heuristic. */
+    isWeightedStochasticBlockModel(): boolean;
+    /** Weighted latent space detection using edge weights. */
+    isWeightedLatentSpace(): boolean;
+    private weightedDegree;
+    private weightedNodeClusteringCoefficient;
+    private weightedAverageClusteringCoefficient;
+    /**
+     * Heuristic check if the network resembles an Erdos-Renyi random network.
+     */
+    isErdosRenyi(tolerance?: number): boolean;
+    /** Check if each node has degree approximately `2*k` as in a ring lattice. */
+    isRingLattice(k: number): boolean;
+    /** Rough test for a Barabasi–Albert style degree distribution. */
+    isBarabasiAlbert(): boolean;
+    /** Check for rich‑club organisation using a simple coefficient. */
+    hasRichClub(threshold?: number): boolean;
+    /** Estimate if the network originated from a Watts–Strogatz process. */
+    isWattsStrogatz(k: number, betaTolerance?: number): boolean;
+    /** Basic check for a deterministic hierarchical structure. */
+    isHierarchical(): boolean;
+    /** Quick planar check for an Apollonian network. */
+    isApollonian(): boolean;
+    /** Rough heuristic detecting block community structure. */
+    isStochasticBlockModel(): boolean;
+    /** Determine if node vectors likely generated edges via dot-product similarity. */
+    isLatentSpace(): boolean;
+    private nodeClusteringCoefficient;
+    private averageClusteringCoefficient;
     /** Serialize network to an object including weights. */
     toJSON(): {
         nodes: {
