@@ -24,7 +24,7 @@ export abstract class DataNode<T = unknown> {
   /**
    * Creates an instance of DataNode.
    * @param {T} [data] - Optional data to associate with the node.
-   * If the "data" argument is an object whch contains
+   * If the "data" argument is an object which contains
    * the property id, then the id will be set from the
    * data, otherwise, the id property will be set automatically.
    */
