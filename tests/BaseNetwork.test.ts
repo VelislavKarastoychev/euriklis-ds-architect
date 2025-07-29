@@ -14,6 +14,8 @@ const buildNetwork = () => {
   return n;
 };
 
+const constant = (w: number) => () => w;
+
 describe("BaseNetwork", () => {
   it("BFS traverses correctly", () => {
     const n = buildNetwork();
@@ -345,5 +347,42 @@ describe("BaseNetwork", () => {
   it("builds Barabasi-Albert networks", () => {
     const g = BaseNetwork.barabasiAlbert(6, 2);
     expect(g.order).toBe(6);
+  });
+});
+
+describe("Weighted network generators", () => {
+  it("builds weighted Erdos-Renyi networks", () => {
+    const g = BaseNetwork.erdosRenyiWeighted(4, 1, constant(2));
+    expect(g.order).toBe(4);
+    expect(g.size).toBe(12); // 4*(4-1)
+    expect(g.weightedSize).toBe(24);
+    for (const e of g.edges) expect(e.weight).toBe(2);
+  });
+
+  it("builds weighted ring lattice networks", () => {
+    const g = BaseNetwork.ringLatticeWeighted(5, 1, constant(3));
+    expect(g.order).toBe(5);
+    expect(g.size).toBe(10); // 2 * n * k
+    expect(g.weightedSize).toBe(30);
+    for (const e of g.edges) expect(e.weight).toBe(3);
+    expect(g.isWeightedRingLattice(1)).toBe(true);
+  });
+
+  it("builds weighted Watts-Strogatz networks", () => {
+    const g = BaseNetwork.wattsStrogatzWeighted(6, 1, 0, constant(4));
+    expect(g.order).toBe(6);
+    expect(g.size).toBe(12);
+    expect(g.weightedSize).toBe(48);
+    for (const e of g.edges) expect(e.weight).toBe(4);
+  });
+
+  it("smallWorldWeighted aliases wattsStrogatzWeighted", () => {
+    const w = constant(5);
+    const a = BaseNetwork.wattsStrogatzWeighted(5, 1, 0, w);
+    const b = BaseNetwork.smallWorldWeighted(5, 1, 0, w);
+    expect(b.order).toBe(5);
+    expect(b.size).toBe(a.size);
+    expect(b.weightedSize).toBe(a.weightedSize);
+    expect(b.edges).toEqual(a.edges);
   });
 });
