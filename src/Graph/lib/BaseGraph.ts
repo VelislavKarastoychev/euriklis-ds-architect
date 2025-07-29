@@ -202,7 +202,7 @@ export abstract class BaseGraph<
     }
 
     // delete the node from the incoming
-    // connections of the outgoing connectins
+    // connections of the outgoing connections
     // of the node.
     for (const [_, n] of outgoing) {
       n.target.incoming.delete(name);
